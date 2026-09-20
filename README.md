@@ -65,7 +65,7 @@ Consulta `entregas/entrega1/README.md` para conocer el alcance, la arquitectura,
 
 ## Documento de la entrega
 
-El informe formal consolidado se encuentra en [entregas/entrega1/README.md](entregas/entrega1/README.md). Allí presentamos el resultado en primera persona plural, la estructura del proyecto, la función de los componentes, el trabajo por integrante, las pruebas realizadas, las instrucciones de ejecución y el alcance pendiente.
+El informe formal consolidado se encuentra en [entregas/entrega1/README.md](entregas/entrega1/README.md). Allí presentamos el resultado , la estructura del proyecto, la función de los componentes, el trabajo por integrante, las pruebas realizadas, las instrucciones de ejecución y el alcance pendiente.
 
 ## Reglas de trabajo
 
@@ -75,3 +75,4 @@ El informe formal consolidado se encuentra en [entregas/entrega1/README.md](entr
 - Las estructuras resuelven mecánicas reales y no se agregan solo para mostrarlas.
 - Los recursos maestros permanecen en `../Diseño Visual y Dirección de Arte/`; solo se copiarán a `src/main/resources` los archivos adaptados para ejecución.
 - No se suben archivos generados por Maven, configuraciones personales ni secretos.
+
