@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {"label":"Entrega 1: jugar","type":"shell","command":"bash jugar.sh","windows":{"command":".\\jugar.bat"},"problemMatcher":[]},
+    {"label":"Entrega 1: pruebas","type":"shell","command":"bash herramientas.sh test","windows":{"command":"mvn test"},"group":"test","problemMatcher":[]},
+    {"label":"Entrega 1: empaquetar","type":"shell","command":"bash herramientas.sh paquete","windows":{"command":"mvn package"},"group":"build","problemMatcher":[]}
+  ]
+}

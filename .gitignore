@@ -1,0 +1,16 @@
+target/
+out/
+bin/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+*.class
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+config-local.json
+partidas-locales/
+distribucion/

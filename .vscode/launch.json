@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "AutopruebaI1App",
+      "request": "launch",
+      "mainClass": "alcaldedigital.app.AutopruebaI1App",
+      "projectName": "alcalde-digital"
+    },
+    {
+      "type": "java",
+      "name": "EvidenciasApp",
+      "request": "launch",
+      "mainClass": "alcaldedigital.app.EvidenciasApp",
+      "projectName": "alcalde-digital"
+    },
+    {
+      "type": "java",
+      "name": "Alcalde Digital — Cliente",
+      "request": "launch",
+      "mainClass": "alcaldedigital.app.ClienteApp"
+    },
+    {
+      "type": "java",
+      "name": "Alcalde Digital — Servidor",
+      "request": "launch",
+      "mainClass": "alcaldedigital.app.ServidorApp"
+    }
+  ]
+}
