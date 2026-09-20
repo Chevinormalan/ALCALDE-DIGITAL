@@ -1,0 +1,18 @@
+{
+  "dirigido": false,
+  "ponderado": true,
+  "lugares": ["A", "B", "C", "D", "E", "F", "G", "H"],
+  "rutas": [
+    {"desde": "A", "hasta": "B", "peso": 2},
+    {"desde": "A", "hasta": "C", "peso": 3},
+    {"desde": "B", "hasta": "D", "peso": 4},
+    {"desde": "B", "hasta": "E", "peso": 2},
+    {"desde": "C", "hasta": "F", "peso": 2},
+    {"desde": "D", "hasta": "G", "peso": 1},
+    {"desde": "D", "hasta": "E", "peso": 2},
+    {"desde": "E", "hasta": "H", "peso": 3},
+    {"desde": "F", "hasta": "H", "peso": 3},
+    {"desde": "G", "hasta": "H", "peso": 2}
+  ]
+}
+

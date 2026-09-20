@@ -1,0 +1,11 @@
+{
+  "versionConfiguracion": 1,
+  "puerto": 5050,
+  "jugadoresMinimos": 2,
+  "jugadoresMaximos": 4,
+  "semilla": 20260917,
+  "diasNarrativos": 7,
+  "segundosDecisionViral": 10,
+  "modoDemostracion": true
+}
+

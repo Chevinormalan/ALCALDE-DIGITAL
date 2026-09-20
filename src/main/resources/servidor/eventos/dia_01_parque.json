@@ -1,0 +1,22 @@
+{
+  "id": "evento.dia1.parque",
+  "version": 1,
+  "dia": 1,
+  "lugar": "B_PARQUE",
+  "titulo": "El helipuerto de palomas",
+  "publicacion": "¿Cerrarán el parque para construir un helipuerto de palomas?",
+  "estado": "IMPLEMENTADO_ENTREGA_1",
+  "variantes": [
+    {"id":"FALSO", "aviso":"Aviso 014: el parque sigue abierto. No existe proyecto de helipuerto. Firma y fecha verificadas.", "testimonio":"Solo compramos semillas. ¡Ni las palomas saben aterrizar en fila!", "conclusion":"El cierre es falso: el parque sigue abierto."},
+    {"id":"MANTENIMIENTO", "aviso":"Aviso 015: cierre de la fuente durante dos horas por mantenimiento. Senderos abiertos.", "testimonio":"Reparamos una tubería, no una pista aérea. Confundieron la fuente con todo el parque.", "conclusion":"Mantenimiento parcial: el mensaje exagera el cierre e inventa el helipuerto."},
+    {"id":"PROPUESTA", "aviso":"Acta 016: propuesta de helipuerto recibida. No aprobada; sin presupuesto ni fecha de cierre.", "testimonio":"El candidato entregó un dibujo en una servilleta. Recibir no significa aprobar.", "conclusion":"La propuesta existe, pero no fue aprobada. No hay cierre confirmado."},
+    {"id":"SATIRA", "aviso":"Archivo 017: el mensaje nació en El Palomar Satírico. El recorte perdió la etiqueta HUMOR.", "testimonio":"Yo escribí la broma. También propuse un ministerio de migas. Quitaron la etiqueta.", "conclusion":"Era sátira: el recorte omitió su etiqueta. El parque sigue abierto."}
+  ],
+  "opciones": [
+    "COMPARTIR",
+    "VERIFICAR",
+    "REPORTAR",
+    "IGNORAR"
+  ],
+  "notaDesarrollo": "Hechos privados: revelar mediante interacción con aviso y testimonio."
+}

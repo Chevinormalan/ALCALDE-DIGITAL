@@ -1,0 +1,13 @@
+{
+  "lugares": [
+    {"id": "A", "nombre": "Centro Comercial El Descuento Eterno"},
+    {"id": "B", "nombre": "Parque de las Palomas Influencers"},
+    {"id": "C", "nombre": "Barrio Wi-Fi Prestado"},
+    {"id": "D", "nombre": "Universidad de los Expertos de Cinco Minutos"},
+    {"id": "E", "nombre": "Plaza del Megáfono"},
+    {"id": "F", "nombre": "Barrio Humilde La Última Parada"},
+    {"id": "G", "nombre": "Noticiero Canal Casi Serio"},
+    {"id": "H", "nombre": "Plaza Central de las Decisiones Cuestionables"}
+  ]
+}
+
