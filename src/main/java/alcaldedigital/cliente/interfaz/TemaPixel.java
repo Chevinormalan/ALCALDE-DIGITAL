@@ -4,12 +4,13 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import alcaldedigital.cliente.recursos.PaletaMorada;
 
 /** Materiales compartidos de la interfaz. Coordenadas enteras y fuente empaquetada. */
 public final class TemaPixel {
-    public static final Color NOCHE=new Color(0x06263C), PANEL=new Color(0x09364F),
-        AZUL=new Color(0x104E6C), CIAN=new Color(0x54BDCF), CREMA=new Color(0xFFF0CE),
-        ORO=new Color(0xF4BD4F), SOMBRA=new Color(0x031522);
+    public static final Color NOCHE=PaletaMorada.FONDO, PANEL=PaletaMorada.PANEL,
+        AZUL=PaletaMorada.VIOLETA, CIAN=PaletaMorada.LILA, CREMA=PaletaMorada.PAPEL,
+        ORO=PaletaMorada.ACENTO, SOMBRA=PaletaMorada.SOMBRA;
     private final Font base;
     private final Map<String,Font> fuentes=new HashMap<>();
     public TemaPixel() {
