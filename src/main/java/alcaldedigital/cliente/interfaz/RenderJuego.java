@@ -1,13 +1,19 @@
 package alcaldedigital.cliente.interfaz;
 
 import alcaldedigital.cliente.*;
+import alcaldedigital.cliente.mision2.MisionDosSketch;
+import alcaldedigital.cliente.misiones.PartidasMenu;
+import alcaldedigital.cliente.entrada.MapaControles;
 import alcaldedigital.cliente.recursos.Recursos;
+import alcaldedigital.cliente.recursos.PaletaMorada;
+import alcaldedigital.compartido.protocolo.SesionMisionUno;
 import alcaldedigital.cliente.visualizadores.ConsultaEstructuras;
 import alcaldedigital.compartido.modelo.*;
 import alcaldedigital.compartido.estructuras.avl.ArbolAVLPublicaciones;
 import alcaldedigital.compartido.estructuras.decisiones.ArbolDecisiones;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 
@@ -15,6 +21,9 @@ import java.util.List;
 public final class RenderJuego {
     public record Boton(Rectangle area,String accion,String texto) { }
     private final Recursos recursos=new Recursos();
+    private final Map<String,Rectangle> limitesCelda=new HashMap<>();
+    private final Map<String,Rectangle> limitesGrupo=new HashMap<>();
+    private SpritesTranseuntes spritesTranseuntes;
     private final TemaPixel tema=new TemaPixel();
     private int ratonX=-1,ratonY=-1;
     private String presionado="";
@@ -25,7 +34,8 @@ public final class RenderJuego {
     private final BufferedImage lienzo=new BufferedImage(1280,720,BufferedImage.TYPE_INT_ARGB);
     private Graphics2D g;
     private JuegoCliente juego;
-    private Color tinta=new Color(0x18283D), papel=new Color(0xF7E7C6), tenue=new Color(0xA9BEBE), oro=new Color(0xE5AA45), teal=new Color(0x287F82);
+    private Color tinta=PaletaMorada.FONDO, papel=PaletaMorada.PAPEL,
+        tenue=PaletaMorada.TEXTO_SUAVE, oro=PaletaMorada.ACENTO, teal=PaletaMorada.VIOLETA;
     public List<Boton> botones() { return List.copyOf(botones); }
     public void avanzarFoco(JuegoCliente j,int paso) {
         if(botones.isEmpty()) return;
@@ -33,8 +43,26 @@ public final class RenderJuego {
         j.editandoBusqueda=botones.get(j.foco).accion().equals("campoBusqueda");
         if(j.editandoBusqueda) j.cursorBusqueda=j.busqueda.length();
     }
+    public void moverFocoDireccion(JuegoCliente j,int dx,int dy) {
+        if(botones.isEmpty()) return;
+        Rectangle actual=botones.get(Math.floorMod(j.foco,botones.size())).area();
+        double cx=actual.getCenterX(),cy=actual.getCenterY(),mejor=Double.POSITIVE_INFINITY;
+        int elegido=j.foco;
+        for(int i=0;i<botones.size();i++) {
+            if(i==j.foco) continue;
+            Rectangle r=botones.get(i).area();
+            double x=r.getCenterX()-cx,y=r.getCenterY()-cy;
+            double avance=x*dx+y*dy;
+            if(avance<=1) continue;
+            double lado=Math.abs(x*dy-y*dx);
+            double puntaje=avance+lado*2.5;
+            if(puntaje<mejor) {mejor=puntaje;elegido=i;}
+        }
+        j.foco=elegido;
+        j.editandoBusqueda=botones.get(elegido).accion().equals("campoBusqueda");
+    }
     public void activarFoco(JuegoCliente j) {
-        if(j.editandoBusqueda) {j.accion("buscar");return;}
+        if(j.editandoBusqueda&&!j.tecladoNumericoActivo) {j.accion("buscar");return;}
         if(!botones.isEmpty()) j.accion(botones.get(Math.floorMod(j.foco,botones.size())).accion());
     }
     public void pulsar(JuegoCliente j,int x,int y) {
@@ -48,19 +76,46 @@ public final class RenderJuego {
         this.juego=juego; botones.clear(); g=lienzo.createGraphics();
         TemaPixel.nitido(g);
         tinta=juego.contraste?Color.BLACK:TemaPixel.NOCHE; papel=juego.contraste?Color.WHITE:TemaPixel.CREMA;
-        oro=TemaPixel.ORO;tenue=new Color(juego.contraste?0xFFFFFF:0xACD9DF);teal=new Color(0x197E87);
+        oro=TemaPixel.ORO;tenue=juego.contraste?Color.WHITE:PaletaMorada.TEXTO_SUAVE;teal=PaletaMorada.VIOLETA;
         rect(0,0,1280,720,tinta);
-        if(juego.sesion!=null&&juego.pantalla!=JuegoCliente.Pantalla.MENU&&juego.pantalla!=JuegoCliente.Pantalla.PARQUE) {
+        boolean seleccion=juego.pantalla==JuegoCliente.Pantalla.GUARDADO||juego.pantalla==JuegoCliente.Pantalla.MISIONES||
+            juego.pantalla==JuegoCliente.Pantalla.CONTROLES||juego.pantalla==JuegoCliente.Pantalla.CONFIRMAR_REINICIO||
+            juego.pantalla==JuegoCliente.Pantalla.DIFICULTAD||
+            juego.pantalla==JuegoCliente.Pantalla.DIFICULTAD_DOS;
+        if(juego.misionUno!=null&&!seleccion&&juego.pantalla!=JuegoCliente.Pantalla.MENU&&juego.pantalla!=JuegoCliente.Pantalla.PARQUE) {
+            mundoMisionUno(0,0,1280,720,true);
+            rect(0,0,1280,720,new Color(33,21,47,juego.contraste?250:210));
+        } else if(juego.sesion!=null&&!seleccion&&juego.pantalla!=JuegoCliente.Pantalla.MENU&&juego.pantalla!=JuegoCliente.Pantalla.PARQUE) {
             fondoMundo=true;mundo(0,0,1280,720);fondoMundo=false;
-            rect(0,0,1280,720,new Color(2,18,32,juego.contraste?250:195));
+            rect(0,0,1280,720,new Color(33,21,47,juego.contraste?250:195));
         } else {
             for(int y=0;y<720;y+=8) rect(0,y,1280,2,new Color(255,255,255,4));
         }
-        switch(juego.pantalla) {
-            case MENU -> menu(); case ROLES -> roles(); case PARQUE -> parque();
+        if(seleccion) {
+            if(juego.pantalla==JuegoCliente.Pantalla.GUARDADO) guardado();
+            else if(juego.pantalla==JuegoCliente.Pantalla.MISIONES) misiones();
+            else if(juego.pantalla==JuegoCliente.Pantalla.CONTROLES) controles();
+            else if(juego.pantalla==JuegoCliente.Pantalla.CONFIRMAR_REINICIO) confirmarReinicio();
+            else if(juego.pantalla==JuegoCliente.Pantalla.DIFICULTAD_DOS) dificultadDos();
+            else dificultad();
+        } else if(juego.misionUno!=null&&juego.pantalla!=JuegoCliente.Pantalla.MENU&&juego.pantalla!=JuegoCliente.Pantalla.ROLES&&
+            !(juego.pantalla==JuegoCliente.Pantalla.AYUDA&&juego.anterior==JuegoCliente.Pantalla.MENU)) {
+            switch(juego.pantalla) {
+                case PARQUE -> parqueMisionUno(); case CIVITAS -> civitasMisionUno();
+                case RESULTADO -> resultadoMisionUno(); case AYUDA -> ayudaMisionUno();
+                case ARBOLES -> estructurasMisionUno();
+                default -> parqueMisionUno();
+            }
+        } else switch(juego.pantalla) {
+            case MENU -> menu(); case MISIONES -> misiones(); case GUARDADO -> guardado();
+            case DIFICULTAD -> dificultad(); case DIFICULTAD_DOS -> dificultadDos();
+            case ROLES -> roles(); case PARQUE -> parque();
             case CIVITAS -> civitas(); case EVIDENCIAS -> evidencias();
             case ARBOLES -> arboles(); case AYUDA -> ayuda(); case RESULTADO -> resultado();
+            case CONTROLES -> controles(); case CONFIRMAR_REINICIO -> confirmarReinicio();
         }
+        if(juego.pausa&&!juego.pausaUnificada) pausa();
+        else if(juego.tecladoNumericoActivo) tecladoNumerico();
         if(!botones.isEmpty()) {
             juego.foco=Math.floorMod(juego.foco,botones.size());
             Rectangle r=botones.get(juego.foco).area();g.setStroke(new BasicStroke(2));g.setColor(oro);
@@ -70,6 +125,36 @@ public final class RenderJuego {
         g.setStroke(new BasicStroke(2));g.setColor(papel);g.drawRect(10,10,1260,700);
         for(int x:new int[]{10,1258}) for(int y:new int[]{10,698}) {g.setColor(oro);g.drawRect(x,y,12,12);}
         g.dispose(); return lienzo;
+    }
+    private void pausa() {
+        botones.clear();
+        rect(0,0,1280,720,new Color(13,8,24,220));
+        panel(340,118,600,482,PaletaMorada.PANEL);
+        texto("PAUSA",380,171,38,oro,true);
+        texto("Misión 1 · Sofi y Mr. Palomo",380,205,18,papel,true);
+        if(juego.controlesPausa)
+            parrafo("Stick izquierdo o cruceta: moverse. A: hablar y confirmar. X: Civitas. Y: estructuras. LB y RB: cambiar publicación. B: volver. Menú: pausa.",380,265,515,19,papel);
+        else
+            parrafo("El tiempo de la misión está detenido. Puedes continuar, consultar los controles o regresar al selector.",380,265,515,19,papel);
+        boton("Continuar","reanudar",380,421,520,true);
+        boton(juego.controlesPausa?"Ocultar controles":"Ver controles","controlesPausa",380,475,520,false);
+        boton("Salir al selector","salirMision",380,529,520,false);
+    }
+    private void tecladoNumerico() {
+        botones.clear();
+        rect(0,0,1280,720,new Color(13,8,24,220));
+        panel(412,76,456,568,PaletaMorada.PANEL);
+        texto("BUSCAR ID",450,127,31,oro,true);
+        texto(juego.busqueda.isBlank()?"Escribe un número":juego.busqueda,450,177,22,papel,true);
+        String[][] teclas={{"7","8","9"},{"4","5","6"},{"1","2","3"}};
+        for(int fila=0;fila<3;fila++) for(int columna=0;columna<3;columna++) {
+            String digito=teclas[fila][columna];
+            boton(digito,"digito:"+digito,450+columna*126,213+fila*65,108,false);
+        }
+        boton("Borrar","borrarDigito",450,408,108,false);
+        boton("0","digito:0",576,408,108,false);
+        boton("Buscar","buscar",702,408,108,true);
+        boton("Cancelar [B]","cerrarTeclado",450,503,360,false);
     }
     private void rect(int x,int y,int w,int h,Color c) { g.setColor(c);g.fillRect(x,y,w,h); }
     private void panel(int x,int y,int w,int h,Color c) {
@@ -81,7 +166,7 @@ public final class RenderJuego {
         if(size>=12&&size<17) size+=2;
         g.setFont(tema.fuente(size,bold));
         Font fuente=tema.fuente(size,bold);
-        if(size>=28) {g.setColor(new Color(0,8,20,130));tema.escribir(g,t,x+2,y+3,fuente);}
+        if(size>=28) {g.setColor(new Color(20,12,29,130));tema.escribir(g,t,x+2,y+3,fuente);}
         g.setColor(c);tema.escribir(g,t,x,y,fuente);
     }
     private int parrafo(String t,int x,int y,int w,int size,Color c) {
@@ -98,7 +183,7 @@ public final class RenderJuego {
         boolean hover=new Rectangle(x,y,w,42).contains(ratonX,ratonY);
         boolean down=action.equals(presionado)&&juego.animacion<finPulsacion;
         int dy=down?2:0;
-        Color fondo=principal?oro:juego.contraste?Color.BLACK:hover?new Color(0x176582):TemaPixel.AZUL;
+        Color fondo=principal?oro:juego.contraste?Color.BLACK:hover?PaletaMorada.VIOLETA.brighter():TemaPixel.AZUL;
         String icono=switch(action) {
             case "compartir" -> "07_compartir";case "verificar" -> "08_verificar";
             case "reportar" -> "09_reportar";case "ignorar" -> "10_ignorar";
@@ -107,8 +192,8 @@ public final class RenderJuego {
         };
         boolean accionSocial=Set.of("compartir","verificar","reportar","ignorar").contains(action);
         if(accionSocial&&!juego.contraste) fondo=switch(action) {
-            case "verificar" -> new Color(0x167964);case "reportar" -> new Color(0xAD413E);
-            case "ignorar" -> oro;default -> TemaPixel.AZUL;
+            case "verificar" -> PaletaMorada.EXITO;case "reportar" -> PaletaMorada.PELIGRO;
+            default -> TemaPixel.AZUL;
         };
         TemaPixel.marco(g,x,y+dy,w,42-dy,fondo,principal?papel:hover?oro:TemaPixel.CIAN,false);
         rect(x+7,y+5+dy,w-14,2,new Color(255,255,255,principal?95:35));
@@ -121,7 +206,7 @@ public final class RenderJuego {
         Font f=tema.fuente(size,true);
         while(size>12&&tema.ancho(g,t,f)>w-espacio) f=tema.fuente(--size,true);
         tw=tema.ancho(g,t,f);
-        boolean claro=accionSocial?action.equals("ignorar")&&!juego.contraste:principal;
+        boolean claro=principal&&!accionSocial;
         g.setColor(claro?TemaPixel.NOCHE:papel);
         tema.escribir(g,t,x+(icono==null?(w-tw)/2:40+(w-48-tw)/2),y+27+dy,f);
         botones.add(new Boton(new Rectangle(x,y,w,42),action,t));
@@ -131,19 +216,31 @@ public final class RenderJuego {
         texto("ALCALDE DIGITAL",28,33,16,oro,true);texto(titulo,28,77,34,papel,true);
         texto(detalle,30,101,14,tenue,false);
         rect(28,114,1224,2,TemaPixel.CIAN);
-        boton("Volver [Esc]","volver",1080,35,170,false);
+        boton(juego.mandoActivo?"Volver [B]":"Volver [Esc]","volver",1080,35,170,false);
     }
     private void pie(String t) {texto(t,30,696,13,tenue,false);}
     private void menu() {
         imagen("portada",462,0,1080,720);
         TemaPixel.marco(g,18,18,467,683,tinta,papel,true);
         imagen("iconos/20_reloj",47,44,24,24);
-        texto("CIUDAD NOVA  /  DÍA 01",84,64,17,oro,true);
+        int victorias=0;for(int n=1;n<=7;n++)if(juego.progreso.ganada(n))victorias++;
+        texto("CIUDAD NOVA  /  "+(victorias==0?"NUEVA CAMPAÑA":victorias+" MISIONES GANADAS"),84,64,17,oro,true);
         texto("ALCALDE",44,150,72,papel,true);texto("DIGITAL",44,215,72,papel,true);
         rect(48,232,384,3,oro);
         texto("PROMESAS, PALOMAS Y WI-FI",48,259,19,oro,true);
-        parrafo("El parque tiene un rumor. Las palomas tienen abogado. Tú decides qué merece compartirse.",48,301,390,20,papel);
-        if(juego.sesion==null) {
+        parrafo(victorias==0?"Sofi conoce a Mr. Palomo. Una publicación altera el parque y tus decisiones pueden calmarlo.":
+            "Tu campaña continúa en Ciudad Nova. Retoma una partida o elige una misión disponible.",48,301,390,20,papel);
+        if(juego.misionUnoDisponible()) {
+            var partida=juego.continuacionMenu();
+            boolean ganada=partida!=null&&partida.estado()==PartidasMenu.Estado.VICTORIA;
+            boolean accesoDirecto=partida!=null&&!ganada;
+            boton(ganada?"Continuar campaña":"Jugar · elegir misión","jugar",48,397,364,true);
+            if(accesoDirecto)boton(partida.estado()==PartidasMenu.Estado.DERROTA?
+                "Reintentar misión "+partida.mision():"Continuar misión "+partida.mision(),
+                "continuarMision",48,453,364,false);
+            boton("Cómo jugar","ayuda",48,accesoDirecto?509:453,364,false);
+            boton("Salir","salir",48,accesoDirecto?565:509,364,false);
+        } else if(juego.sesion==null) {
             boton("Entrar a Ciudad Nova  →","jugar",48,414,364,true);
             boton("Cómo jugar","ayuda",48,470,364,false);boton("Salir","salir",48,526,364,false);
         } else {
@@ -153,20 +250,193 @@ public final class RenderJuego {
             boton("Laboratorio de estructuras","laboratorio",875,536,362,false);
         }
         rect(48,610,364,2,TemaPixel.CIAN);
-        texto("CAPÍTULO 1 · EL HELIPUERTO DE PALOMAS",48,639,15,oro,true);
-        texto("Entrega 1  ·  Java + Processing",48,666,16,tenue,false);
-        panel(917,605,320,69,new Color(24,40,61,225));
-        texto("Una ciudad. Muchas versiones.",938,634,17,papel,true);
-        texto("Explora · contrasta · decide",938,657,14,oro,false);
+        int disponibles=0;for(int n=1;n<=7;n++)if(juego.progreso.disponible(n))disponibles++;
+        texto("MISIONES 1–7 · "+disponibles+" DISPONIBLES",48,639,15,oro,true);
+        texto("Ciudad Nova · campaña local",48,666,16,tenue,false);
+        panel(917,605,320,69,new Color(56,38,75,225));
+        texto(juego.mandoActivo?"Mando conectado":"Una ciudad. Muchas versiones.",938,634,17,papel,true);
+        texto(juego.mandoActivo?"A: elegir · B: volver":"Explora · contrasta · decide",938,657,14,oro,false);
+    }
+    private void guardado(){
+        cabecera("Misión "+juego.misionSolicitada,"Hay una partida guardada para esta misión.");
+        panel(300,200,680,350,PaletaMorada.PANEL);
+        texto("¿Cómo quieres continuar?",340,260,29,papel,true);
+        boton("Continuar partida","partida:continuar",340,310,600,true);
+        boton("Nueva partida","partida:nueva",340,375,600,false);
+        boton("Volver a misiones","volver",340,440,600,false);
+        pie("Nueva partida conserva las victorias y los antecedentes de campaña.");
+    }
+    private void elegirMision(int n,int x,int y){
+        if(juego.progreso.disponible(n))boton("Elegir misión "+n,"mision"+n,x,y,258,true);
+        else {panel(x,y,258,42,new Color(40,29,54));texto("Gana la misión "+juego.progreso.requisitoPendiente(n),x+15,y+28,17,tenue,true);}
+    }
+    private void misiones() {
+        cabecera("Elige una misión","Empieza por la misión 1. Gana para avanzar o usa el desbloqueo opcional. Misiones 5 y 7 admiten LAN.");
+        for(int i=0;i<8;i++) {
+            int x=28+(i%4)*312,y=145+(i/4)*230;
+            panel(x,y,288,213,PaletaMorada.PANEL);
+            if(i==0) {
+                imagen("mision1/parque",x+9,y+9,270,88);
+                rect(x+9,y+73,270,24,new Color(33,21,47,205));
+                texto("MISIÓN 1 · DISPONIBLE",x+17,y+92,14,oro,true);
+                texto("Sofi y Mr. Palomo",x+16,y+123,20,papel,true);
+                elegirMision(1,x+15,y+157);
+            } else if(i==1) {
+                imagen("mision2/oficina",x+9,y+9,270,88);
+                rect(x+9,y+73,270,24,new Color(33,21,47,205));
+                texto(juego.ultimoResultadoMisionDos!=null&&juego.ultimoResultadoMisionDos.terminada()
+                    ?"MISIÓN 2 · JUGADA":"MISIÓN 2 · DISPONIBLE",x+17,y+92,14,oro,true);
+                texto("La red Civitas",x+16,y+123,20,papel,true);
+                elegirMision(2,x+15,y+157);
+            } else if(i==2) {
+                BufferedImage portada=recursos.imagen("mision3/bg_atrio_noche");
+                g.drawImage(portada,x+9,y+9,x+279,y+97,60,150,1350,570,null);
+                rect(x+9,y+9,270,88,new Color(93,43,134,65));
+                rect(x+9,y+73,270,24,new Color(33,21,47,205));
+                texto(juego.ultimoResultadoMisionTres!=null&&juego.ultimoResultadoMisionTres.completada()
+                    ?"MISIÓN 3 · COMPLETADA":"MISIÓN 3 · DISPONIBLE",x+17,y+92,14,oro,true);
+                texto("Civitas en Rojo",x+16,y+123,20,papel,true);
+                elegirMision(3,x+15,y+157);
+            } else if(i==3) {
+                imagen("mision4/plaza_presentacion",x+9,y+9,270,88);
+                rect(x+9,y+73,270,24,new Color(33,21,47,205));
+                texto(juego.ultimoResultadoMisionCuatro!=null&&juego.ultimoResultadoMisionCuatro.completada()?"MISIÓN 4 · COMPLETADA":"MISIÓN 4 · DISPONIBLE",x+17,y+92,14,oro,true);
+                texto("Juan en campaña",x+16,y+123,20,papel,true);
+                elegirMision(4,x+15,y+157);
+            } else if(i==4) {
+                imagen("mision5/servidor-interior",x+9,y+9,270,88);
+                texto("MISIÓN 5 · LOCAL / LAN",x+17,y+92,14,oro,true);
+                texto("El servidor crítico",x+16,y+123,20,papel,true);
+                elegirMision(5,x+15,y+157);
+            } else if(i==5) {
+                imagen("mision6/cielo",x+9,y+9,270,88);
+                rect(x+9,y+73,270,24,new Color(33,21,47,205));
+                texto(juego.ultimoResultadoMisionSeis!=null&&juego.ultimoResultadoMisionSeis.completada()?"MISIÓN 6 · COMPLETADA":"MISIÓN 6 · LOCAL",x+17,y+92,14,oro,true);
+                texto("Cielos de campaña",x+16,y+123,20,papel,true);
+                elegirMision(6,x+15,y+157);
+            } else if(i==6) {
+                imagen("mision7/avenida",x+9,y+9,270,88);
+                texto("MISIÓN 7 · LOCAL / LAN",x+17,y+92,14,oro,true);
+                texto("La carrera por la primicia",x+16,y+123,18,papel,true);
+                elegirMision(7,x+15,y+157);
+            } else {
+                texto("%02d".formatted(i+1),x+18,y+83,49,tenue,true);
+                texto("MISIÓN "+(i+1),x+18,y+121,18,papel,true);
+                texto("En desarrollo",x+18,y+161,15,tenue,false);
+            }
+            if(i<7){rect(x+9,y+73,270,24,new Color(33,21,47,240));texto("MISIÓN "+(i+1)+" · "+(juego.progreso.disponible(i+1)?juego.progreso.ganada(i+1)?"GANADA":"DISPONIBLE":"BLOQUEADA"),x+17,y+92,14,juego.progreso.disponible(i+1)?oro:tenue,true);}
+        }
+        if(juego.progreso.todasDesbloqueadas()){
+            panel(28,615,350,44,PaletaMorada.PANEL);
+            texto("TODAS LAS MISIONES DISPONIBLES",42,643,16,oro,true);
+        }else boton("Desbloquear todas las misiones","desbloquearTodas",28,615,350,false);
+        texto("Acceso libre",396,643,15,tenue,false);
+        boton("Restablecer juego","pedirRestablecer",952,615,300,false);
+        pie(juego.segundosAviso>0?juego.aviso:(juego.mandoActivo?"Stick/cruceta: elegir · A: confirmar · B: volver  |  ":"")+
+            "Ciudad: confianza "+juego.estadoCampana.confianza()+" · desinformación "+
+            juego.estadoCampana.desinformacion()+"  |  Misión 8 en desarrollo.");
+    }
+    private void confirmarReinicio(){
+        cabecera("Restablecer juego","Comenzar otra vez desde la misión 1.");
+        panel(240,175,800,370,PaletaMorada.PANEL);
+        texto("¿Restablecer todo el progreso?",285,245,30,oro,true);
+        parrafo("Se archivarán las partidas guardadas, victorias, puntajes, decisiones de campaña y el desbloqueo total. El perfil anterior quedará en una carpeta de respaldo.",285,285,710,19,papel);
+        boton("Cancelar y volver","cancelarRestablecer",285,405,340,true);
+        boton("Sí, restablecer juego","confirmarRestablecer",650,405,345,false);
+        pie("Después del reinicio, la misión 1 estará disponible y las misiones 2 a 7 volverán a bloquearse.");
+    }
+    private void controles(){
+        int n=juego.controlesMision;boolean dos=juego.controlesDosJugadores&&n>=5;
+        cabecera("Controles · misión "+n,MapaControles.nombreMision(n)+" · "+(dos?"dos personas en un teclado":"una persona"));
+        panel(28,137,596,482,PaletaMorada.PANEL);
+        panel(652,137,596,482,PaletaMorada.PANEL);
+        texto("TECLADO",52,174,24,oro,true);texto("MANDO",676,174,24,TemaPixel.CIAN,true);
+        imagen("controles/teclado",52,187,548,203);
+        imagen("controles/mando",694,183,505,240);
+        var c=new MapaControles.Contexto(n,dos,"Jugador 1","Jugador 2",juego.nombreMando);
+        if(dos){
+            texto("J1",52,419,17,oro,true);texto("J2",338,419,17,TemaPixel.CIAN,true);
+            dibujarListaTeclas(MapaControles.teclado1(c),52,442,26,oro);
+            dibujarListaTeclas(MapaControles.teclado2(c),338,442,26,TemaPixel.CIAN);
+        }else dibujarListaTeclas(MapaControles.teclado1(c),52,418,27,oro);
+        texto(c.playStation()?"PlayStation · compatibilidad de botones":"Esquema Xbox / mando genérico",676,443,16,papel,false);
+        int y=468;for(var b:MapaControles.mando(c)){
+            texto(MapaControles.etiquetaBoton(c,b.boton()),678,y,15,TemaPixel.CIAN,true);
+            texto(b.accion(),900,y,15,papel,false);y+=22;
+        }
+        if(n>1)boton("Misión anterior","controlesAnterior",28,638,238,false);
+        else {panel(28,638,238,42,PaletaMorada.PANEL);texto("Primera misión",52,666,15,tenue,false);}
+        if(n<7)boton("Misión siguiente","controlesSiguiente",280,638,238,false);
+        else {panel(280,638,238,42,PaletaMorada.PANEL);texto("Última misión",304,666,15,tenue,false);}
+        if(n>=5)boton(dos?"Dos personas":"Una persona","controlesModo",532,638,258,false);
+        else {panel(532,638,258,42,PaletaMorada.PANEL);texto("Una persona",555,666,15,tenue,false);}
+        boton("Volver a Ayuda","volver",804,638,448,true);
+        pie("Esc / P / Menú: pausa · H / Vista: ayuda · G: guardar · T: consultas");
+    }
+    private void dibujarListaTeclas(List<MapaControles.Tecla> teclas,int x,int y,int paso,Color acento){
+        for(var t:teclas){
+            texto(t.tecla(),x,y,15,acento,true);
+            texto(t.accion(),x+dosColumnas(x),y,15,papel,false);y+=paso;
+        }
+    }
+    private int dosColumnas(int x){return x>=338?112:120;}
+    private void dificultad() {
+        cabecera("Elige la dificultad","Misión 1 · Sofi y Mr. Palomo · cambia el tiempo disponible durante la crisis.");
+        String[] nombres={"FÁCIL","NORMAL","DIFÍCIL"};
+        String[] descripciones={
+            "Para explorar el parque y conversar con calma. Tienes margen para corregir tu ruta.",
+            "El ritmo original de la misión. Planifica el orden de las ocho conversaciones.",
+            "Un reto muy ajustado: conoce la ruta y actúa rápido. Es posible completar la misión."
+        };
+        SesionMisionUno.Dificultad[] opciones=SesionMisionUno.Dificultad.values();
+        for(int i=0;i<opciones.length;i++) {
+            int x=28+i*417;
+            panel(x,157,390,405,PaletaMorada.PANEL);
+            texto(nombres[i],x+25,207,27,i==2?PaletaMorada.PELIGRO:oro,true);
+            rect(x+25,224,340,3,oro);
+            texto(opciones[i].segundos()+" s",x+25,307,60,papel,true);
+            texto("para la crisis del parque",x+25,340,16,tenue,false);
+            parrafo(descripciones[i],x+25,385,333,19,papel);
+            if(juego.misionUnoDisponible()) boton("Jugar en "+nombres[i],
+                "m1dificultad:"+opciones[i].name(),x+21,502,348,i==1);
+        }
+        parrafo("La introducción y las decisiones en Civitas no consumen este tiempo. Iniciar una dificultad nueva reinicia la misión 1.",31,610,1180,17,tenue);
+        pie(juego.mandoActivo?"Stick: caminar · A: hablar · X: Civitas · Y: estructuras · Menú: pausa":
+            "WASD o flechas: caminar · E: hablar · C: Civitas · T: estructuras · Esc/P: pausa");
+    }
+    private void dificultadDos() {
+        cabecera("Dificultad de la misión 2","Defiende la red Civitas hasta que termine el reloj.");
+        String[] nombres={"FÁCIL","NORMAL","DIFÍCIL"};
+        String[] descripciones={
+            "6 oleadas de 1 a 3 equipos y una alerta final a los 2 s.",
+            "9 oleadas de 1 a 3 equipos y una alerta final a los 2 s.",
+            "11 oleadas y alerta final. Solo el primer intento tiene 30 % de fallo crítico."
+        };
+        MisionDosSketch.Dificultad[] opciones=MisionDosSketch.Dificultad.values();
+        for(int i=0;i<opciones.length;i++) {
+            int x=28+i*417;
+            panel(x,157,390,405,PaletaMorada.PANEL);
+            texto(nombres[i],x+25,207,27,i==2?PaletaMorada.PELIGRO:oro,true);
+            rect(x+25,224,340,3,oro);
+            texto(opciones[i].segundos()+" s",x+25,307,60,papel,true);
+            texto("ataque cada "+NumberFormat.getNumberInstance(Locale.forLanguageTag("es-CO"))
+                .format(opciones[i].intervaloAtaque())+" s",x+25,340,17,tenue,false);
+            parrafo(descripciones[i],x+25,385,333,19,papel);
+            boton("Jugar en "+nombres[i],"m2dificultad:"+opciones[i].name(),
+                x+21,502,348,i==1);
+        }
+        parrafo("Cada oleada compromete entre 1 y 3 equipos seguros. Pulsa E junto a cada uno para repararlo. A los 2 s restantes, un equipo seguro se pondrá rojo. Ganas si todos quedan seguros.",31,610,1180,17,tenue);
+        pie(juego.mandoActivo?"Stick: mover · RB: correr · X: salto · A: defender · Menú: pausa":
+            "WASD o flechas: mover · Shift: correr · Espacio: salto · E: defender · P: pausa");
     }
     private void roles() {
         cabecera("¿Qué voz tendrá tu historia?","Un caso local de la entrega 1. Los otros personajes te acompañan como NPC.");
         String[] nombres={"Ciudadano","Periodista","Influencer","Candidato"};
         String[] textos={"Escucha a los vecinos y encuentra las fuentes. Tu voz puede frenar una cadena.","Documenta la declaración completa. Investiga antes de convertirla en titular.","Transmite junto al candidato. Dale alcance al contexto, no solo al escándalo.","Responde por tu campaña. Reconocer lo que no sabes también es una decisión."};
         for(int i=0;i<4;i++) {
-            int x=28+i*312;panel(x,146,288,322,new Color(0x22394D));
+            int x=28+i*312;panel(x,146,288,322,PaletaMorada.PANEL);
             imagen("portada",x+8,154,272,114);
-            rect(x+8,154,272,114,new Color(0,25,45,155));
+            rect(x+8,154,272,114,new Color(33,21,47,155));
             imagen("actores/"+nombres[i].toLowerCase(Locale.ROOT)+"_00",x+96,165,96,96);
             rect(x+10,270,268,2,TemaPixel.CIAN);
             texto(nombres[i],x+22,290,24,papel,true);parrafo(textos[i],x+22,324,245,16,tenue);
@@ -186,7 +456,7 @@ public final class RenderJuego {
         boton("Civitas [C]","civitas",637,35,157,true);boton("Árboles [T]","arboles",805,35,157,false);
         boton("Ayuda [H]","ayuda",974,35,128,false);boton("Menú","menu",1114,35,138,false);
         mundo(24,114,866,484);
-        panel(912,114,344,484,new Color(0x22394D));
+        panel(912,114,344,484,PaletaMorada.PANEL);
         texto("TU SIGUIENTE PASO",936,148,13,oro,true);
         parrafo(s.objetivo(),936,180,291,20,papel);
         texto("EVIDENCIAS  "+s.evidencias().size()+" / 2",936,265,14,tenue,true);
@@ -196,13 +466,297 @@ public final class RenderJuego {
         int[] vals={s.ciudad().informacionVerificada(),s.ciudad().confianza(),s.ciudad().desinformacion()};
         String[] labels={"Información verificada","Confianza ciudadana","Desinformación"};
         for(int i=0;i<3;i++) barra(labels[i],vals[i],936,413+i*49,292,i==2);
-        panel(24,608,1232,72,new Color(0x294357));
+        panel(24,608,1232,72,PaletaMorada.PANEL);
         parrafo(avisoVisible()?juego.aviso+" [T] Consultar":s.mensaje(),42,631,1185,14,papel);
         pie("WASD / flechas: explorar    E / Espacio: interactuar    C: Civitas    I: pruebas    T: árboles    H: ayuda");
     }
+    private void parqueMisionUno() {
+        var s=juego.misionUno.vista();
+        texto("CIUDAD NOVA / MISIÓN 1",28,30,14,oro,true);
+        texto("Sofi y Mr. Palomo",28,65,29,papel,true);
+        texto("El parque escucha lo que compartes",28,92,14,tenue,false);
+        if(s.fase()!=SesionMisionUno.Fase.INTRO) boton(juego.mandoActivo?"Civitas [X]":"Civitas [C]","civitas",635,35,143,true);
+        boton(juego.mandoActivo?"Árboles [Y]":"Árboles [T]","arboles",788,35,143,false);
+        boton(juego.mandoActivo?"Ayuda [View]":"Ayuda [H]","ayuda",941,35,143,false);
+        boton("Menú","menu",1094,35,158,false);
+        mundoMisionUno(24,114,866,484,false);
+        panel(912,114,344,484,PaletaMorada.PANEL);
+        texto("TU MISIÓN · "+nombreDificultad(s.dificultad()),936,148,15,oro,true);
+        String objetivo=switch(s.fase()) {
+            case INTRO -> s.palomo().estado()==SesionMisionUno.EstadoPalomo.LLEGANDO?
+                "Mr. Palomo llega volando. Espera a que aterrice.":
+                s.palomo().estado()==SesionMisionUno.EstadoPalomo.SALIENDO?
+                "Mr. Palomo vuela de regreso por el mismo camino.":
+                juego.mandoActivo?"Escucha a Mr. Palomo. Pulsa A o Continuar.":
+                    "Escucha a Mr. Palomo. Pulsa E o Continuar.";
+            case CIVITAS -> "Examina las tres publicaciones en Civitas.";
+            case CRISIS -> "Habla con las ocho personas alteradas. Cada pareja saldrá por un camino.";
+            case RESULTADO -> "Consulta el resultado de Sofi.";
+        };
+        parrafo(objetivo,936,181,292,18,papel);
+        texto("PERSONAS CALMADAS   "+s.calmados()+" / 8",936,271,15,oro,true);
+        texto("PAREJAS FUERA   "+s.parejasFuera()+" / 4",936,303,15,papel,true);
+        if(s.fase()==SesionMisionUno.Fase.CRISIS) {
+            texto("TIEMPO   "+(int)Math.ceil(s.tiempo())+" s",936,351,22,s.tiempo()<8?PaletaMorada.PELIGRO:oro,true);
+            texto(juego.mandoActivo?"Stick para moverte; A para hablar.":"WASD para moverte; E para hablar.",936,382,13,tenue,false);
+        } else if(s.fase()==SesionMisionUno.Fase.INTRO&&
+            s.palomo().estado()==SesionMisionUno.EstadoPalomo.POSADO) {
+            boton(juego.mandoActivo?"Continuar [A]":"Continuar [E]","continuar",936,348,292,true);
+        }
+        barra("Convivencia",s.ciudad().convivencia(),936,427,282,false);
+        barra("Información verificada",s.ciudad().informacionVerificada(),936,482,282,false);
+        barra("Desinformación",s.ciudad().desinformacion(),936,537,282,true);
+        panel(24,608,1232,72,PaletaMorada.PANEL);
+        boolean cerca=s.fase()==SesionMisionUno.Fase.CRISIS&&s.peatones().stream().anyMatch(p->
+            p.animo()==SesionMisionUno.Animo.ALTERADO&&Math.hypot(s.x()-p.x(),s.y()-p.y())<38);
+        parrafo(s.mensaje(),42,636,cerca?650:1180,16,papel);
+        if(cerca) {
+            boton(juego.mandoActivo?"Escuchar [A]":"Escuchar [E]","interactuar",721,619,220,true);
+            boton("Burlarse","m1:burlarse",956,619,268,false);
+        }
+        pie(juego.mandoActivo?"Sofi: stick / cruceta · A: hablar · X: Civitas · Y: árboles · Menú: pausa":
+            "Sofi: WASD / flechas · E / Espacio: hablar · C: Civitas · Esc/P: pausa · G: guardar");
+    }
+    private void mundoMisionUno(int vx,int vy,int vw,int vh,boolean fondo) {
+        var s=juego.misionUno.vista();
+        int camX=Math.max(0,Math.min(640-vw/2,Math.round(s.x())-vw/4));
+        int camY=Math.max(0,Math.min(480-vh/2,Math.round(s.y())-vh/4));
+        Graphics2D previo=g;g=(Graphics2D)g.create();g.clipRect(vx,vy,vw,vh);
+        g.translate(vx-camX*2,vy-camY*2);g.scale(2,2);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        imagen("mision1/parque",0,0,640,480);
+        int agua=juego.movimientoReducido?0:(int)(juego.animacion*5)%4;
+        celda("mision1/fuente-agua",4,1,agua,276,164,88,90);
+        if(s.fase()==SesionMisionUno.Fase.CRISIS&&s.ciudad().conflictos()>=29) {
+            rect(295,207,5,3,new Color(0x675B8B));rect(340,226,7,2,new Color(0x675B8B));
+            rect(317,238,4,2,new Color(0x675B8B));
+        }
+        List<SesionMisionUno.Peaton> peatones=new ArrayList<>(s.peatones());
+        peatones.sort(Comparator.comparingDouble(SesionMisionUno.Peaton::y));
+        for(var p:peatones) {
+            if(p.animo()==SesionMisionUno.Animo.FUERA) continue;
+            boolean moviendo=p.animo()==SesionMisionUno.Animo.ALTERADO||p.animo()==SesionMisionUno.Animo.SALIENDO
+                ||p.animo()==SesionMisionUno.Animo.NORMAL;
+            int paso=moviendo&&!juego.movimientoReducido?(int)(juego.animacion*8+p.id()*.7)%4:0;
+            if(spritesTranseuntes==null) spritesTranseuntes=new SpritesTranseuntes(recursos);
+            g.drawImage(spritesTranseuntes.imagen(p.id(),p.direccion(),paso),
+                (int)p.x()-15,(int)p.y()-48,null);
+            if(p.animo()==SesionMisionUno.Animo.ALTERADO) {
+                if(p.id()!=3) {
+                    rect((int)p.x()+12,(int)p.y()+4,6,3,new Color(0x8E6387));
+                    rect((int)p.x()+17,(int)p.y()+3,2,2,oro);
+                }
+                rect((int)p.x()-9,(int)p.y()-57,18,3,PaletaMorada.PELIGRO);
+                texto("!",(int)p.x()-3,(int)p.y()-61,12,PaletaMorada.PELIGRO,true);
+            } else if(p.animo()==SesionMisionUno.Animo.CALMADO||p.animo()==SesionMisionUno.Animo.SALIENDO) {
+                texto("✓",(int)p.x()-4,(int)p.y()-54,11,oro,true);
+            }
+        }
+        if(s.fase()==SesionMisionUno.Fase.INTRO) dibujarPalomo(s.palomo());
+        int sofiFrame=s.direccion()*4+(s.caminando()?juego.cuadro:0);
+        if(s.fase()==SesionMisionUno.Fase.INTRO) {
+            int quieta=juego.movimientoReducido?0:(juego.animacion%5.2)<.28?1:0;
+            celda("mision1/sofi-sentada",2,1,quieta,(int)s.x()-16,(int)s.y()-42,32,42);
+        } else {
+            int x=(int)s.x()-16,y=(int)s.y()-47;
+            celda("mision1/sofi-caminar",4,4,sofiFrame,x,y,32,47);
+            if(!s.caminando()&&s.direccion()==0&&!juego.movimientoReducido) {
+                double t=juego.animacion%5.2;
+                if(t<.22) parpadeoSofi(x,y,t<.10);
+            }
+        }
+        g.dispose();g=previo;
+        if(!fondo) {
+            panel(vx+11,vy+11,128,38,new Color(56,38,75,220));
+            texto("N  ↑  E  →",vx+21,vy+34,13,oro,true);
+        }
+    }
+    private void parpadeoSofi(int x,int y,boolean cerrado) {
+        Color piel=new Color(0xF5B8A8),parpado=new Color(0x39213E);
+        for(int ojo:new int[]{14,20}) {
+            if(cerrado) rect(x+ojo,y+22,4,3,piel);
+            rect(x+ojo,y+23,4,1,parpado);
+        }
+    }
+    private void dibujarPalomo(SesionMisionUno.Palomo palomo) {
+        if(palomo.estado()==SesionMisionUno.EstadoPalomo.FUERA) return;
+        if(palomo.estado()==SesionMisionUno.EstadoPalomo.POSADO) {
+            celda("mision1/palomo",4,2,0,153,84,40,40);return;
+        }
+        int[][] origenes={{24,-49},{450,65},{320,263},{-52,65}};
+        int lado=palomo.lado();
+        double recorrido=palomo.estado()==SesionMisionUno.EstadoPalomo.LLEGANDO?
+            palomo.progreso():1-palomo.progreso();
+        double suavizado=recorrido*recorrido*(3-2*recorrido);
+        int x=(int)Math.round(origenes[lado][0]+(148-origenes[lado][0])*suavizado);
+        int y=(int)Math.round(origenes[lado][1]+(78-origenes[lado][1])*suavizado
+            -12*Math.sin(Math.PI*recorrido));
+        BufferedImage atlas=recursos.imagen("mision1/palomo");
+        int frame=4+(juego.movimientoReducido?0:(int)(juego.animacion*11)%4);
+        int sx=(frame%4)*atlas.getWidth()/4,sy=atlas.getHeight()/2+48;
+        int ex=(frame%4+1)*atlas.getWidth()/4,ey=atlas.getHeight();
+        boolean haciaIzquierda=palomo.estado()==SesionMisionUno.EstadoPalomo.LLEGANDO?
+            lado==1:lado!=1;
+        g.drawImage(atlas,haciaIzquierda?x+48:x,y,
+            haciaIzquierda?x:x+48,y+48,sx,sy,ex,ey,null);
+    }
+    private void celda(String nombre,int columnas,int filas,int indice,int x,int y,int w,int h) {
+        BufferedImage im=recursos.imagen(nombre);
+        int col=indice%columnas,row=indice/columnas;
+        Rectangle r=limiteCelda(nombre,im,columnas,filas,indice);
+        if(nombre.startsWith("mision1/")) {
+            int inicio=nombre.equals("mision1/palomo")?row*columnas:0;
+            int fin=nombre.equals("mision1/palomo")?inicio+columnas:columnas*filas;
+            String grupo=nombre+":"+columnas+":"+filas+":"+inicio;
+            Rectangle fijo=limitesGrupo.computeIfAbsent(grupo,k->{
+                int minX=Integer.MAX_VALUE,minY=Integer.MAX_VALUE,maxX=0,maxY=0;
+                for(int i=inicio;i<fin;i++) {
+                    int cx=(i%columnas)*im.getWidth()/columnas;
+                    int cy=(i/columnas)*im.getHeight()/filas;
+                    Rectangle cel=limiteCelda(nombre,im,columnas,filas,i);
+                    minX=Math.min(minX,cel.x-cx);minY=Math.min(minY,cel.y-cy);
+                    maxX=Math.max(maxX,cel.x-cx+cel.width);
+                    maxY=Math.max(maxY,cel.y-cy+cel.height);
+                }
+                return new Rectangle(minX,minY,maxX-minX,maxY-minY);
+            });
+            int origenX=col*im.getWidth()/columnas,origenY=row*im.getHeight()/filas;
+            g.drawImage(im,x,y,x+w,y+h,origenX+fijo.x,origenY+fijo.y,
+                origenX+fijo.x+fijo.width,origenY+fijo.y+fijo.height,null);
+        } else g.drawImage(im,x,y,x+w,y+h,r.x,r.y,r.x+r.width,r.y+r.height,null);
+    }
+    private Rectangle limiteCelda(String nombre,BufferedImage im,int columnas,int filas,int indice) {
+        return limitesCelda.computeIfAbsent(nombre+":"+indice,k->{
+            int col=indice%columnas,row=indice/columnas;
+            int x0=col*im.getWidth()/columnas,x1=(col+1)*im.getWidth()/columnas;
+            int y0=row*im.getHeight()/filas,y1=(row+1)*im.getHeight()/filas;
+            int minX=x1,minY=y1,maxX=x0-1,maxY=y0-1;
+            for(int py=y0;py<y1;py++) for(int px=x0;px<x1;px++) if((im.getRGB(px,py)>>>24)>24) {
+                minX=Math.min(minX,px);minY=Math.min(minY,py);
+                maxX=Math.max(maxX,px);maxY=Math.max(maxY,py);
+            }
+            return maxX<minX?new Rectangle(x0,y0,x1-x0,y1-y0):
+                new Rectangle(minX,minY,maxX-minX+1,maxY-minY+1);
+        });
+    }
+    private void civitasMisionUno() {
+        var s=juego.misionUno.vista();
+        cabecera("Civitas / ¿qué merece compartirse?","Comprueba la procedencia y observa sus efectos en el parque.");
+        for(int i=0;i<3;i++) {
+            var p=s.publicaciones().get(i);int y=130+i*174;
+            panel(28,y,786,164,PaletaMorada.PANEL);
+            texto("#"+p.id()+"  "+p.autor(),48,y+27,16,oro,true);
+            parrafo(p.texto(),48,y+57,742,18,papel);
+            String fuente=s.fuentes().get(i);
+            parrafo(fuente.isBlank()?"Procedencia pendiente · riesgo "+p.riesgo():fuente,48,y+85,742,13,tenue);
+            if(s.resueltas().get(i)) texto("DECISIÓN REGISTRADA",48,y+139,14,oro,true);
+            else {
+                boton("Contrastar","m1:verificar:"+(i+1),48,y+113,170,true);
+                boton("Compartir","m1:compartir:"+(i+1),234,y+113,170,false);
+                boton("Reportar","m1:reportar:"+(i+1),420,y+113,170,false);
+                boton("Ignorar","m1:ignorar:"+(i+1),606,y+113,170,false);
+            }
+            if(s.fase()==SesionMisionUno.Fase.CRISIS&&fuente.isBlank())
+                boton("Consultar fuente","m1:verificar:"+(i+1),48,y+113,250,false);
+        }
+        panel(834,130,418,512,PaletaMorada.PANEL);
+        texto("EFECTO DE TUS DECISIONES",854,165,17,oro,true);
+        parrafo(s.mensaje(),854,205,370,18,papel);
+        texto(s.fase()==SesionMisionUno.Fase.CRISIS?"CRISIS: "+(int)Math.ceil(s.tiempo())+" s":"PUBLICACIONES: 3",854,307,19,oro,true);
+        texto("Puntos: "+s.puntos(),854,343,17,papel,true);
+        barra("Información",s.ciudad().informacionVerificada(),854,395,366,false);
+        barra("Convivencia",s.ciudad().convivencia(),854,450,366,false);
+        barra("Desinformación",s.ciudad().desinformacion(),854,505,366,true);
+        boton("Volver al parque","volver",853,572,179,true);
+        boton("Árboles [T]","arboles",1045,572,179,false);
+        pie("Contrastar muestra el origen. Después eliges qué hacer; no hay preguntas de memoria.");
+    }
+    private void resultadoMisionUno() {
+        var s=juego.misionUno.vista();
+        panel(28,138,712,478,PaletaMorada.PANEL);
+        texto("DESENLACE "+s.desenlace(),52,185,29,oro,true);
+        parrafo(s.mensaje(),52,230,650,21,papel);
+        texto("PERSONAS CALMADAS  "+s.calmados()+" / 8",52,345,20,papel,true);
+        texto("PAREJAS QUE SALIERON  "+s.parejasFuera()+" / 4",52,385,20,papel,true);
+        parrafo("Sofi observa lo que cambió fuera de la pantalla. Sus decisiones en Civitas y sus conversaciones cuentan para el resultado.",52,462,644,17,tenue);
+        if(juego.ultimaFila!=null&&juego.ultimaFila.mision()==1){
+            texto("PUBLICACIONES RESPONSABLES  "+juego.ultimaFila.senales().getOrDefault("publicaciones_responsables",0)+
+                " / 3    ·    BURLAS  "+juego.ultimaFila.senales().getOrDefault("burlas",0),52,541,16,papel,true);
+        }
+        panel(760,138,492,478,PaletaMorada.PANEL);
+        texto(s.puntos()+" PUNTOS",786,184,29,oro,true);
+        var c=s.ciudad();String[] nombres={"Información verificada","Confianza","Convivencia","Bienestar digital","Participación","Desinformación","Conflictos"};
+        int[] valores={c.informacionVerificada(),c.confianza(),c.convivencia(),c.bienestar(),c.participacion(),c.desinformacion(),c.conflictos()};
+        for(int i=0;i<7;i++) barra(nombres[i],valores[i],786,217+i*53,435,i>4);
+        boton("Repetir / dificultad","mision1",28,638,290,true);
+        boton("Menú principal","menu",335,638,290,false);
+        boton("Elegir otra misión","jugar",642,638,290,false);
+        boton(juego.mandoActivo?"Volver [B]":"Volver [Esc]","volver",960,638,290,false);
+        pie("El desenlace combina las conversaciones con las publicaciones que decidiste difundir o verificar.");
+    }
+    private static String nombreDificultad(SesionMisionUno.Dificultad dificultad) {
+        return switch(dificultad) {
+            case FACIL -> "FÁCIL"; case NORMAL -> "NORMAL"; case DIFICIL -> "DIFÍCIL";
+        };
+    }
+    private void estructurasMisionUno() {
+        var s=juego.misionUno.vista();
+        cabecera("Estructuras de la misión 1","Los cambios de Civitas y la difusión alteran el estado real del parque.");
+        panel(28,140,389,479,PaletaMorada.PANEL);
+        panel(429,140,397,479,PaletaMorada.PANEL);
+        panel(838,140,414,479,PaletaMorada.PANEL);
+        texto("AVL · PUBLICACIONES",47,174,17,oro,true);
+        if(s.avl()!=null) dibujarAVL(s.avl(),223,283,82,0,-1);
+        texto("Clave: riesgo + ID",47,560,14,tenue,false);
+        texto("Verificar cambia el riesgo; reportar",47,582,13,papel,false);
+        texto("con pruebas retira una publicación.",47,602,13,papel,false);
+        texto("ÁRBOL · DECISIONES",448,174,17,oro,true);
+        decisionesMisionUno(s.decisiones(),0,211);
+        texto("GRAFO · DIFUSIÓN",857,174,17,oro,true);
+        texto("Dos cadenas propagan el rumor",857,209,14,papel,false);
+        texto("en oleadas entre ocho personas.",857,231,14,papel,false);
+        int[] posX=new int[8],posY=new int[8];
+        for(int i=0;i<8;i++) {posX[i]=i%2==0?922:1135;posY[i]=285+i/2*70;}
+        g.setColor(PaletaMorada.LINEA);g.setStroke(new BasicStroke(2));
+        for(var arista:s.conexiones()) {
+            int a=arista.origen(),b=arista.destino();
+            g.drawLine(posX[a],posY[a]+13,posX[b],posY[b]-13);
+            g.drawLine(posX[b]-4,posY[b]-19,posX[b],posY[b]-13);
+            g.drawLine(posX[b]+4,posY[b]-19,posX[b],posY[b]-13);
+        }
+        for(int i=0;i<8;i++) {
+            var estado=s.peatones().get(i).animo();
+            Color color=estado==SesionMisionUno.Animo.ALTERADO?PaletaMorada.PELIGRO:
+                estado==SesionMisionUno.Animo.CALMADO||estado==SesionMisionUno.Animo.SALIENDO||
+                    estado==SesionMisionUno.Animo.FUERA?oro:PaletaMorada.VIOLETA;
+            g.setColor(color);g.fillOval(posX[i]-18,posY[i]-18,36,36);
+            texto(""+(i+1),posX[i]-5,posY[i]+6,15,estado==SesionMisionUno.Animo.NORMAL?papel:tinta,true);
+        }
+        texto("Lila: sin llegar · Rosa: alterado",857,586,13,tenue,false);
+        texto("Amarillo: calmado",857,606,13,tenue,false);
+        boton(juego.mandoActivo?"Volver [B / Y]":"Volver [T]","volver",28,640,258,true);
+        pie("AVL: orden por riesgo · Árbol n-ario: opciones elegidas · Grafo: conexiones reales del rumor");
+    }
+    private int decisionesMisionUno(ArbolDecisiones.Vista nodo,int nivel,int y) {
+        if(y>594) return y;
+        texto((nodo.ejecutado()?"✓ ":"• ")+nodo.texto(),448+nivel*25,y,14,nodo.ejecutado()?oro:papel,nodo.ejecutado());
+        y+=23;
+        for(var hijo:nodo.hijos()) y=decisionesMisionUno(hijo,nivel+1,y);
+        return y;
+    }
+    private void ayudaMisionUno() {
+        cabecera("Ayuda / misión 1","Sofi escucha, contrasta y conversa con la gente del parque.");
+        panel(28,138,1224,464,PaletaMorada.PANEL);
+        parrafo(juego.mandoActivo?
+            "1. Pulsa A para escuchar a Mr. Palomo y abrir Civitas. 2. Contrasta las tres publicaciones y decide qué hacer con cada una. 3. Durante la crisis, usa el stick izquierdo o la cruceta para acercarte y A para conversar. Algunas personas necesitan dos o tres conversaciones. Cada pareja calmada sale por uno de los cuatro caminos. Y muestra las estructuras de esta misión.":
+            "1. Pulsa E para escuchar a Mr. Palomo y abrir Civitas. 2. Contrasta las tres publicaciones y decide qué hacer con cada una. 3. Cuando la gente se altere, usa WASD o las flechas para acercarte y E para conversar. Algunas personas necesitan dos o tres conversaciones. Cada pareja calmada sale por uno de los cuatro caminos. T muestra los árboles de esta misión.",54,188,1140,23,papel);
+        parrafo("Durante la crisis el reloj sigue corriendo si abres Civitas. La opción de tiempo ampliado da 60 segundos; el plazo normal es 30. Los estados también usan símbolos y texto, además del color. Movimiento reducido detiene las animaciones decorativas.",54,362,1140,20,tenue);
+        boton("Volver a la misión","volver",54,524,344,true);
+        pie("Esta misión usa una sesión local; la sala multijugador y los grafos se integran en las siguientes entregas.");
+    }
     private void barra(String nombre,int valor,int x,int y,int w,boolean peligro) {
         texto(nombre,x,y,13,papel,false);texto(""+valor,x+w-26,y,13,oro,true);
-        rect(x,y+8,w,6,new Color(0x405461));rect(x,y+8,Math.max(1,w*valor/100),6,peligro?new Color(0xE97866):new Color(0x6ABCAA));
+        rect(x,y+8,w,6,PaletaMorada.VIOLETA);rect(x,y+8,Math.max(1,w*valor/100),6,peligro?PaletaMorada.PELIGRO:PaletaMorada.EXITO);
     }
     private void mundo(int vx,int vy,int vw,int vh) {
         var s=juego.sesion.vista();
@@ -213,7 +767,7 @@ public final class RenderJuego {
         String[] tiles={"cesped","camino","agua"};
         for(int row=0;row<MapaParque.FILAS;row++) for(int col=0;col<MapaParque.COLUMNAS;col++)
             imagen("tiles/"+tiles[juego.sesion.mapa().suelo(col,row)],col*16,row*16,16,16);
-        rect(419,114,82,42,new Color(0x976646));rect(419,114,82,3,oro);
+        rect(419,114,82,42,PaletaMorada.VIOLETA);rect(419,114,82,3,oro);
         for(int i=0;i<6;i++) { g.setColor(i%2==0?oro:teal);g.fillPolygon(new int[]{422+i*13,435+i*13,428+i*13},new int[]{109,109,119},3); }
         // El orden por coordenada de pies permite pasar detrás de árboles y delante de bancos.
         record Entidad(int y,Runnable dibujar) { }
@@ -224,7 +778,7 @@ public final class RenderJuego {
         orden.add(new Entidad(267,()->sprite("influencer",0,474,267)));
         orden.add(new Entidad(315,()->imagen("actores/noti_%02d".formatted(juego.movimientoReducido?0:(int)(juego.animacion*6)%4),276,287,32,32)));
         orden.add(new Entidad((int)s.y(),()->{
-            g.setColor(new Color(20,35,40,70));g.fillOval((int)s.x()-10,(int)s.y()-4,20,7);
+            g.setColor(new Color(33,21,47,70));g.fillOval((int)s.x()-10,(int)s.y()-4,20,7);
             if(juego.efecto>0&&juego.ultimaAccion.equals("rol")&&!juego.movimientoReducido)
                 imagen("acciones/frame_%02d".formatted(s.rol().ordinal()*4+Math.min(3,(int)((.8-juego.efecto)*5))),(int)s.x()-24,(int)s.y()-48,48,48);
             else sprite(s.rol().name().toLowerCase(Locale.ROOT),juego.direccion*4+juego.cuadro,(int)s.x(),(int)s.y());
@@ -242,16 +796,16 @@ public final class RenderJuego {
         g.dispose();g=guard;
         if(fondoMundo) return;
         // Minimap basado en el mismo tilemap.
-        panel(vx+12,vy+12,130,101,new Color(24,40,61,220));
+        panel(vx+12,vy+12,130,101,new Color(56,38,75,220));
         for(int row=0;row<30;row++) for(int col=0;col<40;col++) {
-            int t=juego.sesion.mapa().suelo(col,row);rect(vx+17+col*3,vy+17+row*3,3,3,t==0?new Color(0x478F62):t==1?papel:teal);
+            int t=juego.sesion.mapa().suelo(col,row);rect(vx+17+col*3,vy+17+row*3,3,3,t==0?PaletaMorada.CESPED:t==1?PaletaMorada.SUPERFICIE_CLARA:PaletaMorada.AGUA);
         }
         rect(vx+17+(int)s.x()*3/16,vy+17+(int)s.y()*3/16,5,5,oro);
     }
     private void sprite(String rol,int frame,int x,int y) {imagen("actores/"+rol+"_%02d".formatted(frame),x-16,y-32,32,32);}
     private void marcador(String label,int x,int y,boolean listo) {
         g.setFont(tema.fuente(8,true));int w=g.getFontMetrics().stringWidth(label)+12;
-        panel(x-w/2,y-10,w,14,tinta);texto((listo?"✓ ":"")+label,x-w/2+4,y,8,listo?new Color(0x8FD7B6):papel,true);
+        panel(x-w/2,y-10,w,14,tinta);texto((listo?"✓ ":"")+label,x-w/2+4,y,8,listo?PaletaMorada.EXITO:papel,true);
     }
     private void civitas() {
         var s=juego.sesion.vista();cabecera("Civitas / lo que está circulando","Popular no significa comprobado. La prioridad expresa urgencia, no veracidad.");
@@ -264,14 +818,14 @@ public final class RenderJuego {
         imagen("iconos/09_reportar",627,248,40,40);
         parrafo("¿Cerrarán el parque para construir un helipuerto de palomas?",54,243,494,28,tinta);
         parrafo("«Mi primo tiene una paloma que trabaja en la alcaldía». Compártelo antes de que lo borren.",54,350,640,18,tinta);
-        panel(50,395,680,44,new Color(0xEAD7AF));texto("ESTADO: "+(s.evidencias().size()==2?"FUENTES CONTRASTADAS":"SIN COMPROBAR"),67,424,14,tinta,true);
+        panel(50,395,680,44,PaletaMorada.SUPERFICIE_CLARA);texto("ESTADO: "+(s.evidencias().size()==2?"FUENTES CONTRASTADAS":"SIN COMPROBAR"),67,424,14,tinta,true);
         boton("Compartir","compartir",53,464,157,false);boton("Verificar","verificar",226,464,157,true);
         boton("Reportar","reportar",399,464,157,false);boton("Ignorar","ignorar",572,464,157,false);
         if(s.evidencias().size()==2) {
             boton("Publicar contexto","contexto",53,527,213,true);boton("Guardar pruebas","guardar",283,527,210,false);
             if(juego.sesion.buscarDecision("rectificar")!=null) boton("Rectificar","rectificar",510,527,219,true);
         } else texto("Publicar contexto requiere el aviso + el testimonio.",54,550,15,teal,true);
-        panel(779,133,475,499,new Color(0x22394D));texto("RADAR DE PUBLICACIONES",803,169,15,oro,true);
+        panel(779,133,475,499,PaletaMorada.PANEL);texto("RADAR DE PUBLICACIONES",803,169,15,oro,true);
         int y=207;
         for(Publicacion p:s.publicaciones()) {
             texto("#"+p.id()+"   PRIORIDAD "+p.riesgo(),803,y,13,oro,true);
@@ -285,7 +839,7 @@ public final class RenderJuego {
     private void evidencias() {
         var s=juego.sesion.vista();cabecera("Archivo de evidencias","Lee la procedencia y contrasta. Una captura aislada puede perder su contexto.");
         for(int i=0;i<2;i++) {
-            int x=28+i*624;panel(x,149,599,286,new Color(0x22394D));
+            int x=28+i*624;panel(x,149,599,286,PaletaMorada.PANEL);
             imagen("iconos/"+(i==0?"06_fuente":"04_libreta"),x+23,170,48,48);
             texto(i==0?"01 / Aviso municipal":"02 / Testimonio directo",x+87,202,21,papel,true);
             parrafo(s.evidencias().size()>i?s.evidencias().get(i):"Pendiente. Explora el parque y pulsa E cerca de esta fuente.",x+25,258,544,20,papel);
@@ -307,7 +861,7 @@ public final class RenderJuego {
     private boolean avisoVisible() {return juego.avisos&&juego.segundosAviso>0&&!juego.aviso.isBlank();}
     private void vistaJugador(boolean radar) {
         var s=juego.sesion.vista();
-        panel(28,190,766,483,new Color(0x22394D));panel(814,190,438,483,new Color(0x22394D));
+        panel(28,190,766,483,PaletaMorada.PANEL);panel(814,190,438,483,PaletaMorada.PANEL);
         texto(radar?"Qué merece tu atención":"Tu camino en el rumor del parque",50,224,22,papel,true);
         if(radar) {
             int y=245;
@@ -346,7 +900,7 @@ public final class RenderJuego {
     private int caminoJugador(ArbolDecisiones.Vista n,int nivel,int y,boolean terminado) {
         int x=52+nivel*32;
         if(nivel>0) {g.setColor(tenue);g.drawLine(x-15,y-24,x-15,y);g.drawLine(x-15,y,x-3,y);}
-        panel(x,y-21,700-nivel*32,36,n.ejecutado()?teal:new Color(0x294357));
+        panel(x,y-21,700-nivel*32,36,n.ejecutado()?teal:PaletaMorada.PANEL);
         texto((n.ejecutado()?"✓ ":"")+n.texto(),x+12,y+3,16,papel,true);
         texto(n.ejecutado()?"Elegida":nivel==0?"Tu caso":terminado?"Caso cerrado":"Disponible",635,y+3,13,papel,false);
         y+=43;
@@ -358,7 +912,7 @@ public final class RenderJuego {
         int cantidad=radar?juego.sesion.pasosAVL().size():juego.sesion.pasosDecisiones().size();
         boolean actual=(radar?juego.pasoAVL:juego.pasoDecision)<0;
         String orden=radar?new String[]{"inorden","preorden","postorden","inverso"}[juego.recorrido]:new String[]{"preorden","postorden","niveles"}[juego.recorridoNario];
-        panel(28,190,788,316,new Color(0x22394D));panel(836,190,416,316,new Color(0x22394D));
+        panel(28,190,788,316,PaletaMorada.PANEL);panel(836,190,416,316,PaletaMorada.PANEL);
         texto((actual?"ACTUAL":"HISTÓRICO")+" · Estado "+(indice+1)+" / "+cantidad,48,217,14,oro,true);
         var evento=juego.consulta.eventoDelPaso(radar,indice);
         int y=parrafo(evento==null?"Operación de la sesión":evento.titulo(),858,223,370,17,papel);
@@ -401,7 +955,7 @@ public final class RenderJuego {
     }
     private void dibujarAVL(ArbolAVLPublicaciones.Vista n,int x,int y,int distancia,int nivel,long resaltado) {
         if(n==null) return;
-        g.setStroke(new BasicStroke(2));g.setColor(new Color(0x69818B));
+        g.setStroke(new BasicStroke(2));g.setColor(PaletaMorada.LINEA);
         if(n.izquierdo()!=null) g.drawLine(x,y,x-distancia,y+76);
         if(n.derecho()!=null) g.drawLine(x,y,x+distancia,y+76);
         dibujarAVL(n.izquierdo(),x-distancia,y+76,distancia/2,nivel+1,resaltado);
@@ -416,10 +970,10 @@ public final class RenderJuego {
             int peso=hojas(n.hijos().get(i));
             int l=left+(right-left)*offset/total,r=left+(right-left)*(offset+peso)/total;
             offset+=peso;
-            g.setColor(new Color(0x69818B));g.drawLine(x,y,(l+r)/2,y+82);
+            g.setColor(PaletaMorada.LINEA);g.drawLine(x,y,(l+r)/2,y+82);
             dibujarNario(n.hijos().get(i),l,r,y+82,depth+1);
         }
-        panel(x-55,y-17,110,35,n.ejecutado()?teal:new Color(0x405461));
+        panel(x-55,y-17,110,35,n.ejecutado()?teal:PaletaMorada.VIOLETA);
         texto((n.ejecutado()?"✓ ":"")+n.id(),x-49,y+5,13,papel,true);
         var ruta=ConsultaEstructuras.decisiones(juego.vistaDecision(),new String[]{"preorden","postorden","niveles"}[juego.recorridoNario]);
         if(!ruta.isEmpty()&&n.id().equals(ruta.get(Math.floorMod(juego.visita,ruta.size())))) {
@@ -435,7 +989,7 @@ public final class RenderJuego {
         texto("TU RECORRIDO",54,339,13,teal,true);int y=368;
         List<String> h=s.historial();
         for(String linea:h.subList(Math.max(0,h.size()-6),h.size())) y=parrafo("• "+linea,54,y,650,14,tinta)+5;
-        panel(766,139,487,478,new Color(0x22394D));texto(s.puntos()+" PUNTOS",793,180,29,oro,true);
+        panel(766,139,487,478,PaletaMorada.PANEL);texto(s.puntos()+" PUNTOS",793,180,29,oro,true);
         EstadoCiudad c=s.ciudad();String[] names={"Información verificada","Confianza","Convivencia","Bienestar digital","Participación","Desinformación","Conflictos"};
         int[] vals={c.informacionVerificada(),c.confianza(),c.convivencia(),c.bienestar(),c.participacion(),c.desinformacion(),c.conflictos()};
         for(int i=0;i<7;i++) {
@@ -444,22 +998,22 @@ public final class RenderJuego {
         }
         boton("Otra historia","jugar",28,639,226,true);boton("Revisar los árboles","arboles",273,639,252,false);
         boton("Evidencias","evidencias",545,639,198,false);boton("Laboratorio","laboratorio",766,639,230,false);boton("Menú principal","menu",1012,639,241,false);
-        if(avisoVisible()) {panel(45,516,682,93,new Color(0xEAD7AF));parrafo(juego.aviso+" [T] Consultar",58,538,654,13,tinta);}
+        if(avisoVisible()) {panel(45,516,682,93,PaletaMorada.SUPERFICIE_CLARA);parrafo(juego.aviso+" [T] Consultar",58,538,654,13,tinta);}
         pie("El historial conserva tus acciones incluso cuando una publicación sale del AVL.");
     }
     private void ayuda() {
-        cabecera("Ayuda / antes de darle a compartir","Explora con calma. El panel de ayuda pausa el reloj de esta sesión local.");
+        cabecera("Ayuda / Alcalde Digital","Elige una misión o abre el mapa gráfico de controles. Cada capítulo tiene ayuda durante la partida.");
         String[] titulos={"01 · Tu objetivo","02 · Cómo te mueves","03 · Qué significan las acciones","04 · Tu papel","05 · Los indicadores","06 · Accesibilidad"};
-        String[] body={"Investiga el rumor del helipuerto. Encuentra el aviso municipal, contrasta con la administradora y decide qué publicar. El contexto y la convivencia importan más que el alcance.",
-            "WASD/flechas: caminar. E: interactuar. C: Civitas. I/J: pruebas. T abre/cierra Radar y Camino; Laboratorio: detalle técnico. Esc vuelve al origen. Tab/Mayús+Tab + Enter: controles.",
+        String[] body={"Acompaña a Sofi y a los demás personajes por Ciudad Nova. Las misiones 1 a 7 están disponibles según tus victorias; la 8 sigue en desarrollo.",
+            "J1 usa WASD, E y Espacio. En partidas locales de dos personas, J2 usa flechas, Enter y Mayús. Esc/P pausa; H abre Ayuda; G guarda; T abre consultas. Pulsa Ver controles para revisar cada misión.",
             "Compartir puede aumentar el daño. Verificar inicia una búsqueda. Reportar requiere pruebas y validación. Ignorar evita tu retransmisión, pero otros pueden continuar. Rectificar recupera parcialmente.",
-            "Ciudadano: escuchar. Periodista: documentar. Influencer: transmitir junto al candidato. Candidato: responder. En este capítulo todos investigan el parque y tienen una acción de rol en la campaña.",
+            "Sofi escucha a sus vecinos; la periodista contrasta; el influencer publica; Juan responde por su campaña. Cada misión indica sus acciones propias y sus condiciones de victoria.",
             "Información, confianza, convivencia, bienestar y participación: cuidar. Desinformación y conflicto: reducir. Todos van de 0 a 100. Popularidad y verdad no son equivalentes.",
-            "Activa alto contraste o movimiento reducido. Antes de empezar, amplía la decisión de 10 a 60 segundos. Hay etiquetas y formas además del color. Toda información esencial es visual y textual."};
+            "Activa alto contraste o movimiento reducido. La misión 1 ofrece tres plazos de crisis; otras misiones tienen sus propias dificultades. Hay etiquetas y formas además del color. Toda información esencial es visual y textual."};
         String[] iconos={"06_fuente","19_mapa","07_compartir","01_celular","13_confianza","24_accesibilidad"};
         for(int i=0;i<6;i++) {
             int x=28+(i%2)*624,y=135+(i/2)*163;
-            panel(x,y,596,153,new Color(0x22394D));
+            panel(x,y,596,153,PaletaMorada.PANEL);
             TemaPixel.marco(g,x+14,y+19,88,113,TemaPixel.NOCHE,TemaPixel.CIAN,false);
             if(i==3) imagen("actores/ciudadano_00",x+26,y+37,64,64);
             else imagen("iconos/"+iconos[i],x+26,y+40,64,64);
@@ -469,8 +1023,7 @@ public final class RenderJuego {
         boton("Contraste: "+(juego.contraste?"alto":"normal"),"contraste",28,639,288,false);
         boton("Animaciones: "+(juego.movimientoReducido?"reducidas":"activas"),"movimiento",338,639,302,false);
         boton(juego.avisos?"Avisos: visibles":"Avisos: solo al consultar","avisos",660,639,286,false);
-        if(juego.sesion!=null) boton("Laboratorio","laboratorio",964,639,289,true);
-        else boton("Volver","volver",964,639,289,true);
-        pie("La entrega 1 usa una sesión local. El multijugador y los grafos se integran en las siguientes entregas.");
+        boton("Ver controles","verControles",964,639,289,true);
+        pie("Esc / B: volver · Misiones 5 y 7 admiten dos personas en un teclado o una sala LAN.");
     }
 }

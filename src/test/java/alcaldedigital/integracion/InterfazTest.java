@@ -4,10 +4,19 @@ import alcaldedigital.cliente.interfaz.*;
 import alcaldedigital.cliente.recursos.*;
 import alcaldedigital.compartido.modelo.*;
 import alcaldedigital.servidor.sesion.SesionLocal;
+import alcaldedigital.servidor.sesion.SesionMisionUnoLocal;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class InterfazTest {
+    @Test void ayudaDelMenuSigueDisponibleTrasJugarMisionUno(){
+        var j=new JuegoCliente(SesionLocal::new,SesionMisionUnoLocal::new);var r=new RenderJuego();
+        j.accion("jugar");j.accion("mision1");j.accion("m1dificultad:FACIL");
+        j.abrir(JuegoCliente.Pantalla.MENU);j.accion("ayuda");r.dibujar(j);
+        assertTrue(r.botones().stream().anyMatch(b->b.accion().equals("verControles")));
+        j.accion("verControles");assertEquals(JuegoCliente.Pantalla.CONTROLES,j.pantalla);
+        j.accion("volver");j.accion("volver");assertEquals(JuegoCliente.Pantalla.MENU,j.pantalla);
+    }
     @Test void pantallasBotonesYRecursos() {
         var j=new JuegoCliente(SesionLocal::new);var r=new RenderJuego();
         for(var pantalla:JuegoCliente.Pantalla.values()) {

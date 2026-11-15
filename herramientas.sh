@@ -15,9 +15,11 @@ case "${1:-test}" in
   test) bash "$AD_MAVEN" test -Djava.awt.headless=true ;;
   paquete)
     bash "$AD_MAVEN" package -Djava.awt.headless=true
-    mkdir -p distribucion/lib
+    mkdir -p distribucion/lib distribucion/nativos
     cp target/alcalde-digital-0.1.0-SNAPSHOT.jar distribucion/alcalde-digital.jar
     cp "${HOME}/.m2/repository/org/processing/core/4.5.6/core-4.5.6.jar" distribucion/lib/
+    cp "${HOME}/.m2/repository/net/java/jinput/jinput/2.0.10/jinput-2.0.10.jar" distribucion/lib/
+    unzip -oqj "${HOME}/.m2/repository/net/java/jinput/jinput/2.0.10/jinput-2.0.10-natives-all.jar" '*.so' '*.dll' '*.jnilib' -d distribucion/nativos
     ;;
   evidencias)
     bash "$AD_MAVEN" compile

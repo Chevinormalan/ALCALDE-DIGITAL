@@ -30,7 +30,7 @@ public final class TransicionPixel {
         if(salida==null) salida=new BufferedImage(w,h,BufferedImage.TYPE_INT_ARGB);
         var g=salida.createGraphics();TemaPixel.nitido(g);g.drawImage(anterior,0,0,null);
         double t=Math.min(1,transcurrido/DURACION),ease=1-Math.pow(1-t,3);
-        g.setColor(new Color(0,12,25,(int)(110*ease)));g.fillRect(0,0,w,h);
+        g.setColor(new Color(20,12,29,(int)(110*ease)));g.fillRect(0,0,w,h);
         if(panel) {
             int visible=(int)(h*ease)/4*4;
             g.clipRect(0,0,w,visible);
