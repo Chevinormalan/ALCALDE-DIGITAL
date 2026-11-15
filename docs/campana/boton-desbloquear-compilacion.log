@@ -1,0 +1,124 @@
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ------------------< co.edu.uninorte:alcalde-digital >-------------------
+[INFO] Building Alcalde Digital 0.1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.4.0:resources (default-resources) @ alcalde-digital ---
+[INFO] Copying 501 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.13.0:compile (default-compile) @ alcalde-digital ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ alcalde-digital ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ alcalde-digital ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 43 source files with javac [debug release 21] to target/test-classes
+[INFO]
+[INFO] --- surefire:3.5.2:test (default-test) @ alcalde-digital ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[WARNING] System property [java.awt.headless] overwritten by user properties from Maven session
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running alcaldedigital.batalla.DificultadesBatallaTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.239 s -- in alcaldedigital.batalla.DificultadesBatallaTest
+[INFO] Running alcaldedigital.batalla.FlujoMisionCincoTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.048 s -- in alcaldedigital.batalla.FlujoMisionCincoTest
+[INFO] Running alcaldedigital.batalla.IndividualYUbicacionesTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in alcaldedigital.batalla.IndividualYUbicacionesTest
+[INFO] Running alcaldedigital.batalla.InterfazMisionCincoTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.901 s -- in alcaldedigital.batalla.InterfazMisionCincoTest
+[INFO] Running alcaldedigital.batalla.MotorBatallaTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s -- in alcaldedigital.batalla.MotorBatallaTest
+[INFO] Running alcaldedigital.batalla.PatronesPasablesTest
+RECORRIDOS COMPLETOS: 24; fallos 0
+PASABILIDAD: 2970 casos; fallos 0
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.924 s -- in alcaldedigital.batalla.PatronesPasablesTest
+[INFO] Running alcaldedigital.batalla.PausaMisionCincoTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in alcaldedigital.batalla.PausaMisionCincoTest
+[INFO] Running alcaldedigital.batalla.RecuperacionYDialogosTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in alcaldedigital.batalla.RecuperacionYDialogosTest
+[INFO] Running alcaldedigital.batalla.RedBatallaTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.918 s -- in alcaldedigital.batalla.RedBatallaTest
+[INFO] Running alcaldedigital.carrera.CampanaElectoralTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in alcaldedigital.carrera.CampanaElectoralTest
+[INFO] Running alcaldedigital.carrera.InterfazCarreraTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 23.58 s -- in alcaldedigital.carrera.InterfazCarreraTest
+[INFO] Running alcaldedigital.carrera.MotorCarreraTest
+MISIÓN 7: 9 recorridos completos con física real
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 s -- in alcaldedigital.carrera.MotorCarreraTest
+[INFO] Running alcaldedigital.carrera.RedCarreraTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.531 s -- in alcaldedigital.carrera.RedCarreraTest
+[INFO] Running alcaldedigital.cliente.entrada.LectorJInputTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in alcaldedigital.cliente.entrada.LectorJInputTest
+[INFO] Running alcaldedigital.cliente.mision4.PresentacionMisionCuatroTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in alcaldedigital.cliente.mision4.PresentacionMisionCuatroTest
+[INFO] Running alcaldedigital.cliente.mision4.RecorridoMisionCuatroTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in alcaldedigital.cliente.mision4.RecorridoMisionCuatroTest
+[INFO] Running alcaldedigital.cliente.mision6.AudioMisionSeisTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in alcaldedigital.cliente.mision6.AudioMisionSeisTest
+[INFO] Running alcaldedigital.cliente.mision6.MisionSeisEntregaTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.079 s -- in alcaldedigital.cliente.mision6.MisionSeisEntregaTest
+[INFO] Running alcaldedigital.cliente.mision6.MisionSeisSalaCorazonesTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in alcaldedigital.cliente.mision6.MisionSeisSalaCorazonesTest
+[INFO] Running alcaldedigital.cliente.mision6.MisionSeisTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.396 s -- in alcaldedigital.cliente.mision6.MisionSeisTest
+[INFO] Running alcaldedigital.cliente.misiones.IntegracionCampanaTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.424 s -- in alcaldedigital.cliente.misiones.IntegracionCampanaTest
+[INFO] Running alcaldedigital.cliente.misiones.PausaUnificadaTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in alcaldedigital.cliente.misiones.PausaUnificadaTest
+[INFO] Running alcaldedigital.cliente.misiones.ProgresionYGuardadoTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.787 s -- in alcaldedigital.cliente.misiones.ProgresionYGuardadoTest
+[INFO] Running alcaldedigital.cliente.presentacion.RecursosPresentacionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.100 s -- in alcaldedigital.cliente.presentacion.RecursosPresentacionTest
+[INFO] Running alcaldedigital.compartido.modelo.ClavePublicacionTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in alcaldedigital.compartido.modelo.ClavePublicacionTest
+[INFO] Running alcaldedigital.estructuras.ArbolAVLTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.043 s -- in alcaldedigital.estructuras.ArbolAVLTest
+[INFO] Running alcaldedigital.estructuras.ArbolDecisionesTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in alcaldedigital.estructuras.ArbolDecisionesTest
+[INFO] Running alcaldedigital.estructuras.GrafosMisionTresTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in alcaldedigital.estructuras.GrafosMisionTresTest
+[INFO] Running alcaldedigital.integracion.ControlMandoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.901 s -- in alcaldedigital.integracion.ControlMandoTest
+[INFO] Running alcaldedigital.integracion.ExperienciaArbolesTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.266 s -- in alcaldedigital.integracion.ExperienciaArbolesTest
+[INFO] Running alcaldedigital.integracion.InterfazPixelTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.058 s -- in alcaldedigital.integracion.InterfazPixelTest
+[INFO] Running alcaldedigital.integracion.InterfazTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.584 s -- in alcaldedigital.integracion.InterfazTest
+[INFO] Running alcaldedigital.integracion.MisionDosRedTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.016 s -- in alcaldedigital.integracion.MisionDosRedTest
+[INFO] Running alcaldedigital.integracion.MisionTresMenuTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.380 s -- in alcaldedigital.integracion.MisionTresMenuTest
+[INFO] Running alcaldedigital.integracion.MisionUnoInterfazTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.761 s -- in alcaldedigital.integracion.MisionUnoInterfazTest
+[INFO] Running alcaldedigital.integracion.ProgresoCampanaTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in alcaldedigital.integracion.ProgresoCampanaTest
+[INFO] Running alcaldedigital.reglas.IntegracionAportesTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.061 s -- in alcaldedigital.reglas.IntegracionAportesTest
+[INFO] Running alcaldedigital.reglas.ReglasCapituloTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in alcaldedigital.reglas.ReglasCapituloTest
+[INFO] Running alcaldedigital.reglas.SesionLocalTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in alcaldedigital.reglas.SesionLocalTest
+[INFO] Running alcaldedigital.reglas.SesionMisionUnoLocalTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in alcaldedigital.reglas.SesionMisionUnoLocalTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 200, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] --- jar:3.5.0:jar (default-jar) @ alcalde-digital ---
+[INFO] Building jar: /home/sebas/Documentos/LAB1/entrega1-nueva/target/alcalde-digital-0.1.0-SNAPSHOT.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  43.181 s
+[INFO] Finished at: 2026-11-12T16:28:23-05:00
+[INFO] ------------------------------------------------------------------------
