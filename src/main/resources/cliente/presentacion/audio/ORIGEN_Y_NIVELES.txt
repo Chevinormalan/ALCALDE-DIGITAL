@@ -1,0 +1,20 @@
+Efectos sintetizados originalmente para Alcalde Digital. Mono PCM 16 bit, 44100 Hz.
+carro_ralenti.wav | 2.00 s | pico=0.337 | RMS=0.184 | bucle periódico
+carro_marcha.wav | 2.00 s | pico=0.333 | RMS=0.183 | bucle periódico
+carro_acelerar.wav | 2.00 s | pico=0.331 | RMS=0.183 | bucle periódico
+helicoptero_hover.wav | 2.00 s | pico=0.300 | RMS=0.140 | bucle periódico
+helicoptero_vuelo.wav | 2.00 s | pico=0.301 | RMS=0.140 | bucle periódico
+helicoptero_descenso.wav | 2.00 s | pico=0.291 | RMS=0.139 | bucle periódico
+ambiente.wav | 2.00 s | pico=0.277 | RMS=0.066 | bucle periódico
+freno.wav | 0.38 s | pico=0.091 | RMS=0.023 | efecto con envolvente
+impacto.wav | 0.14 s | pico=0.406 | RMS=0.074 | efecto con envolvente
+disparo_jugador.wav | 0.14 s | pico=0.661 | RMS=0.118 | efecto con envolvente
+disparo_dron.wav | 0.14 s | pico=0.480 | RMS=0.079 | efecto con envolvente
+cohete.wav | 0.48 s | pico=0.512 | RMS=0.125 | efecto con envolvente
+explosion_cohete.wav | 0.80 s | pico=0.762 | RMS=0.130 | efecto con envolvente
+destruccion_dron.wav | 1.05 s | pico=0.741 | RMS=0.130 | efecto con envolvente
+dano.wav | 0.14 s | pico=0.490 | RMS=0.075 | efecto con envolvente
+paso_adoquin.wav | 0.14 s | pico=0.384 | RMS=0.051 | efecto con envolvente
+paso_madera.wav | 0.14 s | pico=0.436 | RMS=0.053 | efecto con envolvente
+radio.wav | 0.28 s | pico=0.373 | RMS=0.084 | efecto con envolvente
+encendido_helicoptero.wav | 1.10 s | pico=0.292 | RMS=0.114 | efecto con envolvente
