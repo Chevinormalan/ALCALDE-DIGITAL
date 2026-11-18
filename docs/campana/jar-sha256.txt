@@ -1,0 +1,1 @@
+bc217584e2b5ff3eda3a02c0361e91db631a93ac480fed2278fe442bacea31f9  distribucion/alcalde-digital.jar

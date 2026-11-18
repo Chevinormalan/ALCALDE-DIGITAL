@@ -41,7 +41,7 @@ class ProgresionYGuardadoTest {
   r.pulsar(j,(int)boton.area().getCenterX(),(int)boton.area().getCenterY());
   assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);
   var reiniciado=juego();for(int n=1;n<=7;n++){assertTrue(reiniciado.progreso.disponible(n));assertFalse(reiniciado.progreso.ganada(n));}
-  assertFalse(reiniciado.progreso.disponible(8));reiniciado.victoria(6);
+  assertTrue(reiniciado.progreso.disponible(8));reiniciado.victoria(6);
   var despuesDeGanar=juego();assertTrue(despuesDeGanar.progreso.ganada(6));assertFalse(despuesDeGanar.progreso.ganada(5));
   assertTrue(despuesDeGanar.progreso.todasDesbloqueadas());
   reiniciado.accion("jugar");r.dibujar(reiniciado);

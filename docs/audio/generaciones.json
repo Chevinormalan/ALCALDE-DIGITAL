@@ -1,0 +1,114 @@
+[
+  {
+    "id": "G01",
+    "job": "job_5a1475bb-8dbe-468f-b657-b1cbcd981afe",
+    "mcpJobId": "job_5a1475bb-8dbe-468f-b657-b1cbcd981afe",
+    "toolName": "vidiq_generate_music",
+    "status": "completed",
+    "result": {
+      "musicId": "fbb11ee5-3fa8-46df-8a46-8b815a231d5b",
+      "audioUrl": "https://ai-music-tracks.s3.us-east-1.amazonaws.com/8e908432-6f62-4c1a-9eb2-aab6a51d742f/fbb11ee5-3fa8-46df-8a46-8b815a231d5b.wav",
+      "durationSeconds": 74.34441666666666
+    },
+    "refunded": false,
+    "message": null,
+    "_credits": {
+      "used": 0
+    }
+  },
+  {
+    "id": "G02",
+    "bpm": 82,
+    "prompt": "Original instrumental music for the same colorful pixel-art adventure in a purple and golden city. Quiet investigative dialogue and careful decisions in a colorful city. Thoughtful gentle curious mood, warm electric piano, pizzicato strings, soft mallets, delicate digital chimes, spacious soft pulse. Hybrid orchestral chiptune. 82 BPM, 4/4. Memorable rising four-note motif, clear musical development, polished balanced game soundtrack, immediately recognizable opening, repeating harmonic cycle suited for continuous looping. Instrumental.",
+    "job": "job_beb84617-fa3f-4f57-827c-0e7f25c5be1a",
+    "status": "completed",
+    "mcpJobId": "job_beb84617-fa3f-4f57-827c-0e7f25c5be1a",
+    "toolName": "vidiq_generate_music",
+    "result": {
+      "musicId": "4f057e3c-64e3-410c-bdaf-43ec5c82c615",
+      "audioUrl": "https://ai-music-tracks.s3.us-east-1.amazonaws.com/8e908432-6f62-4c1a-9eb2-aab6a51d742f/4f057e3c-64e3-410c-bdaf-43ec5c82c615.wav",
+      "durationSeconds": 61.727291666666666
+    },
+    "refunded": false,
+    "message": null,
+    "_credits": {
+      "used": 0
+    }
+  },
+  {
+    "id": "G03",
+    "bpm": 88,
+    "prompt": "Original instrumental music for the same colorful pixel-art adventure in a purple and golden city. Hopeful city reconstruction after an adventure. Reflective gentle beginning rising into an earned optimistic finale, piano, strings, celesta, warm synthesized choir textures, soft drums. Hybrid orchestral chiptune. 88 BPM, 4/4. Memorable rising four-note motif, clear musical development, polished balanced game soundtrack, immediately recognizable opening, repeating harmonic cycle suited for continuous looping. Instrumental.",
+    "job": "job_2660b717-6a0f-4d0a-a64b-b7de4d506bb9",
+    "status": "completed",
+    "mcpJobId": "job_2660b717-6a0f-4d0a-a64b-b7de4d506bb9",
+    "toolName": "vidiq_generate_music",
+    "result": {
+      "musicId": "864fd9ff-f0c2-411c-b52d-7c06d5fb97e1",
+      "durationSeconds": 62.04075,
+      "audioUrl": "https://ai-music-tracks.s3.us-east-1.amazonaws.com/8e908432-6f62-4c1a-9eb2-aab6a51d742f/864fd9ff-f0c2-411c-b52d-7c06d5fb97e1.wav"
+    },
+    "refunded": false,
+    "message": null,
+    "_credits": {
+      "used": 0
+    }
+  },
+  {
+    "id": "M101",
+    "bpm": 92,
+    "prompt": "Original instrumental music for the same colorful pixel-art adventure in a purple and golden city. A sunny urban park with conversations and a busy journalist. Warm playful urban ambience, plucked guitar, pizzicato strings, marimba, soft electronic bass and light percussion. Hybrid orchestral chiptune. 92 BPM, 4/4. Memorable rising four-note motif, clear musical development, polished balanced game soundtrack, immediately recognizable opening, repeating harmonic cycle suited for continuous looping. Instrumental.",
+    "job": "job_b4ac5c4a-22f6-48a9-88f5-87abecc97dc4",
+    "status": "completed",
+    "mcpJobId": "job_b4ac5c4a-22f6-48a9-88f5-87abecc97dc4",
+    "toolName": "vidiq_generate_music",
+    "result": {
+      "musicId": "a5550cb6-08b2-448d-b689-51048781e320",
+      "durationSeconds": 62.772166666666664,
+      "audioUrl": "https://ai-music-tracks.s3.us-east-1.amazonaws.com/8e908432-6f62-4c1a-9eb2-aab6a51d742f/a5550cb6-08b2-448d-b689-51048781e320.wav"
+    },
+    "refunded": false,
+    "message": null,
+    "_credits": {
+      "used": 0
+    }
+  },
+  {
+    "id": "M102",
+    "bpm": 124,
+    "prompt": "Original instrumental music for the same colorful pixel-art adventure in a purple and golden city. An urgent race against a spreading rumor in a city park. Nervous ticking marimba ostinato, tight bass arpeggios, quick restrained drums, short string figures, catchy ascending four-note melody, playful controlled tension. Hybrid orchestral chiptune. 124 BPM, 4/4. Memorable rising four-note motif, clear musical development, polished balanced game soundtrack, immediately recognizable opening, repeating harmonic cycle suited for continuous looping. Instrumental.",
+    "job": "job_6d8e2f40-8f09-4961-89be-815d3d45c7ad",
+    "status": "completed",
+    "mcpJobId": "job_6d8e2f40-8f09-4961-89be-815d3d45c7ad",
+    "toolName": "vidiq_generate_music",
+    "result": {
+      "musicId": "b0ec7e56-d3fe-4654-a454-2385d836fe7e",
+      "durationSeconds": 63.97383333333333,
+      "audioUrl": "https://ai-music-tracks.s3.us-east-1.amazonaws.com/8e908432-6f62-4c1a-9eb2-aab6a51d742f/b0ec7e56-d3fe-4654-a454-2385d836fe7e.wav"
+    },
+    "refunded": false,
+    "message": null,
+    "_credits": {
+      "used": 0
+    }
+  },
+  {
+    "id": "M201",
+    "bpm": 100,
+    "prompt": "Original instrumental music for the same colorful pixel-art adventure in a purple and golden city. A lively newspaper office before a deadline. Focused witty energy, keyboard-like percussion, muted bass, mallets, pizzicato strings and soft synthesizer arpeggios. Hybrid orchestral chiptune. 100 BPM, 4/4. Memorable rising four-note motif, clear musical development, polished balanced game soundtrack, immediately recognizable opening, repeating harmonic cycle suited for continuous looping. Instrumental.",
+    "job": "job_d96789d5-257b-41ec-a231-a8aea5f1fd3e",
+    "status": "completed",
+    "mcpJobId": "job_d96789d5-257b-41ec-a231-a8aea5f1fd3e",
+    "toolName": "vidiq_generate_music",
+    "result": {
+      "musicId": "37f7b67d-e9f1-40fd-82c2-bda2073b25f2",
+      "durationSeconds": 61.335458333333335,
+      "audioUrl": "https://ai-music-tracks.s3.us-east-1.amazonaws.com/8e908432-6f62-4c1a-9eb2-aab6a51d742f/37f7b67d-e9f1-40fd-82c2-bda2073b25f2.wav"
+    },
+    "refunded": false,
+    "message": null,
+    "_credits": {
+      "used": 0
+    }
+  }
+]

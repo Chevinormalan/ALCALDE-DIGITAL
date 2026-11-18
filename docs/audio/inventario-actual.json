@@ -1,0 +1,258 @@
+{
+  "estado": "Inventario de archivos y metadatos; no constituye escucha de mezcla",
+  "total_wav": 36,
+  "archivos": [
+    {
+      "recurso": "mision3/audio/alert.wav",
+      "segundos": 0.45,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/ambient_loop.wav",
+      "segundos": 8.0,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/boss.wav",
+      "segundos": 0.55,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/boss_loop.wav",
+      "segundos": 8.0,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/combat_loop.wav",
+      "segundos": 8.0,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/dash.wav",
+      "segundos": 0.16,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/dialogue.wav",
+      "segundos": 0.035,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/flash.wav",
+      "segundos": 0.28,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/hit.wav",
+      "segundos": 0.1,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/live.wav",
+      "segundos": 0.7,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/ping.wav",
+      "segundos": 0.11,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/private.wav",
+      "segundos": 0.28,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision3/audio/ui.wav",
+      "segundos": 0.075,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision4/dialogue.wav",
+      "segundos": 0.07,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision4/hit.wav",
+      "segundos": 0.22,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision4/shield.wav",
+      "segundos": 0.17,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "mision4/sword.wav",
+      "segundos": 0.12,
+      "frecuencia_hz": 22050,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/ambiente.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/carro_acelerar.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/carro_marcha.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/carro_ralenti.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/cohete.wav",
+      "segundos": 0.48,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/dano.wav",
+      "segundos": 0.14,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/destruccion_dron.wav",
+      "segundos": 1.05,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/disparo_dron.wav",
+      "segundos": 0.14,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/disparo_jugador.wav",
+      "segundos": 0.14,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/encendido_helicoptero.wav",
+      "segundos": 1.1,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/explosion_cohete.wav",
+      "segundos": 0.8,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/freno.wav",
+      "segundos": 0.38,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/helicoptero_descenso.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/helicoptero_hover.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/helicoptero_vuelo.wav",
+      "segundos": 2.0,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/impacto.wav",
+      "segundos": 0.14,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/paso_adoquin.wav",
+      "segundos": 0.14,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/paso_madera.wav",
+      "segundos": 0.14,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    },
+    {
+      "recurso": "presentacion/audio/radio.wav",
+      "segundos": 0.28,
+      "frecuencia_hz": 44100,
+      "canales": 1,
+      "bits": 16
+    }
+  ]
+}

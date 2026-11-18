@@ -1,0 +1,67 @@
+[
+  {
+    "caso": "infeccion-0",
+    "correcto": true,
+    "animacion": true
+  },
+  {
+    "caso": "infeccion-1",
+    "correcto": true,
+    "animacion": true
+  },
+  {
+    "caso": "infeccion-2",
+    "correcto": true,
+    "animacion": true
+  },
+  {
+    "caso": "infeccion-3",
+    "correcto": true,
+    "animacion": true
+  },
+  {
+    "caso": "ataque-orbes",
+    "correcto": true,
+    "animacion": true
+  },
+  {
+    "caso": "ataque-rayos",
+    "correcto": true,
+    "animacion": true
+  },
+  {
+    "caso": "ataque-lluvia",
+    "correcto": true,
+    "animacion": false
+  },
+  {
+    "caso": "ataque-bots",
+    "correcto": true,
+    "animacion": false
+  },
+  {
+    "caso": "ataque-abanico",
+    "correcto": true,
+    "animacion": false
+  },
+  {
+    "caso": "ataque-muro",
+    "correcto": true,
+    "animacion": false
+  },
+  {
+    "caso": "fase3",
+    "correcto": true,
+    "animacion": false
+  },
+  {
+    "caso": "fase5",
+    "correcto": true,
+    "animacion": false
+  },
+  {
+    "caso": "reposo",
+    "correcto": true,
+    "animacion": true
+  }
+]

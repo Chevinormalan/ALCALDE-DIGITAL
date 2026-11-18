@@ -19,7 +19,7 @@ class IntegracionCampanaTest {
  private void tecla(VistaCampana v,int k){v.pulsar((char)k,k);v.soltar(k);}
  private void pasos(VistaCampana v,int n){for(int i=0;i<n;i++)v.actualizar(1f/60);}
  private EstadoMando mando(float x,Boton...b){return new EstadoMando("Simulado",x,0,0,0,Set.of(b));}
- @Test void sieteTarjetasFuncionanYLaOchoSiguePendiente(){var j=juego();var r=new RenderJuego();r.dibujar(j);for(int n=1;n<=7;n++){int m=n;assertTrue(r.botones().stream().anyMatch(b->b.accion().equals("mision"+m)));}assertFalse(r.botones().stream().anyMatch(b->b.accion().equals("mision8")));}
+ @Test void ochoTarjetasFuncionanTrasLasSieteVictorias(){var j=juego();var r=new RenderJuego();r.dibujar(j);for(int n=1;n<=7;n++){int m=n;assertTrue(r.botones().stream().anyMatch(b->b.accion().equals("mision"+m)));}assertTrue(r.botones().stream().anyMatch(b->b.accion().equals("mision8")));}
  @Test void pausaCongelaRelojPosicionesYEntradasDeAmbasMisiones(){
   for(int n:new int[]{4,6}){var j=juego();j.accion("mision"+n);try(var v=new VistaCampana(n,j)){
    v.iniciarEn(null);v.pulsar('d',68);pasos(v,30);tecla(v,80);var antes=v.estado();pasos(v,90);assertEquals(antes,v.estado());

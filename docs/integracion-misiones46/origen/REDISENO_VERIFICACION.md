@@ -1,0 +1,9 @@
+﻿# Alcalde Digital: rediseño visual de la Misión 4
+
+Proyecto completo basado en la versión integrada de ED2.DANI. Ejecutar Jugar.bat desde esta carpeta; se requiere Java 21 o posterior. También se incluye el JAR en entrega1-nueva/distribucion junto a sus dependencias.
+
+La Misión 4 conserva sus fases, personajes, diálogos, habilidades, conducción, colisiones, combate, guardado y retorno al selector. El trabajo visual integra la vegetación y el mobiliario compartidos; la plaza ordena sus personajes por profundidad; el automóvil tiene sombras, luces y movimiento; Juan mantiene sus sprites y gestos; los enemigos usan las animaciones direccionales de la Misión 3. Se han unificado los paneles, las decisiones, Civitas, indicadores y el final, y añadido transiciones entre escenarios. Las demás misiones permanecen en el proyecto.
+
+Verificación: compilación Java 21 correcta; 96 pruebas automatizadas aprobadas; comprobación original de la Misión 4 aprobada, incluyendo conducción, colisiones, diálogo, combate, guardado y final. Mision4VisualChecks carga los sprites direccionales, los gestos, los enemigos y los recursos y genera capturas para sus 16 fases. Las pruebas gráficas desde el JAR para la pantalla base y las misiones 2, 3, 4 y 5 finalizaron correctamente. Las capturas y registros están en entrega1-nueva/verificacion y build/verify.
+
+Alcance de la comprobación: las capturas incluyen estados preparados para revisión y no equivalen a una partida manual completa. No se probó un mando físico; en este equipo JInput informó que no pudo adquirir dos dispositivos HIDI2C, pero las comprobaciones gráficas y las pruebas automatizadas terminaron correctamente. Se conservan y reutilizan los sprites existentes de Juan, vecinos, vehículo y plaza; las animaciones de enemigos proceden de la Misión 3.

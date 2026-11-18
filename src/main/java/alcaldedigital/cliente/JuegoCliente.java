@@ -14,7 +14,9 @@ import java.util.function.DoubleSupplier;
 
 /** Control de entrada y navegación; los efectos siempre pasan por la sesión. */
 public final class JuegoCliente {
-    public enum Pantalla { MENU, MISIONES, GUARDADO, DIFICULTAD, DIFICULTAD_DOS, MISION_DOS, MISION_TRES, MISION_CUATRO, MISION_CINCO, MISION_SEIS, MISION_SIETE, ROLES, PARQUE, CIVITAS, EVIDENCIAS, ARBOLES, AYUDA, CONTROLES, CONFIRMAR_REINICIO, RESULTADO }
+    public enum Pantalla { MENU, MISIONES, GUARDADO, DIFICULTAD, DIFICULTAD_DOS, MISION_DOS, MISION_TRES, MISION_CUATRO, MISION_CINCO, MISION_SEIS, MISION_SIETE, MISION_OCHO, ROLES, PARQUE, CIVITAS, EVIDENCIAS, ARBOLES, AYUDA, GRAFICOS, AUDIO, CONTROLES, CONFIRMAR_REINICIO, RESULTADO }
+    public final alcaldedigital.cliente.audio.OpcionesAudio audio=new alcaldedigital.cliente.audio.OpcionesAudio();
+    public final alcaldedigital.cliente.graficos.OpcionesGraficas graficos=new alcaldedigital.cliente.graficos.OpcionesGraficas();
     public Pantalla pantalla=Pantalla.MENU, anterior=Pantalla.MENU;
     public Pantalla origenArboles=Pantalla.PARQUE;
     public enum Pestana { RADAR, CAMINO }
@@ -82,7 +84,7 @@ public final class JuegoCliente {
         }
         return partidaMenu;
     }
-    public int numeroMision(){return switch(pantalla){case MISION_DOS->2;case MISION_TRES->3;case MISION_CUATRO->4;case MISION_CINCO->5;case MISION_SEIS->6;case MISION_SIETE->7;default->misionUno!=null&&pantalla!=Pantalla.MENU&&pantalla!=Pantalla.MISIONES&&pantalla!=Pantalla.GUARDADO&&pantalla!=Pantalla.DIFICULTAD&&pantalla!=Pantalla.DIFICULTAD_DOS?1:0;};}
+    public int numeroMision(){return switch(pantalla){case MISION_DOS->2;case MISION_TRES->3;case MISION_CUATRO->4;case MISION_CINCO->5;case MISION_SEIS->6;case MISION_SIETE->7;case MISION_OCHO->8;default->misionUno!=null&&pantalla!=Pantalla.MENU&&pantalla!=Pantalla.MISIONES&&pantalla!=Pantalla.GUARDADO&&pantalla!=Pantalla.DIFICULTAD&&pantalla!=Pantalla.DIFICULTAD_DOS&&pantalla!=Pantalla.GRAFICOS&&pantalla!=Pantalla.AUDIO?1:0;};}
     public void victoria(int n){try{progreso.victoria(n);}catch(java.io.IOException e){aviso="No se pudo guardar el avance: "+e.getMessage();segundosAviso=9;}}
     public EstadoCiudad estadoCampana=EstadoCiudad.inicial();
     public alcaldedigital.compartido.guardado.TablaPuntajes.Fila ultimaFila;
@@ -98,7 +100,7 @@ public final class JuegoCliente {
     private final Set<String> misionesCuatroAcreditadas=new HashSet<>();
     public boolean misionEmbebida() {
         return Set.of(Pantalla.MISION_DOS,Pantalla.MISION_TRES,Pantalla.MISION_CUATRO,
-            Pantalla.MISION_CINCO,Pantalla.MISION_SEIS,Pantalla.MISION_SIETE).contains(pantalla);
+            Pantalla.MISION_CINCO,Pantalla.MISION_SEIS,Pantalla.MISION_SIETE,Pantalla.MISION_OCHO).contains(pantalla);
     }
     public void terminarMisionCuatro(alcaldedigital.cliente.mision4.MisionCuatroSketch.Resultado r) {
         ultimoResultadoMisionCuatro=Objects.requireNonNull(r);if(r.completada())victoria(4);
@@ -157,10 +159,10 @@ public final class JuegoCliente {
     }
     public void abrir(Pantalla destino) {
         boolean conservarPausa=pausa&&pausaUnificada&&Set.of(Pantalla.PARQUE,Pantalla.CIVITAS,Pantalla.ARBOLES,Pantalla.AYUDA,Pantalla.RESULTADO).contains(destino);
-        if(destino==Pantalla.AYUDA&&pantalla!=destino&&pantalla!=Pantalla.CONTROLES) anterior=pantalla;
+        if(destino==Pantalla.AYUDA&&pantalla!=destino&&pantalla!=Pantalla.CONTROLES&&pantalla!=Pantalla.GRAFICOS&&pantalla!=Pantalla.AUDIO) anterior=pantalla;
         if(destino==Pantalla.ARBOLES&&pantalla!=destino&&!(pantalla==Pantalla.AYUDA&&anterior==Pantalla.ARBOLES)) origenArboles=pantalla;
         pantalla=destino; foco=destino==Pantalla.MISIONES?1:
-            destino==Pantalla.DIFICULTAD||destino==Pantalla.DIFICULTAD_DOS?2:0;
+            destino==Pantalla.GRAFICOS?1:destino==Pantalla.DIFICULTAD||destino==Pantalla.DIFICULTAD_DOS?2:0;
         if(destino==Pantalla.MENU)consultaPartidas=0;
         if(destino==Pantalla.MISION_DOS)ultimaMisionAbierta=2;
         else if(destino==Pantalla.MISION_TRES)ultimaMisionAbierta=3;
@@ -179,7 +181,15 @@ public final class JuegoCliente {
     public ArbolDecisiones.Vista vistaDecision() { return pasoDecision<0?sesion.vista().decisiones():sesion.pasosDecisiones().get(indiceDecision()).raiz(); }
     private void seleccionCambiada() { visita=0;automatico=false;encontrado="";editandoBusqueda=false;foco=0; }
     public void accion(String accion) {
-        if(accion.matches("mision[1-7]")){
+        if(accion.equals("audio")&&pantalla==Pantalla.AYUDA){abrir(Pantalla.AUDIO);return;}
+        if(accion.startsWith("audio:")&&pantalla==Pantalla.AUDIO){String a=accion.substring(6);if(a.equals("restaurar"))audio.restaurar();else if(a.equals("prueba"))alcaldedigital.cliente.audio.MotorAudio.global().interfaz("confirmar");else if(a.equals("mudo")||a.equals("suave")||a.equals("voces"))audio.alternar(a);else{String[] partes=a.split(":");audio.cambiar(alcaldedigital.cliente.audio.OpcionesAudio.Bus.valueOf(partes[0]),Integer.parseInt(partes[1]));}return;}
+
+        if(accion.equals("graficos")&&pantalla==Pantalla.AYUDA){graficos.abrir();abrir(Pantalla.GRAFICOS);return;}
+        if(accion.startsWith("grafico:")&&pantalla==Pantalla.GRAFICOS){switch(accion.substring(8)){
+            case "modo"->graficos.modo();case "tamano"->graficos.tamano();case "escalado"->graficos.escalado();case "filtro"->graficos.filtro();case "aplicar"->graficos.aplicar();case "restaurar"->graficos.restaurar();default->{}
+        }return;}
+
+        if(accion.matches("mision[1-8]")){
             int numero=accion.charAt(6)-'0';if(!progreso.disponible(numero)){aviso="Gana la misión "+progreso.requisitoPendiente(numero)+" para desbloquear esta misión.";segundosAviso=8;return;}
             if(pantalla!=Pantalla.MISIONES&&!(eligiendoPartida&&pantalla==Pantalla.GUARDADO))return;
             if(!eligiendoPartida){misionSolicitada=numero;continuarGuardado=false;modoContinuacion=rolContinuacion=-1;
@@ -209,7 +219,7 @@ public final class JuegoCliente {
         if(accion.equals("pausa")) {
             if(pantalla==Pantalla.MISION_DOS||pantalla==Pantalla.MISION_TRES||misionUno!=null&&
                 pantalla!=Pantalla.MENU&&pantalla!=Pantalla.MISIONES&&
-                pantalla!=Pantalla.DIFICULTAD&&pantalla!=Pantalla.DIFICULTAD_DOS) {
+                pantalla!=Pantalla.DIFICULTAD&&pantalla!=Pantalla.DIFICULTAD_DOS&&pantalla!=Pantalla.GRAFICOS&&pantalla!=Pantalla.AUDIO) {
                 pausa=!pausa;controlesPausa=false;foco=0;
             }
             return;
@@ -223,6 +233,7 @@ public final class JuegoCliente {
         if(accion.equals("mision4")){if(pantalla==Pantalla.MISIONES)abrir(Pantalla.MISION_CUATRO);return;}
         if(accion.equals("mision6")){if(pantalla==Pantalla.MISIONES)abrir(Pantalla.MISION_SEIS);return;}
         if(accion.equals("mision5")){if(pantalla==Pantalla.MISIONES)abrir(Pantalla.MISION_CINCO);return;}
+        if(accion.equals("mision8")){if(pantalla==Pantalla.MISIONES)abrir(Pantalla.MISION_OCHO);return;}
         if(accion.equals("mision7")){if(pantalla==Pantalla.MISIONES)abrir(Pantalla.MISION_SIETE);return;}
         if(accion.equals("mision3")) {
             if(pantalla==Pantalla.MISIONES) abrir(Pantalla.MISION_TRES);
@@ -285,7 +296,7 @@ public final class JuegoCliente {
             case "jugar" -> abrir(misionUnoDisponible()?Pantalla.MISIONES:Pantalla.ROLES);
             case "desbloquearTodas" -> {
                 if(pantalla!=Pantalla.MISIONES)break;
-                try{progreso.desbloquearTodas();aviso="Misiones 1 a 7 disponibles. Las victorias se registran por separado.";segundosAviso=8;}
+                try{progreso.desbloquearTodas();aviso="Misiones 1 a 8 disponibles. Puedes elegir un final de prueba en la misión 8.";segundosAviso=8;}
                 catch(java.io.IOException e){aviso="No se pudo guardar el desbloqueo: "+e.getMessage();segundosAviso=9;}
             }
             case "pedirRestablecer" -> {if(pantalla==Pantalla.MISIONES)abrir(Pantalla.CONFIRMAR_REINICIO);}
@@ -331,9 +342,9 @@ public final class JuegoCliente {
             case "ayuda" -> abrir(Pantalla.AYUDA);
             case "verControles" -> {if(pantalla==Pantalla.AYUDA){controlesMision=1;controlesDosJugadores=false;abrir(Pantalla.CONTROLES);}}
             case "controlesAnterior" -> {if(pantalla==Pantalla.CONTROLES)controlesMision=Math.max(1,controlesMision-1);}
-            case "controlesSiguiente" -> {if(pantalla==Pantalla.CONTROLES)controlesMision=Math.min(7,controlesMision+1);}
+            case "controlesSiguiente" -> {if(pantalla==Pantalla.CONTROLES)controlesMision=Math.min(8,controlesMision+1);}
             case "controlesModo" -> {if(pantalla==Pantalla.CONTROLES&&controlesMision>=5)controlesDosJugadores=!controlesDosJugadores;}
-            case "volver" -> { if(pantalla==Pantalla.CONTROLES) abrir(Pantalla.AYUDA);
+            case "volver" -> { if(pantalla==Pantalla.CONTROLES||pantalla==Pantalla.GRAFICOS||pantalla==Pantalla.AUDIO) abrir(Pantalla.AYUDA);
                 else if(pantalla==Pantalla.CONFIRMAR_REINICIO) abrir(Pantalla.MISIONES);
                 else if(pantalla==Pantalla.GUARDADO||pantalla==Pantalla.DIFICULTAD||pantalla==Pantalla.DIFICULTAD_DOS) abrir(Pantalla.MISIONES);
                 else if(pantalla==Pantalla.MISION_DOS||pantalla==Pantalla.MISION_TRES) abrir(Pantalla.MISIONES);
@@ -451,7 +462,7 @@ public final class JuegoCliente {
         } else cuadro=0;
     }
     public void tecla(int codigo,char caracter) {
-        if(codigo==27&&pantalla==Pantalla.CONTROLES){abrir(Pantalla.AYUDA);return;}
+        if(codigo==27&&(pantalla==Pantalla.CONTROLES||pantalla==Pantalla.GRAFICOS||pantalla==Pantalla.AUDIO)){abrir(Pantalla.AYUDA);return;}
         if(codigo==27&&pantalla==Pantalla.CONFIRMAR_REINICIO){abrir(Pantalla.MISIONES);return;}
         if(codigo==27&&(pantalla==Pantalla.DIFICULTAD||pantalla==Pantalla.DIFICULTAD_DOS)) {abrir(Pantalla.MISIONES);return;}
         if(codigo==27&&pantalla==Pantalla.GUARDADO){abrir(Pantalla.MISIONES);return;}

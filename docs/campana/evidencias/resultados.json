@@ -1,0 +1,72 @@
+[
+  {
+    "escena": "selector-bloqueado",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision1-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision1-recuperada",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision2-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision2-recuperada",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision3-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision3-recuperada",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-recuperada",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision5-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-recuperada",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision7-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision5-ayuda",
+    "codigo": 0,
+    "ok": true
+  }
+]

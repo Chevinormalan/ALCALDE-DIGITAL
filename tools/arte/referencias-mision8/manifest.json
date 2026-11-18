@@ -1,0 +1,3694 @@
+{
+  "herramienta": "imagegen integrada",
+  "referencia": "arte vigente de misiones 1, 2, 3 y 7",
+  "paleta": [
+    "#21152F",
+    "#38264B",
+    "#604077",
+    "#BD91D5",
+    "#F5E8FB",
+    "#F4CB6A"
+  ],
+  "atlas": {
+    "heroes": {
+      "tamano": [
+        1254,
+        1254
+      ],
+      "columnas": 8,
+      "filas": 8,
+      "sha256": "654ed7b8cb2b4d093ddc7ec666787768a970a8f4552c086c2dce054bdcc1180e"
+    },
+    "candidatos": {
+      "tamano": [
+        1263,
+        1246
+      ],
+      "columnas": 8,
+      "filas": 8,
+      "sha256": "e12ee914ad36bfa11db998e373baf63629ad68f261be8b556867d90baca6707b"
+    },
+    "efectos": {
+      "tamano": [
+        1254,
+        1254
+      ],
+      "columnas": 8,
+      "filas": 8,
+      "sha256": "78c42fb546139e8de11bddf7a27a99928b1b284e9bacd087920f3b5bc11f0a89"
+    },
+    "escenarios": {
+      "tamano": [
+        1672,
+        941
+      ],
+      "columnas": 2,
+      "filas": 2,
+      "sha256": "1f2b876dafbe365918f65968ec440df91ced45955969ffbcd5d9e625deb188e5"
+    },
+    "tarima-cuatro": {
+      "tamano": [
+        1672,
+        941
+      ],
+      "columnas": 1,
+      "filas": 1,
+      "sha256": "dae9f4f79b04ec0e3fc122f1091e38aebddb71b7ec93540583139b564b906f90"
+    },
+    "infeccion-juan": {
+      "tamano": [
+        1254,
+        1254
+      ],
+      "columnas": 4,
+      "filas": 4,
+      "sha256": "b3c6ecf1960c30e7aa5869fc0265177a171197f05f3ebbf88cc6d5c2dc9183fe"
+    },
+    "infeccion-petrosqui": {
+      "tamano": [
+        1254,
+        1254
+      ],
+      "columnas": 4,
+      "filas": 4,
+      "sha256": "7d941e99ae6a325a157db80a218086207a8b0fea97a31d192f94faf2f49ef82e"
+    },
+    "infeccion-abel": {
+      "tamano": [
+        1254,
+        1254
+      ],
+      "columnas": 4,
+      "filas": 4,
+      "sha256": "7860417c1b1684e4be0d06b3375f788909703b147f98c8a5229dd73241cb4829"
+    },
+    "infeccion-alberto": {
+      "tamano": [
+        1254,
+        1254
+      ],
+      "columnas": 4,
+      "filas": 4,
+      "sha256": "731dac6edcee0c47a2b70cfdf8882ac7da9318f871f613d1cdf3520f3fdf6f92"
+    },
+    "ataques-forma-1": {
+      "tamano": [
+        1774,
+        887
+      ],
+      "columnas": 8,
+      "filas": 4,
+      "sha256": "fbfa525617bfbd3aa7c33d73ab2c77f5708d0bd2d1cb09665f1e406c9b0458d0"
+    },
+    "ataques-forma-2": {
+      "tamano": [
+        1774,
+        887
+      ],
+      "columnas": 8,
+      "filas": 4,
+      "sha256": "1e4e5ac73bc99f825300413acd4e48ccfcd0ee4f9664fc239d12fb6b2963abbc"
+    },
+    "ataques-forma-3": {
+      "tamano": [
+        1774,
+        887
+      ],
+      "columnas": 8,
+      "filas": 4,
+      "sha256": "e4ead6951af43c31a73782e7c6e75992953c34f38b86cf6ef4c8f351daaf6aaf"
+    }
+  },
+  "cuadros": [
+    {
+      "atlas": "heroes",
+      "indice": 0,
+      "archivo": "heroes/sofi/00-reposo.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "eea52109440e407ecd198d48fc61ac3a212c5eb732edc861906ae45d99151e9c"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 1,
+      "archivo": "heroes/sofi/01-carrera_contacto.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "deccdef7c40d573f6c2ce3ac1828d5249cc425e50be9bcb235d6495721cc78bd"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 2,
+      "archivo": "heroes/sofi/02-carrera_paso.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "8d325227caffe276c33bca9fa7a0857b2d965fab5c0c7acc1cf6a6a1cb429afa"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 3,
+      "archivo": "heroes/sofi/03-despegue.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "0a214b9634f2e8daea47e1e6ac40b0a291eb7ed7fc582cbf2ecd0cb47f7fc3c9"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 4,
+      "archivo": "heroes/sofi/04-ascenso.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "4a2e374fe24abedef8a712d4ee31c6cb915f5bf22fd60f7db6692c62119fd511"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 5,
+      "archivo": "heroes/sofi/05-caida.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "602a8ff1933a699195becf440fb1909ee08bfada651ec62b470645d73de25fde"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 6,
+      "archivo": "heroes/sofi/06-aterrizaje.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "a6793511598884dfcd09c975d0f4adbfcac4e9d6ae624fb5fb3c536c4374e90b"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 7,
+      "archivo": "heroes/sofi/07-esquiva.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "100ca3364e248e85404788b30ddd9a76c9aa2d6f50386ea63d1a3c0136d3e323"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 8,
+      "archivo": "heroes/sofi/08-ataque_preparacion.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "de930db5d616e5e693b499132b60f17a15c211d2b307f75cf3d7c57df01361a8"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 9,
+      "archivo": "heroes/sofi/09-ataque_activo.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "b34ef83bdca3cf59a2ed6c6c20dc61141376db47a865b32c3b5984bacde7703a"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 10,
+      "archivo": "heroes/sofi/10-ataque_recuperacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "b674b12f35c4866ebcd14fa2f9eca4775bc70d99cd0825e2847aecfce3f62f87"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 11,
+      "archivo": "heroes/sofi/11-alcance_preparacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "08f12e618afdd2eba5a746ceaa0f574487cdca615f700cc537fdb9977444bc32"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 12,
+      "archivo": "heroes/sofi/12-alcance_activo.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "8c33a397b0140a41d63a7c9f1a6080f5b635f6616ef610d7fc0a8a072b6f3232"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 13,
+      "archivo": "heroes/sofi/13-proteccion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "e20bf80a52924599d51ca6d6ebe428134ab61deef59d84a3293af600bcb08a1d"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 14,
+      "archivo": "heroes/sofi/14-dano.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "6125163a2e4c3a4392a8b1d7c4aa82374ea1de251dd1b88080ce7a8bb28de5dc"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 15,
+      "archivo": "heroes/sofi/15-derrota.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "133a5ee343b345e83a9fee4be9e72d944c9b576420dff163a307fe854975c558"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 16,
+      "archivo": "heroes/periodista/00-reposo.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "18af22703fdacb92d93d3d51e29a5e39a3155c04b861eb7effdd1cfb005855a0"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 17,
+      "archivo": "heroes/periodista/01-carrera_contacto.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "2957c56b3f27555a597687e69f8aaee9aebb0450cb49c2654ff9711a5927c541"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 18,
+      "archivo": "heroes/periodista/02-carrera_paso.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "07aa47a1c0398b39818264c4e614cbc596fbba826f2f75fc66398fda50e2437f"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 19,
+      "archivo": "heroes/periodista/03-despegue.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "901d288dae826c4e0f6dadb1a5fd46a0eb0ac0aa411cd0f0d51b234bc5fd7189"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 20,
+      "archivo": "heroes/periodista/04-ascenso.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "af3aa9bcbaf1f09e1f5148b724fa3d8f929144b240fe4497134ba77dc586ae09"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 21,
+      "archivo": "heroes/periodista/05-caida.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "fa02b43da368ebeeaf3da73535eaf31285b6e2ee947daaa6c61d2003189c28ab"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 22,
+      "archivo": "heroes/periodista/06-aterrizaje.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "64a6c211817189d0a1efab8624a7f1e028929edc286a4dd2f7bc8a788e4c8889"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 23,
+      "archivo": "heroes/periodista/07-esquiva.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "08e45761adec139806b038d99b0668164f7c09b19139de3a6e38bb3a194eb1a9"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 24,
+      "archivo": "heroes/periodista/08-ataque_preparacion.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "80e4bbb4f50210ec48b858d3dc85540f776a071909e5ce1b89cf1e96889a6f3b"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 25,
+      "archivo": "heroes/periodista/09-ataque_activo.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "275f1f28ec90774d39a417e0783ba1cd51c291ca6d3341f4e778757e5ac95910"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 26,
+      "archivo": "heroes/periodista/10-ataque_recuperacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "65adb85a2aa29e8b79c3941470944b0019e79d64f612de28205d17cae49eb11c"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 27,
+      "archivo": "heroes/periodista/11-alcance_preparacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "6f3fb3dda6c2de2169b08183a108897471009d21dae39b74f9a02e749947d996"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 28,
+      "archivo": "heroes/periodista/12-alcance_activo.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "cea83586e3077112ead1ecf0b2d5b174f24c785e15b2a504d087e87f6d152d49"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 29,
+      "archivo": "heroes/periodista/13-proteccion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "50612dccb1de9ae6ae35c1ef2ba0b1fe04b5ae80a98b454c35f0c26a2820e651"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 30,
+      "archivo": "heroes/periodista/14-dano.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "bb3f6ebd87d57f49cc306fb50e969f1c15940901a07f5ddaa014e542d42e2938"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 31,
+      "archivo": "heroes/periodista/15-derrota.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "57a2c566768e3e0ceef2124ffb974dace102b5abbe771f1680edbd819be092ce"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 32,
+      "archivo": "heroes/influencer/00-reposo.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "7a61fe99667af92e2243c05d2fa76dbf928375be6a29bb94b1e9f275a06396c8"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 33,
+      "archivo": "heroes/influencer/01-carrera_contacto.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "5c8933006bf7eb9b9af59663300450d7a89c12e2a53bfa9f795b969ce5dc4426"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 34,
+      "archivo": "heroes/influencer/02-carrera_paso.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "29b9e4af8f29f143e709541fd8f28d7fd89c7c5fa5129b2e1c774c9d1b3f7468"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 35,
+      "archivo": "heroes/influencer/03-despegue.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "1e17a7d4a5474c681c8a05875fc02027458566375a6251bb677a23ed813152af"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 36,
+      "archivo": "heroes/influencer/04-ascenso.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "ab2b70f786c36d1ae1e85d79973df5e01f4ca5a27b587b9707d31f92e8adedcd"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 37,
+      "archivo": "heroes/influencer/05-caida.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "2124d5581cb564f6766eb1b6d30cd01fe178c2d013b9bd89336cf29b67ebdc91"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 38,
+      "archivo": "heroes/influencer/06-aterrizaje.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "9c01e448cf871db8dcc267e8877320591b8e0b363db9e1550c6a4099a0806a97"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 39,
+      "archivo": "heroes/influencer/07-esquiva.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "238da7de76aa7d95b5b5ba35f07436a9cbdba48bce0971f817eea2fe5c031541"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 40,
+      "archivo": "heroes/influencer/08-ataque_preparacion.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "51fac57ecaf47f97685c1cc5d5ba9bec75a020353e56aec8c60eb16975dfed9a"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 41,
+      "archivo": "heroes/influencer/09-ataque_activo.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "5b0797ec61da16ad773a2ef7c4b2c457461ae40a43bfb1b100f749254b2ccd2b"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 42,
+      "archivo": "heroes/influencer/10-ataque_recuperacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "48599349734caa3ba3db28c80d9c1e021df89ab41ce39ca23cab73bd174d77d7"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 43,
+      "archivo": "heroes/influencer/11-alcance_preparacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "138af6071e69e10a51334278ccc04a4b77a4897e5fae1c457088c529d8c9eed3"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 44,
+      "archivo": "heroes/influencer/12-alcance_activo.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "763a295c927645f4034e4d5ce507dbcbc3747dd6b6695a60196b077638a21f41"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 45,
+      "archivo": "heroes/influencer/13-proteccion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "6462b85c408de851beb00b6f5d4dec367b9539d6e1b4a1e49f3cb4fa94f6b674"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 46,
+      "archivo": "heroes/influencer/14-dano.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "a413d903c7ae7db626c0276f166ee67dafaed336e0b45c14aab4820fbb78fbb6"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 47,
+      "archivo": "heroes/influencer/15-derrota.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "54a1a520e66e578c95899cef7967a79e9b973f3255ded1bc89dfcb8bee720925"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 48,
+      "archivo": "heroes/juan/00-reposo.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "3d0d67760d591ef0a4e335126630d5fc54d6b96eb8a9dccf617d6d9574c636d3"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 49,
+      "archivo": "heroes/juan/01-carrera_contacto.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "921c291b27bc73a87d534a61f2bf69b76b02e92fbd98c07edf96269d441d98b5"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 50,
+      "archivo": "heroes/juan/02-carrera_paso.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "f391a1b78d555cd2acffcad34954a39d88b570ecb1b376aa82025b64c9e7fdb7"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 51,
+      "archivo": "heroes/juan/03-despegue.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "504188663be249ab171a8ff8c05fc36de6fd0c60267174edb784c66c9dfe0f78"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 52,
+      "archivo": "heroes/juan/04-ascenso.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "f7d1adffb659fd3d49ac99ec2a277cddba6021823f0a92ef4a0cbad6b83bae23"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 53,
+      "archivo": "heroes/juan/05-caida.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "a1e6918a4512c02f3b5c2db583cc72d051e60e7606f01b46ba260eeecc936e9d"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 54,
+      "archivo": "heroes/juan/06-aterrizaje.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "57ac095fd0734065e300b82129e7143c0163a639c01f0820ce2e5475bf9a09b2"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 55,
+      "archivo": "heroes/juan/07-esquiva.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "2f096bee3a5dce5c7296c29ac904abef546711f80f602d8e5a89574b22d230d0"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 56,
+      "archivo": "heroes/juan/08-ataque_preparacion.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "f5fa10c14f66cc42bb28c87f2ef1ca27ca82cddd66b238c46d1c372c228022d4"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 57,
+      "archivo": "heroes/juan/09-ataque_activo.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "95fb23403fde8aa00cc4af5d81d90f2a342afe9aeac2c4cda7079edf3653bc05"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 58,
+      "archivo": "heroes/juan/10-ataque_recuperacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "7f7e521d412e7019424c028447b1b5a1b6c603bc0923d61d738e76942fcf0261"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 59,
+      "archivo": "heroes/juan/11-alcance_preparacion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "8e80834ea2142131ed73451b5f862809ee2990224be6eefda4a1bb88a76758e6"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 60,
+      "archivo": "heroes/juan/12-alcance_activo.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "26ea68cc4b2bb391823df8e2d0f05f183262a9cb0220f2260b5e934f35a2fc45"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 61,
+      "archivo": "heroes/juan/13-proteccion.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "01c4248ccf91eb4b9a4c110277d1f0201ba5468fea2f59fc45bb17417d73b2de"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 62,
+      "archivo": "heroes/juan/14-dano.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "712ae71c8f6ee5d4876b7abd2e15e2376ad40679a59427634f173bd688d888cb"
+    },
+    {
+      "atlas": "heroes",
+      "indice": 63,
+      "archivo": "heroes/juan/15-derrota.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "350dfe4c93c742b3305cd47e7f3b411b760fe9435ec3816e1908722711587dac"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 0,
+      "archivo": "candidatos/juan/00.png",
+      "dimensiones": [
+        157,
+        155
+      ],
+      "sha256": "8b0c7872e2b45306987413f1b6a6f7da1d65c08b3f0ebcfde577d5ad556f2b19"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 1,
+      "archivo": "candidatos/juan/01.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "c05e9912568f03c28e8b4a1b3a3000179391dd32ac1a8c01366d5c02ac7532a0"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 2,
+      "archivo": "candidatos/juan/02.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "0acfc38f0b4696e5e1920f361f5c52eb2b33cb8cfa28e321c581537aeb984a59"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 3,
+      "archivo": "candidatos/juan/03.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "2884c528551394bcb87901889f466c14f6463cc662310909bf93bc5560bd930f"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 4,
+      "archivo": "candidatos/juan/04.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "867febf32a85d750319137f2f1a3c3c8b8ffe23904eede0f7fdf9a367d924af3"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 5,
+      "archivo": "candidatos/juan/05.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "7c22b7c5b272fbb6bec7ee44190cb82b879dbedf6f5c0bb0afe31bf3d7a17a85"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 6,
+      "archivo": "candidatos/juan/06.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "99edf64bb576f3ae4f904a475aa713119e63ce0c2a4a276d88cb619ecc4f3c71"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 7,
+      "archivo": "candidatos/juan/07.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "7e023a4e4a6e66e24233c83baf949290d135745534ed66fb0bb6ac79ba3401ec"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 8,
+      "archivo": "candidatos/juan/08.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "8f82a56d04b8262066e748eb186ac4947ce63a8cd25b8c81b1fb3366f1bfb91d"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 9,
+      "archivo": "candidatos/juan/09.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "429cdbd9de904c1a048aa0e3d479f0ca4abc38cafd38a12669cc5fa02537dba0"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 10,
+      "archivo": "candidatos/juan/10.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "d0e4072f81a7fd694853b8fe08295baf3d632fbd59e1426e2ce2517d8abb1db8"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 11,
+      "archivo": "candidatos/juan/11.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "f572a1cad7758aa51a5878b08cbc75ffed6102ee5a260c706caf9765a130bb07"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 12,
+      "archivo": "candidatos/juan/12.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "b6d572944b7735a721e0dde5c2ead375e92bb769761d0c744a8683e3c7ea8560"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 13,
+      "archivo": "candidatos/juan/13.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "faafd727decda2c2613a957fa8217f3ddc63bcc7c0afa41bd3932187576c757c"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 14,
+      "archivo": "candidatos/juan/14.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "e6afcb44c0138c53d082dc6a3808f4b0f7c68dbe604fffd9a7bd0e2d6ebb69bc"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 15,
+      "archivo": "candidatos/juan/15.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "7e9245f246ea3d12fff35eedbd8f48b58978e4ebb34fc5835bd06e4ff487ec94"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 16,
+      "archivo": "candidatos/petrosqui/00.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "82b19770f647bc7464efff550165c5d0d2b648a78463aead149e4dd944fba91f"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 17,
+      "archivo": "candidatos/petrosqui/01.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "3799beb835c2c3d420ee4dcc13490dbb56de46dc100ffb5be5a4da5410c7d156"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 18,
+      "archivo": "candidatos/petrosqui/02.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "bb4ad84164ca53002ea6daf53f00e3e8ec852a4cd6bd438731f162673e6473c0"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 19,
+      "archivo": "candidatos/petrosqui/03.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "203066dccf88de3e7d89e8298af9ce4614caa7eddecd3cb1beceec99938e559d"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 20,
+      "archivo": "candidatos/petrosqui/04.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "b4852acea09aa70c9d9f0c8a9906cb44ab68083be74c1f3f51257ef6d1fd0ed5"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 21,
+      "archivo": "candidatos/petrosqui/05.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "fa5793c26d9840e912f2b87e0f86f0c93bf5c973213a9c58cd13680d70f88be1"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 22,
+      "archivo": "candidatos/petrosqui/06.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "4b71ac33707eac8256ced81cf86b30baf1dbb2cb0128d86c8c80da78d2056381"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 23,
+      "archivo": "candidatos/petrosqui/07.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "0dcfb3ab84a3e98e8b3093623c4db0f97014437b3851eac7551f6c8ebf3da8b1"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 24,
+      "archivo": "candidatos/petrosqui/08.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "c703b6b6bca295dd2c17063674b09913535b46ba45bf15a5cb4bdf9f2fed4a7a"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 25,
+      "archivo": "candidatos/petrosqui/09.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "b103aa0b9d7012f0f38234e1d6b463612e7c411c69f385a8a14cc24ae7251145"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 26,
+      "archivo": "candidatos/petrosqui/10.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "1158041e0986a524036fb47523b33ceafac12dff7593a3de32bbb8fa73073dad"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 27,
+      "archivo": "candidatos/petrosqui/11.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "63f956b65892ab41a9b9e22bdf4a6a3c19c5f90f1cf542346701ed707bae7fed"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 28,
+      "archivo": "candidatos/petrosqui/12.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "5bf55126b868c2a7fed6a10968d2c2f53c857c2b60e0e44b2a56f01544fa757d"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 29,
+      "archivo": "candidatos/petrosqui/13.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "06765e048d231a1909916dfd39e0e687be0203398c5710edc2338bdc755e81d4"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 30,
+      "archivo": "candidatos/petrosqui/14.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "78a27bff0b2caab5459e5335b266c81a2fbf1f5bafc67e8d1c067b7f8f25e996"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 31,
+      "archivo": "candidatos/petrosqui/15.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "b46bbdf42694fc6bb689f94e0a8cbbbd877ad3c9d5d06db4e1659945bc9b95cd"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 32,
+      "archivo": "candidatos/abel/00.png",
+      "dimensiones": [
+        157,
+        155
+      ],
+      "sha256": "a20487b958a9eaa9bf7c7130732c9cd01c465755194640559820b0bad91c37aa"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 33,
+      "archivo": "candidatos/abel/01.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "80dcdd8f9005dbb3506f1f4e58a66b861c4a5f0b8e3b1e237c75b096aca8ea75"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 34,
+      "archivo": "candidatos/abel/02.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "0ca008184d2d56e1b41066a4455a4cd300bfab84849ceff57522aa072d5a29e9"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 35,
+      "archivo": "candidatos/abel/03.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "2e1f2af14f0dfe3d521b65b178b2160ed0dc1f5b8ceca412dad224137dc504f1"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 36,
+      "archivo": "candidatos/abel/04.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "e9ae1b61dd8a2c9fc0955da4f40a009400a39b15df70a93982e97bdee7dc9d68"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 37,
+      "archivo": "candidatos/abel/05.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "9d749e85bf3dc31d227b90b764c065fa69e86ac2897689efb4867e5eb4f3c317"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 38,
+      "archivo": "candidatos/abel/06.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "c26817b9e735fa7e70ee9b7bbe6c1ebb8c088c7b2113be7615bc550986cefb27"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 39,
+      "archivo": "candidatos/abel/07.png",
+      "dimensiones": [
+        158,
+        155
+      ],
+      "sha256": "040155e99dbee22c062739bf25f04567074f3e7bdf5aca2f819394f188b5dfbc"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 40,
+      "archivo": "candidatos/abel/08.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "b54172319b496e9fbafbebdba2019d869789e4a3cef13b9db04276dacb075274"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 41,
+      "archivo": "candidatos/abel/09.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "cb169bb4514e0829e32ca82640a9e8f23a19c8316a2211f3a935220b2bc12277"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 42,
+      "archivo": "candidatos/abel/10.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "d873dc51531ad0d4310175ce24b5f3a935c9b463e8d64a81ba859d9cedfa3611"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 43,
+      "archivo": "candidatos/abel/11.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "717d30fab87a9f3d95094705585cabfc618cdf5f1ec008cb0070c9d5abf8de5c"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 44,
+      "archivo": "candidatos/abel/12.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "0599ccb12176d523fe293585e0aabef1c48d74cd2b6c3c12c9e71ae7c6bcd45c"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 45,
+      "archivo": "candidatos/abel/13.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "fe94a410f2659faca3329665b86b14ef98e4098f14a8f16d55d4b62f9e619ba1"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 46,
+      "archivo": "candidatos/abel/14.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "7089f9e599429233ea089ca5e092cacc531b2b5dedac7ab76f3287194fb29d39"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 47,
+      "archivo": "candidatos/abel/15.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "d49eff83b278b12821a6b42cfbbeec89fabe18036ea9f3e428f2bdbdc1f7491f"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 48,
+      "archivo": "candidatos/alberto/00.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "9119757a7a790032563d9ed39e93b93267cb04ee0066ee6cfbaec4b0d9b0f0e3"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 49,
+      "archivo": "candidatos/alberto/01.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "6a01bc293636bb601be51ce7d368c2a31a345fd8a737dde46146c4d0c272796c"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 50,
+      "archivo": "candidatos/alberto/02.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "069dd1f1cfc999b80f1f819a2010d6ee1a68a3037d92e6d14b0d8697e9e18a31"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 51,
+      "archivo": "candidatos/alberto/03.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "579de050533ca4da7bf30228e377f9ae7122b8b266ac95e158d7b694d19f685b"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 52,
+      "archivo": "candidatos/alberto/04.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "8e27269685b3c7cce60f46b2a82b0bb3f8e3c1fdf156f34ab9c2a82fc8e54fc3"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 53,
+      "archivo": "candidatos/alberto/05.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "4a126d9e47cdd52a8d5ea4bc837a4ccdd78d0710f1c9624433ee1ba165eee2bc"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 54,
+      "archivo": "candidatos/alberto/06.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "efc58ec5f0c52662bc970ea750fdcfdbb62f1e2e1386da39e1f5c7bf0fc2db01"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 55,
+      "archivo": "candidatos/alberto/07.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "68ea5c623fe6b94f3d2bf1eeaa09bf04500b5aa3042b35bf94f5064a184922c5"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 56,
+      "archivo": "candidatos/alberto/08.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "ef6694968e10cddc4d9d7603764fa4a7c81c96e6e55979bf93350d4f2701daf2"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 57,
+      "archivo": "candidatos/alberto/09.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "72a47e4dfa0ff251db66e9f10b95a7f8ff17a5267304955fe6bb400376d3f4d9"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 58,
+      "archivo": "candidatos/alberto/10.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "e1451b1ec4b8474fa2e1f523dd46d2b7955a537ed0c64492ef07142495233895"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 59,
+      "archivo": "candidatos/alberto/11.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "9c9863ed9534f4bdfe7ccb7cb6ac5adaae7689e91787c7d6927850523b75e8a2"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 60,
+      "archivo": "candidatos/alberto/12.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "edb12b5b1f8a7183c3e165461dd32d1eabd2a81799157bd8f218a02f9661fcf1"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 61,
+      "archivo": "candidatos/alberto/13.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "f695d252fbe8fdef61aa371d01512801ac7ca156ce16fea69567f9e78dcdb8f5"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 62,
+      "archivo": "candidatos/alberto/14.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "fb7ebd6c37d0642a3596d05929f0d6cf78896ea47252aa98039f176d65eb85ba"
+    },
+    {
+      "atlas": "candidatos",
+      "indice": 63,
+      "archivo": "candidatos/alberto/15.png",
+      "dimensiones": [
+        158,
+        156
+      ],
+      "sha256": "740fc96c8ac539a53a199f93f395fb0a1dcb2d705782d508d3e061bb61e330e9"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 0,
+      "archivo": "efectos/constructores/00.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "8209999a0f645335ad24a462dcf619a760ef877ed8760edc43f87cb26734e202"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 1,
+      "archivo": "efectos/constructores/01.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "f082d0145435e524b7b964afe661429cf1d6ae0b2367e9297453e26f39e5e8e8"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 2,
+      "archivo": "efectos/constructores/02.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "94b714664ccae5c203adfba71565e290abad2b66f34c6b1cee9c86dff4829aa7"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 3,
+      "archivo": "efectos/constructores/03.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "c717bd144d8a3dfc462836ca79b4dcb3c46aa4788c8a470b087b7bbf8cbf30b9"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 4,
+      "archivo": "efectos/constructores/04.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "33a499d824e0f5e113b6b26a98827dc13995cf5cca6166c43bc3e1c9d6a624c4"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 5,
+      "archivo": "efectos/constructores/05.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "da996eca168bc23301c752e909e982bbea4dab324c8019143e6781a2b2989cae"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 6,
+      "archivo": "efectos/constructores/06.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "2876a8052a0f4624c94eab326cd3725bcc88a981760b2c0ad99ddde8daa48e05"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 7,
+      "archivo": "efectos/constructores/07.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "e9f4d30405afc5c86fbad12622d3de710582c03a2731631d37ac82d51064dc47"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 8,
+      "archivo": "efectos/nave/00.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "7a0f2bdbeac3bf715b30462651f13b2f4c41b99196aa3471900a405e896cc032"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 9,
+      "archivo": "efectos/nave/01.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "d3199b3da88983764f45804f9ec10debe950ce946556c72f42a46ac181092bc2"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 10,
+      "archivo": "efectos/nave/02.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "b40198f110b3702273b19d43e31b83eee2e8848beeccf1a76816eebdb2adee3e"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 11,
+      "archivo": "efectos/nave/03.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "3b04cbfa0e49f08c456a80d8e852ef79f2be19b1be7d27a63acc0b864705f523"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 12,
+      "archivo": "efectos/nave/04.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "eb2917edcbc1342cca42b40d7fb9a80513f0011f6e37a1493a27eaf70544e280"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 13,
+      "archivo": "efectos/nave/05.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "63d56f2393121f53f822be7ea25e44e8458294c4ce3d6a84da1fa2de780fd0ba"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 14,
+      "archivo": "efectos/nave/06.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "e22d8d639c37a92ab78d8366b2583173a90336cc7f010383dcb5e323921f6af9"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 15,
+      "archivo": "efectos/nave/07.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "e4f4f1f25037df22cee50181786f69a83e2ccbae43f8b049bd172d69109f744a"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 16,
+      "archivo": "efectos/humo/00.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "52d851992727308e52f67f20155517552761bcb97012672e18706963e55b68af"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 17,
+      "archivo": "efectos/humo/01.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "ba5cf64aa4ef5dc4797843c4ebfd8bbd6a8c7d571d6c48c6c8d3687e78c4b585"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 18,
+      "archivo": "efectos/humo/02.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "7b5ba15c387c77760e435439be2e21a817798cd8caca6c2477a1dee4a29e836a"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 19,
+      "archivo": "efectos/humo/03.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "ac93c69e2ceb3e399014b98318a97b770d1be253a09fd6b1ac836a26c97f412a"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 20,
+      "archivo": "efectos/humo/04.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "75cb1f9d6ddac6437e9ee46f50378efd097dfa1b9556b887a6ca2ca28b0d50a2"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 21,
+      "archivo": "efectos/humo/05.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "12cce559327fc4d8f10365407e315030c433cd7a11c77455dba67b878b4e29c8"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 22,
+      "archivo": "efectos/humo/06.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "b90c0bb8fb5dae3c5271cf94281f2cc55e3c20a2ae139b942dc855fa221f6c24"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 23,
+      "archivo": "efectos/humo/07.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "f74e139a48733c84f16bba033075ea50e601263285438f23e7b98e83c89980fc"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 24,
+      "archivo": "efectos/palomo/00.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "48188c998af68cab3d45aced76fae09be2ece50c5f0210316d1e97dfdc71c1df"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 25,
+      "archivo": "efectos/palomo/01.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "1360c476c179f8b95c5a0ade97dd6c89a1194239faad700d590a32880f2257ac"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 26,
+      "archivo": "efectos/palomo/02.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "88350b2b4bf8ed56638ccb59b772febc7d692a89df56633fc86b8987e5ad3dab"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 27,
+      "archivo": "efectos/palomo/03.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "267114c7c56a1ff635148cdb63d89737ffc9689220cc15b374ecf7465a0836fe"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 28,
+      "archivo": "efectos/palomo/04.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "0cf9974f23978869e5c98435b170a1a51da7a5f4b24042651ec0f1c044d51e8f"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 29,
+      "archivo": "efectos/palomo/05.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "a1866ba3fe7c68e65d6ebb22e88769eb8c95c51a71361624054676d94542cb3e"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 30,
+      "archivo": "efectos/palomo/06.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "699dd795fa48b8d7c9b0706516f2465cd291be01ec1b010561e9a9410675215c"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 31,
+      "archivo": "efectos/palomo/07.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "85a55b8894a8f03046979895174483b58e335273ddaba463fb868aa547d9381e"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 32,
+      "archivo": "efectos/orbes/00.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "c7b05517cb9177dfc096fc45ee8917f234ec9d5252680383f4f9e42411be78fa"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 33,
+      "archivo": "efectos/orbes/01.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "ab31e665fca2faf489b5beb09a579fffe6da95d329dbaf3e83f87917fb01fa9b"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 34,
+      "archivo": "efectos/orbes/02.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "2d8779f2b32946fa0fd1c83abc101a1ba35fd03dc9fca06b4238468ebfed7be4"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 35,
+      "archivo": "efectos/orbes/03.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "2ffe776e499ba2254c2a84c329262c631ca20b43f9e401b61b59d19fb89b2d7f"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 36,
+      "archivo": "efectos/orbes/04.png",
+      "dimensiones": [
+        156,
+        156
+      ],
+      "sha256": "e2f51129d8eed84627237cc69b6357f9912caab91a606f90f79a9c2efe79fc78"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 37,
+      "archivo": "efectos/orbes/05.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "17d33d3732bfa4382fd95d818b351fee690cb0d1b4dabcc1d1e6c42d9f53f355"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 38,
+      "archivo": "efectos/orbes/06.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "26799825e04ccec236ea02024b273cc10fb1784bcf0cb13355911d40d9b4effe"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 39,
+      "archivo": "efectos/orbes/07.png",
+      "dimensiones": [
+        157,
+        156
+      ],
+      "sha256": "4d6418ace096d4b1558eb932fd836bd32890ba28b255519565fc85bbfe9fc870"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 40,
+      "archivo": "efectos/bots/00.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "0ab65c5840e328c1f834e7a8e865b6f81b00049673dc9db6a20324584ae71a59"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 41,
+      "archivo": "efectos/bots/01.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "0b28cbd634be10fce29b2889d277323dde7225c6a72ce190e4e8ad9848609734"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 42,
+      "archivo": "efectos/bots/02.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "9acc9c75ddca5cec1ac2d6c9ecef6436eeef230ebabdac6b5b7bcfba1126929a"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 43,
+      "archivo": "efectos/bots/03.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "ed9b0e14d294a0688d6ded31a0553932f3685f5e68d027ebc5b7f37468c9d5c0"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 44,
+      "archivo": "efectos/bots/04.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "72df9043ca58d691e64e61719346b21c85fd4902370e13ea02b114cea2401e43"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 45,
+      "archivo": "efectos/bots/05.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "9cce8a0120d8ee234ee247f3310b2f4d76d845205c6b3ea1528f95f573dc2165"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 46,
+      "archivo": "efectos/bots/06.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "7db79b00bbc3671f59d42a86ddf5c3e84a9877b94e847641822eafeb9b786dac"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 47,
+      "archivo": "efectos/bots/07.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "a6ccc4e74169972f4d1f327187a2e02335a0befc8823b20d3e0bbbdba73e21b0"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 48,
+      "archivo": "efectos/pinchos/00.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "beb324dfe9145810ec9f4649746ed414b19aaa257c1cb427e6b729ed479e48c0"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 49,
+      "archivo": "efectos/pinchos/01.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "962e6ce8aa26f285c20b6c838b30c715612d7afcb005b945ec3fd89b9ccdee6c"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 50,
+      "archivo": "efectos/pinchos/02.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "2e6ebc68168e2c1eee6a74d3d54bd01a2eb3907534f8ab7ce061e145ae92a259"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 51,
+      "archivo": "efectos/pinchos/03.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "b10e1a5818f20e5798234806899b3f304a6c2f26defbe01c628801b48095b363"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 52,
+      "archivo": "efectos/pinchos/04.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "05086137a7d2f6490efb1bb0950da6789ef18a57e92555e5aeabe966b79ba15c"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 53,
+      "archivo": "efectos/pinchos/05.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "ddd152b4bd28cf028a208f5009522578c4047553efcd4c094d6cc8a3cbe47d58"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 54,
+      "archivo": "efectos/pinchos/06.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "26e415bdac55dea4f2f698cf2053b9ed9a80d843dad7309174512fe8134c60c6"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 55,
+      "archivo": "efectos/pinchos/07.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "5e5d7f4af8cfab1035e3a1d40e1bde53476f549024b2b03849c34e9f9457aad2"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 56,
+      "archivo": "efectos/plataformas/00.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "a28af845565c2d91a24e0270be03a8be7a73cb0829c7063ba9ae34f29ba8af6c"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 57,
+      "archivo": "efectos/plataformas/01.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "bec6a53e95cf8a621265c6415a52b51b2ae49ebb0881b6f8c63036dcc8a948a0"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 58,
+      "archivo": "efectos/plataformas/02.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "fa33f43dac300382f49c20c0bde07aa5f55fca5de17b35fa3a435aedb5a7b8b3"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 59,
+      "archivo": "efectos/plataformas/03.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "7e5aba4185fe292986720722d77ee594c3fc6095218f7eb74109e9641aa52b94"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 60,
+      "archivo": "efectos/plataformas/04.png",
+      "dimensiones": [
+        156,
+        157
+      ],
+      "sha256": "2c198b57756492893b4434418dc2983a8d73a61e6a071178c5f8db12783a6765"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 61,
+      "archivo": "efectos/plataformas/05.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "9944f32ecd09e8dfce1e49a9048804103f32540faaf0dde5243888d059b3d922"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 62,
+      "archivo": "efectos/plataformas/06.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "c2a066854f770209f665abd95cef78941ea43c4f21a6034d0b00067090045413"
+    },
+    {
+      "atlas": "efectos",
+      "indice": 63,
+      "archivo": "efectos/plataformas/07.png",
+      "dimensiones": [
+        157,
+        157
+      ],
+      "sha256": "9bd9bfa2c669db0d490a440be1f71d8b1411de2e71880a087c6dbca7bb26dcf1"
+    },
+    {
+      "atlas": "escenarios",
+      "indice": 0,
+      "archivo": "escenarios/tarima/fondo.png",
+      "dimensiones": [
+        836,
+        470
+      ],
+      "sha256": "c30e7c8b4566d16377e3546bbd4e59c399ca0c4c7bfeb8360fd8e6f71cb7d074"
+    },
+    {
+      "atlas": "escenarios",
+      "indice": 1,
+      "archivo": "escenarios/arena/fondo.png",
+      "dimensiones": [
+        836,
+        470
+      ],
+      "sha256": "73fcfc2ecc2a6a8b44f8d6dd0cc34e706d700156e353d3f60278d5b703c45672"
+    },
+    {
+      "atlas": "escenarios",
+      "indice": 2,
+      "archivo": "escenarios/plataformas/fondo.png",
+      "dimensiones": [
+        836,
+        471
+      ],
+      "sha256": "ae60385ee28dc8d53c82df34b30ef03cf82e9061f5678ae9360ca4f79cebfa36"
+    },
+    {
+      "atlas": "escenarios",
+      "indice": 3,
+      "archivo": "escenarios/ascenso/fondo.png",
+      "dimensiones": [
+        836,
+        471
+      ],
+      "sha256": "c473bb66583aa075cfccdc6e5d43be3d5762b63a49ebcccc7747892310e4ea48"
+    },
+    {
+      "atlas": "tarima-cuatro",
+      "indice": 0,
+      "archivo": "tarima-cuatro/fondo.png",
+      "dimensiones": [
+        1672,
+        941
+      ],
+      "sha256": "8f40cf72111431918e38246a94046bf6b9d35b18ac505840995638b33a3ee750"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 0,
+      "archivo": "infeccion-juan/00.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "778cf9a658ebd62998b8f73fb26a060b8db6902de83252bfc673f14db2a3e59e"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 1,
+      "archivo": "infeccion-juan/01.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "6567b0541b1269b50625c810fb7143f2599661d6ad27aa1a40cd46b6640725e1"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 2,
+      "archivo": "infeccion-juan/02.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "edb906dbf755ffea5cdd29c48446641887a871fbb6f4e3ea9e4e93f39e3dbb0c"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 3,
+      "archivo": "infeccion-juan/03.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "dbe84460c1071d28e329318a13be76c4b44d0fd12d41f698457663ff1ccb60b0"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 4,
+      "archivo": "infeccion-juan/04.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "a46144dfc814675acef64bd7424dd1c8d9d4d9e664bb4d6bd0e3baef5ce18d82"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 5,
+      "archivo": "infeccion-juan/05.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "dd1f8fdf62d6be8b4d6b5f66173c937ff1e2acfa07e17db928d28726d1d919c1"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 6,
+      "archivo": "infeccion-juan/06.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "55ec385d29b24c28bd277570e7214c811638c35592d5c77453362c94da640d6a"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 7,
+      "archivo": "infeccion-juan/07.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "4edad96a1d8fca564adba6ea898198194302c3ed90718a90629ebf03c54a16cf"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 8,
+      "archivo": "infeccion-juan/08.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "ea37621d0956f65fb5f2d8ce6ddf7b4d121b00aa69ececd290dbaa41302d857d"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 9,
+      "archivo": "infeccion-juan/09.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "7243b5e0f1e8bb7028ca3c89efeefb33d16e91ec309cfa120e43e4e641cc0ca1"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 10,
+      "archivo": "infeccion-juan/10.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "813c817fed9ad6af9d4ef76c89c6cba80585b35647f75fe55ab664f2c186f284"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 11,
+      "archivo": "infeccion-juan/11.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "1d81694e4da99a4b13ee55c2ae6963defc6eca713bd2d3ea552b4db62355bc0b"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 12,
+      "archivo": "infeccion-juan/12.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "a56f0c5306a939655c9fb5e721ad7a973db3756c458cb3e2cde83c1a88c12a51"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 13,
+      "archivo": "infeccion-juan/13.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "12f001d0a8a702c442df204e78c8079f7e4155b1e0996db3a6804fab760e3c3d"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 14,
+      "archivo": "infeccion-juan/14.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "b229970d096f74357e7cd22b49fc1da1c97398dbd1702474dbd475b951f6a560"
+    },
+    {
+      "atlas": "infeccion-juan",
+      "indice": 15,
+      "archivo": "infeccion-juan/15.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "d495fda8a0f901360f7241534ecc74da984f9dfd9dd014be11f6a6351e32be3f"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 0,
+      "archivo": "infeccion-petrosqui/00.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "f4793c0155a90a5efcf41f35ec083ee8e0cbf593d3b9659714bbba143bed50fd"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 1,
+      "archivo": "infeccion-petrosqui/01.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "443b0a552aff31e34877fa8957c28f648dd903be9db4ea3cfa1687714ec942ae"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 2,
+      "archivo": "infeccion-petrosqui/02.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "03c79842d36b557acf431aa8f81256315b4acbe0322d703d8291c6d0ad647b80"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 3,
+      "archivo": "infeccion-petrosqui/03.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "713f2d1552eb3a02cf2a4697fe659075fdc03abebed18664cdc17a59e6e802bf"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 4,
+      "archivo": "infeccion-petrosqui/04.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "7248bec7be9ad9126cfcb9b169463f31db1c1c90c530fdb2a9485bce585d212a"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 5,
+      "archivo": "infeccion-petrosqui/05.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "9ec421dfd45f4eaff495aa83d2ac31e5525c7182bed7014f323a663ee7776dbc"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 6,
+      "archivo": "infeccion-petrosqui/06.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "ee956184199c332a4bbf4e9f28e55a3407cbe95efbb4c339d2d1b1ad3554e6ff"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 7,
+      "archivo": "infeccion-petrosqui/07.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "1a94a9ec39b7024c2378c3a757924f0d137f7f27a30a938b771c65ce5086c9d9"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 8,
+      "archivo": "infeccion-petrosqui/08.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "ee102d24c3bf0213035fb002166a8f12f08414ea407d1373fa406c911e603142"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 9,
+      "archivo": "infeccion-petrosqui/09.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "01873643030a016bcd362924feb188014a7a025b1e1d35fe18af10e72e184b68"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 10,
+      "archivo": "infeccion-petrosqui/10.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "36d3182111f99f6804cc32ef0f2a2dc3d6fb1006e65f65d6fc66038dbef25fd7"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 11,
+      "archivo": "infeccion-petrosqui/11.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "4bbfd2a31ee4703c1c2c2101140fdf91151ce4f5f4838a471255ca404e1aa626"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 12,
+      "archivo": "infeccion-petrosqui/12.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "fe60bece7a96e0631b353e9a0fdf0077f3e6dc780b5e0430d43cf5f7f96503ae"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 13,
+      "archivo": "infeccion-petrosqui/13.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "cb05d2a5e69a9f2ec403a8d6a55df64c0cd7e927beca0de76e6cc69b26eaf7a3"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 14,
+      "archivo": "infeccion-petrosqui/14.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "e0d6df08d55781cc43c4fefb8b6aa3a4144f8673d4a7aad0a46f06925108bc62"
+    },
+    {
+      "atlas": "infeccion-petrosqui",
+      "indice": 15,
+      "archivo": "infeccion-petrosqui/15.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "d65def25dd1651a348f4158c3114fbc033b02d6fe40694279aef4cf95182ca04"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 0,
+      "archivo": "infeccion-abel/00.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "224329956b504e1ea9aa875bff2a79fecc04c4fde6d954265c3c61918cb182b3"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 1,
+      "archivo": "infeccion-abel/01.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "828fbf566af880df586d588c8a9ee91fb5ab9510ceb0c2468618c6da212c2901"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 2,
+      "archivo": "infeccion-abel/02.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "6d4226d894f5ec0a1ca879bc5c4fb1475049f57385271415b3cc5f9fbcf4c03e"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 3,
+      "archivo": "infeccion-abel/03.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "40950968ab02b062a2792f6f6a01d94355abc19558792764770b45bb4818c7f8"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 4,
+      "archivo": "infeccion-abel/04.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "419c1d7db1f99cb77df4e12785260d880d2a5a30e9ca73e27a38378dcca39e53"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 5,
+      "archivo": "infeccion-abel/05.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "9ec7462dd134c59ba4b9c0f0a60ef768801b43dbb8180b3bc253520bc3a02ba2"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 6,
+      "archivo": "infeccion-abel/06.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "93f5101e0487bb18b6468318e1dc76e33117030870a9c192d1a4b5938135f768"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 7,
+      "archivo": "infeccion-abel/07.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "7e8d58a9f52e4f59cecd9fa3127599830ab0219d800e3c46984223ecf2ba871b"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 8,
+      "archivo": "infeccion-abel/08.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "ac63b3819fc758ef97f1daebd2c52602a575a9e2ca615a7ace3703766638ce15"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 9,
+      "archivo": "infeccion-abel/09.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "47541cba6805935d9881dd81014266ff13af19f64cef246c845c686fd0ca3ad9"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 10,
+      "archivo": "infeccion-abel/10.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "693f61c8144d02a6f765c94ee9a68826e5a9de61950f0c765c779e4910f0a066"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 11,
+      "archivo": "infeccion-abel/11.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "d439aaebde22fc0965ebd26f1ad8b8591052c6ad430daf9a48f2e34942c55c03"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 12,
+      "archivo": "infeccion-abel/12.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "ab1c53f777a4513ccb85bbf4051f828066f5b08a18b396de84697aa36b4aecc6"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 13,
+      "archivo": "infeccion-abel/13.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "a9a30ce1a3f31e7436ce5ed0a1ca0dfd9402c296c9a076f9947d157acc121234"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 14,
+      "archivo": "infeccion-abel/14.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "0b9ca7f7d78518c0c850cfd8dc86b1cec5874198ba817ac743022520935413b5"
+    },
+    {
+      "atlas": "infeccion-abel",
+      "indice": 15,
+      "archivo": "infeccion-abel/15.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "28ff0499b6ae71b1ebb42f5ee6bff6c1f232d956a3785b7c073cfafe4874ac9a"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 0,
+      "archivo": "infeccion-alberto/00.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "5b1e7c665b9e977460e334927d6dc377c0aa5ab19b1979778956505da39d3f07"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 1,
+      "archivo": "infeccion-alberto/01.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "4de17c590ce0c08844539b67c7de3959d048c21964316e97449ad3fff2c4b229"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 2,
+      "archivo": "infeccion-alberto/02.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "e2b4e1884fc0ee08d44f6401223f9f3b380ab8878b1ca8e122e568b5ec9f617c"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 3,
+      "archivo": "infeccion-alberto/03.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "6f5e02828b88bab932724dae9e339d5b3a03abbdcdf829135ba79a263ea39882"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 4,
+      "archivo": "infeccion-alberto/04.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "f8e9dc40ceedb1da8a30b7612b77b934e36a251edebc82f0fa62de277291d554"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 5,
+      "archivo": "infeccion-alberto/05.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "f9d4e7cf2f7117ad6981cdfbb41882aedd2e20bc8f9b11289d0a380694a42812"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 6,
+      "archivo": "infeccion-alberto/06.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "933270f1d556886cb30aa27319f1a941bb21449f540385d6cf314ea6d4be5f2c"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 7,
+      "archivo": "infeccion-alberto/07.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "dd658d023ca2cf2e4279a433f12d265e87430cd8961c8a47f6e686379273e422"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 8,
+      "archivo": "infeccion-alberto/08.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "6dd8b6af1db7eaed5ccc4ff672fd3f9988c98651cf86b63c6646a53066138397"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 9,
+      "archivo": "infeccion-alberto/09.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "f39a04f0e9a2bae5aaa3033113b2581d1ab037b4a87248f1151c445516669583"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 10,
+      "archivo": "infeccion-alberto/10.png",
+      "dimensiones": [
+        313,
+        313
+      ],
+      "sha256": "61da6df644362f4f172dff85fc896de7e304319ff0ae5a333449c9b1e29eedd4"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 11,
+      "archivo": "infeccion-alberto/11.png",
+      "dimensiones": [
+        314,
+        313
+      ],
+      "sha256": "e5495e016479c65b01bcb95fc005bc72c554369ba7773c4772321dc9ad3ef19d"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 12,
+      "archivo": "infeccion-alberto/12.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "b9fcd139e585a179ba50a1b2e3f982e228f5393551f5a57028266deb3bf3213a"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 13,
+      "archivo": "infeccion-alberto/13.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "a4d45d02dd7f1ca8cfadfd4ec9984ce101210a7bdbd2146659ad94999366c607"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 14,
+      "archivo": "infeccion-alberto/14.png",
+      "dimensiones": [
+        313,
+        314
+      ],
+      "sha256": "cd92fb6e4668e32874bc7331188d84c1f3508da2302834962aa7f7950d11be7c"
+    },
+    {
+      "atlas": "infeccion-alberto",
+      "indice": 15,
+      "archivo": "infeccion-alberto/15.png",
+      "dimensiones": [
+        314,
+        314
+      ],
+      "sha256": "f66f00efc63bb4c2938a8b9a278edf7c27858b706b5a77ae099c1cf34fbfce03"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 0,
+      "archivo": "ataques-forma-1/juan/00.png",
+      "dimensiones": [
+        221,
+        221
+      ],
+      "sha256": "e561198eb4dfc4ba484febfdeda346e4ec1e60022b9e0c58dc831e394968c78c"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 1,
+      "archivo": "ataques-forma-1/juan/01.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "24d63e868c4280efbeeb440fb1b5ffd731d0bc0db87ec9651befcc7b2fd453a4"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 2,
+      "archivo": "ataques-forma-1/juan/02.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "1ea841b33d79dc72d8dc0f99266a89ce264e09301968a1a34771732bc4af1c7c"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 3,
+      "archivo": "ataques-forma-1/juan/03.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "c6d9bcc94addf357c64272e32005ffb0ed3cbfa98f4df054bf6ece12afb11c85"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 4,
+      "archivo": "ataques-forma-1/juan/04.png",
+      "dimensiones": [
+        221,
+        221
+      ],
+      "sha256": "cad165eccdc5c1e00e12e3c08f01d3e37d993ca8bee28589067836dc600dd82d"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 5,
+      "archivo": "ataques-forma-1/juan/05.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "7dcb92bd8f23be1d3a90ba460374717ee05e3d7a4ad2a99734c8d61f6f8b8c26"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 6,
+      "archivo": "ataques-forma-1/juan/06.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "69090df669a93bc0a85a18bcd0ba8ef03ccd868abc9fbdb5057a95a40da29d58"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 7,
+      "archivo": "ataques-forma-1/juan/07.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "1be6bd8cb40db58db2702905e41b2ad3bebcd2c4f829b08a1cd8f5c7984dcc57"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 8,
+      "archivo": "ataques-forma-1/petrosqui/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "6715a18a53ff3710bb117dfc5ac6a7dd7c5eae6ca7a4a691a943902010bd297b"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 9,
+      "archivo": "ataques-forma-1/petrosqui/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "cf857746e73d454f7f21b6555f2f785eff46a7c71c7d7c1f9bb5efa3caae03e8"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 10,
+      "archivo": "ataques-forma-1/petrosqui/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "307753dc5867d252ccc385e12fed0121baa03c33aa8abb07d99c8809c3c35de0"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 11,
+      "archivo": "ataques-forma-1/petrosqui/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "eac83a7a1893d7fe709cdcaa3dbd022afd546624b25dd147b3e82ef011900e43"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 12,
+      "archivo": "ataques-forma-1/petrosqui/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "0d18dc065c1da6efef84f9870847d7bd64b6e4f8c2d1e7b9d8e2a35f1fcc4ef4"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 13,
+      "archivo": "ataques-forma-1/petrosqui/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "95160f665354ec82607dc85f47a65c0a3f97257d54ae63b6bac943d9040fb5dd"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 14,
+      "archivo": "ataques-forma-1/petrosqui/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "eb7e6f86179f6619483b3347588337d346bada1a7dce84c8257d138fb81c127e"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 15,
+      "archivo": "ataques-forma-1/petrosqui/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "6398397d717f0e1ee8c04f79efaf1aecb9a09d28bea47c88aa3e88762cd41ac0"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 16,
+      "archivo": "ataques-forma-1/abel/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "ddb1eaa48281e114be4f193bd95c2068a6745d9dc28ab51a5a6bd50a4d0223da"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 17,
+      "archivo": "ataques-forma-1/abel/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "8e9aa8cf52215c724fe30fd3f156f6591083c57e8e67b179be231147c69c1f4e"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 18,
+      "archivo": "ataques-forma-1/abel/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "2011b72488901ebbf9a1d8bce4c282fa1e146b92adcb0bba00918f905abb4445"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 19,
+      "archivo": "ataques-forma-1/abel/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "ffae09637f610d3ce2e6771bc18f6046a4808caf554dfbf5a14ba1e94b115046"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 20,
+      "archivo": "ataques-forma-1/abel/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "d7c84ee8a15c5950866b1ded13ffa89e3d653723e53f4d47286352d8d236f446"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 21,
+      "archivo": "ataques-forma-1/abel/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "005a72542671d626832f2e2e540e0375599c89dd24741bdd56553b486865648a"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 22,
+      "archivo": "ataques-forma-1/abel/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "932088d1b1c42f2131ef88bf99e5265ab18d9c0dfb9afbf48881a632eb75ac70"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 23,
+      "archivo": "ataques-forma-1/abel/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "8ae5a65b5c073b33b3043396f11f4c15c24fdb3ce81d9263bdb381df7d0ce546"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 24,
+      "archivo": "ataques-forma-1/alberto/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "9976f851ef7c68d8d9dc1ec7dfd1568afe87d7bb975234fdb54d269ca1f7f5ce"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 25,
+      "archivo": "ataques-forma-1/alberto/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "92f3f7a365cd23f81d8e6a11bbf52d83b45198df4820b7d9e2729708aa678ca5"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 26,
+      "archivo": "ataques-forma-1/alberto/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "21d6c287d015d82219b8fcae72ce6f6b212abbfd66947a6154c611436320c48e"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 27,
+      "archivo": "ataques-forma-1/alberto/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "50cafde650b7ce1dbfe7ab96bf8f6640d592533591426942b71e4bef92bee142"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 28,
+      "archivo": "ataques-forma-1/alberto/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "b65cebe7094ae72abce464af010afda9e2eaf4a8043d1dff2b38bc520323a128"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 29,
+      "archivo": "ataques-forma-1/alberto/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "a5e60d59b586e8deb570c3b3b54da17f9a0ba9c7ff06de29fc999da29f9fb8e4"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 30,
+      "archivo": "ataques-forma-1/alberto/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "a71c8a59528a0320f648e4c5eee1f57fba5aac7299ff928957e5b525acd58e74"
+    },
+    {
+      "atlas": "ataques-forma-1",
+      "indice": 31,
+      "archivo": "ataques-forma-1/alberto/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "0fdb3358d8db9deecd7c4af6abd9edd51c5f14d4b9ddc31da073508dd3c5d5d2"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 0,
+      "archivo": "ataques-forma-2/juan/00.png",
+      "dimensiones": [
+        221,
+        221
+      ],
+      "sha256": "16f7ca38f28de0169f48a8ef1b600833a8ec608f9c8bc11c6352a1b429d37934"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 1,
+      "archivo": "ataques-forma-2/juan/01.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "7e1855c02e65aac70b8d85bc766e7ae2df1f686a49d8915de384310523a795fa"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 2,
+      "archivo": "ataques-forma-2/juan/02.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "928ead2446c75e9d71c43a83ef1fd1fc401571bea77e42faf9cc1341d306b41a"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 3,
+      "archivo": "ataques-forma-2/juan/03.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "9b5c2716833884b57af64f009a85f083ab401890397123a2b280788e30fa48c5"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 4,
+      "archivo": "ataques-forma-2/juan/04.png",
+      "dimensiones": [
+        221,
+        221
+      ],
+      "sha256": "7b7ac306544b704da738582a8d8cd336afe4bd2bc2cc7eda83061c93be8e63f5"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 5,
+      "archivo": "ataques-forma-2/juan/05.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "34d44d5bdd7c57caeec0aa148d687278cc7792c05e22b267cff9c3707749cec1"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 6,
+      "archivo": "ataques-forma-2/juan/06.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "7cadac198e34b3fe8abcca7718e7b63682f01358e97ad3ae0b876fa680f7e0ca"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 7,
+      "archivo": "ataques-forma-2/juan/07.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "ea16d3a9ddaabba168710e9cd4ed2ba5da604e1e25dfccbae0ef0f605cb6d02f"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 8,
+      "archivo": "ataques-forma-2/petrosqui/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "3c9e5897e8886cca697d796b4d31eb2cd4ef3b72451a2a503fea38e6e8e83a66"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 9,
+      "archivo": "ataques-forma-2/petrosqui/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "2721759149f81f502c2c6eec9da8c911a830f3945c45f6469f62c5ef675b031d"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 10,
+      "archivo": "ataques-forma-2/petrosqui/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "b6ba02f987c13e6b7f1144f02a15d42daeee4c8b940babba059981f04af223f0"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 11,
+      "archivo": "ataques-forma-2/petrosqui/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "b4a016a7f24126ada677dcf3bac3c271c1359b83ab0c6c5dde311451b0011716"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 12,
+      "archivo": "ataques-forma-2/petrosqui/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "ce5e890e610dfd991ff40d583dcfead91ce45279a172153a7e6aa813f21700a0"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 13,
+      "archivo": "ataques-forma-2/petrosqui/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "803ea645b12e0ec9b7156c6a1322f67c365d15e5da2efb5900d5c22c8d01aeec"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 14,
+      "archivo": "ataques-forma-2/petrosqui/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "5ddaeb3e701296b91437f3fe306ba44e4657505a7be68585aefd32849f4305b1"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 15,
+      "archivo": "ataques-forma-2/petrosqui/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "ddc5f676c3523ca8d8e1b4052048c2274acb403f0517b9213820fae0c47c6907"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 16,
+      "archivo": "ataques-forma-2/abel/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "527cc5453e71c9de5ed1c9f15c36d3faeac7b84f451cdadb8d4576949e1d5082"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 17,
+      "archivo": "ataques-forma-2/abel/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "0a7c26e1c16245e4110a2d8df9c996483de22d0678e6cc5d13bccf52adc43559"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 18,
+      "archivo": "ataques-forma-2/abel/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "0dd5994b95b24e360f563797ef686197257b380b284a32e3b80916efec8b093f"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 19,
+      "archivo": "ataques-forma-2/abel/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "d394825ec7363d9f60080236eed57a93baf6c43748b61962daa766296552893c"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 20,
+      "archivo": "ataques-forma-2/abel/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "6f78ce4fd31a2e5aa3213b1cc7714e89c586c5681c4b728ef6ffdad70b6f7242"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 21,
+      "archivo": "ataques-forma-2/abel/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "088d0c031de6bbdd864385bf67e991032aa6d27248dea2c75126d88b820b6b8f"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 22,
+      "archivo": "ataques-forma-2/abel/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "4de578f83fc0b3735012e1fc8a00d5124b694c5a4554d2c1bc16e177b7900631"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 23,
+      "archivo": "ataques-forma-2/abel/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "60eedc5321c8e39327d92dc91c18ded88fc75111d206f9dafb7be20e5f60017e"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 24,
+      "archivo": "ataques-forma-2/alberto/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "09c9920d36da3cdc1fd70f293c5e3a182dc2955284c0fa0124b75e5e0afd18b6"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 25,
+      "archivo": "ataques-forma-2/alberto/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "4fa91b726da61ad793bac6c2f3ffd8fda9499aea0e41ba284ef8eff4ebb20ea5"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 26,
+      "archivo": "ataques-forma-2/alberto/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "fb07292c4e7e454f0ae4f3a380323e4690999e37cf0380d9e62c7cfef3e872e6"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 27,
+      "archivo": "ataques-forma-2/alberto/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "bf2f8c21f048ee842102753068c0fdcd5520f23936c4dc05fd371617cf2aa584"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 28,
+      "archivo": "ataques-forma-2/alberto/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "e0e3afb414259d1ec0d34e7ca4898a32d958c87dfe877c1133ae0bcab8e6ec74"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 29,
+      "archivo": "ataques-forma-2/alberto/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "2f953454bbdffd29126491a3f070ed13f1ca8e54695288da97a913964a5db62f"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 30,
+      "archivo": "ataques-forma-2/alberto/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "03dfc81e35a662e211d83bb992331a800597c7399fd4d47cf84bbee7c2f1e274"
+    },
+    {
+      "atlas": "ataques-forma-2",
+      "indice": 31,
+      "archivo": "ataques-forma-2/alberto/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "f86a332b8cab9938735657ff7848554f41bafc4c2cc782c112e1ae953b5d476c"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 0,
+      "archivo": "ataques-forma-3/juan/00.png",
+      "dimensiones": [
+        221,
+        221
+      ],
+      "sha256": "85631fb8f40556679dddd0d56cf8f857411198587ed7764dfe388ad0d8a2da91"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 1,
+      "archivo": "ataques-forma-3/juan/01.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "4d949ac4faf5dab77fc2b24289bf713755328ab9e9399fc8c3e074c66a979372"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 2,
+      "archivo": "ataques-forma-3/juan/02.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "784d376fde8cfeb834e1adea8fa124bd468711172e4e2a49357514122e5e15ca"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 3,
+      "archivo": "ataques-forma-3/juan/03.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "b40166a13316fe04e928bbcd120e47fe1fea11432e217a4fe3fd689447ac6838"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 4,
+      "archivo": "ataques-forma-3/juan/04.png",
+      "dimensiones": [
+        221,
+        221
+      ],
+      "sha256": "42134c5ccb4afe937fa0848e73c2c5f22ecfe63056aa96adb54e4414982978a1"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 5,
+      "archivo": "ataques-forma-3/juan/05.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "2224ffa4fa6a282af3222f3bf2ca8e7dc3a40df76e552af93cfea79ef90108a5"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 6,
+      "archivo": "ataques-forma-3/juan/06.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "5b5cb26125d76135878eeeae82dd8ca6a73f0c2d4b2e0250749ff56f74069bf7"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 7,
+      "archivo": "ataques-forma-3/juan/07.png",
+      "dimensiones": [
+        222,
+        221
+      ],
+      "sha256": "6f2f1263413b6853d31f27dcb36602b17cfa3913c7ec334629e016f8c1ea16d0"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 8,
+      "archivo": "ataques-forma-3/petrosqui/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "167f6d4d56bda2de2a6528eeb90e9f4ba1b5b82f54e2419c52a029047d08e8f7"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 9,
+      "archivo": "ataques-forma-3/petrosqui/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "7abca47af7f74ab7e8ffbf49cc2061ef57b4acd74bb063d5e96b01ead3575b74"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 10,
+      "archivo": "ataques-forma-3/petrosqui/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "5678e9c87ecc4e9b88a1c235b9613b19afda3fa76730e5f5154bc4a011fae920"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 11,
+      "archivo": "ataques-forma-3/petrosqui/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "0fca0d671c43ca557e2ced49d5f884db4509db7c370273d29d6aa12e9e7c0482"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 12,
+      "archivo": "ataques-forma-3/petrosqui/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "664b5d5ad52196b560d54bd7e29b6f983fa9321afe84aace784abf2993e09528"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 13,
+      "archivo": "ataques-forma-3/petrosqui/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "8b2fe1e50f8dc5a7d2ad51671738dbf0428a4a74c3cd1e25a9dac02ab97c1f17"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 14,
+      "archivo": "ataques-forma-3/petrosqui/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "ea4e5c3546b777072097e5f1a733f376c54c8ecb087d15bffc798b86fc977eaa"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 15,
+      "archivo": "ataques-forma-3/petrosqui/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "1eda41c5e332efa6bdee33df7a25c11292ae74ac090c72816be7cee2ae0757ff"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 16,
+      "archivo": "ataques-forma-3/abel/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "8cffca5e2e74faeb63a59a991aa8c9296ba18b77debba5b710dcfbc09e28fb24"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 17,
+      "archivo": "ataques-forma-3/abel/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "ea6656ba3367cee98da823a12aa27c3a3b84a6b6bc44765d7fe21356f674d28b"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 18,
+      "archivo": "ataques-forma-3/abel/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "cd33a63db61077c53871082b2c78f5ed361f510eacb24019c0f82f6f3ea774a8"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 19,
+      "archivo": "ataques-forma-3/abel/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "ebb28a04d039f37c41ca7478f65b9a06e8f9ddf5a75446023bf6c60d762bc142"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 20,
+      "archivo": "ataques-forma-3/abel/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "7cd8556c44da941238a207936d957977ed8bf2ec079522d216a370997ed9a7da"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 21,
+      "archivo": "ataques-forma-3/abel/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "c1c4334eb6a8c6719f30f2fa211c523476777de12179b047c33b7f543420eb61"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 22,
+      "archivo": "ataques-forma-3/abel/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "4646df07831f1df2eb5b4f984e7861423d7434e86bd78f0e4969ee91de67e3e8"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 23,
+      "archivo": "ataques-forma-3/abel/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "4835a8291eef2fd619f5808c9ff769400f6300aa6527d399eec09a4afb48eb39"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 24,
+      "archivo": "ataques-forma-3/alberto/00.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "ccf894a1e699e90074a8547e7ee7ade406776116b11e682c9f6e710e54da0a94"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 25,
+      "archivo": "ataques-forma-3/alberto/01.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "3a261b10612cbe4faf1ce6527c9e4d0f153f9da596782fbaf75765af1f87558a"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 26,
+      "archivo": "ataques-forma-3/alberto/02.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "7db1ab075e858e09da96d0ecad27b7d5472eeafe3316f2352a32ee84f6a62992"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 27,
+      "archivo": "ataques-forma-3/alberto/03.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "c01467ef130521647705a835a95b90546aca3ca3f81d82865abb2b230026a25b"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 28,
+      "archivo": "ataques-forma-3/alberto/04.png",
+      "dimensiones": [
+        221,
+        222
+      ],
+      "sha256": "c36bcb0ad2d1d75078d096c2445806671486b4c4513e4fc6845e030d2406e0a8"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 29,
+      "archivo": "ataques-forma-3/alberto/05.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "4ca2a795bdec47f5a39c1f18b4a1bdf16fe33524084fa0b701c8d1b143f04181"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 30,
+      "archivo": "ataques-forma-3/alberto/06.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "b6c19f5ee9d51c2f65f712efb3045df64a9cb10e294d994928bffc090077f5ee"
+    },
+    {
+      "atlas": "ataques-forma-3",
+      "indice": 31,
+      "archivo": "ataques-forma-3/alberto/07.png",
+      "dimensiones": [
+        222,
+        222
+      ],
+      "sha256": "77c282d221dd7fbd2c15dd80aa09f79330ded861d886644e5d4255b319be07cd"
+    }
+  ]
+}

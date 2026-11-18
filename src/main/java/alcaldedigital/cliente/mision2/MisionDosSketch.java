@@ -104,7 +104,7 @@ public final class MisionDosSketch {
     private final alcaldedigital.compartido.guardado.AzarPartida ataques;
     private final boolean falloCriticoProgramado;
     private final Set<Integer> pulsadas=new HashSet<>();
-    private final Map<String,Clip> sonidos=new HashMap<>();
+    private final alcaldedigital.cliente.presentacion.AudioEscena sonidos=new alcaldedigital.cliente.presentacion.AudioEscena("M2");
     private float px=640,py=672, palomoX=1340,palomoY=86, vuelo=0, restante;
     private float mandoX,mandoY,animacion, avisoTiempo,interaccionTiempo,remateTiempo,proximoAtaque,tiempoFalloCritico;
     private float saltoTiempo,esperaSalto,saltoDX,saltoDY;
@@ -187,19 +187,9 @@ public final class MisionDosSketch {
         } catch(IOException e) {throw new IllegalStateException("Imagen inválida: "+ruta,e);}
     }
 
-    private void cargarSonido(String nombre) {
-        String ruta="/cliente/mision3/audio/"+nombre+".wav";
-        try(InputStream entrada=MisionDosSketch.class.getResourceAsStream(ruta)) {
-            if(entrada==null) return;
-            try(AudioInputStream audio=AudioSystem.getAudioInputStream(new BufferedInputStream(entrada))) {
-                Clip clip=AudioSystem.getClip();clip.open(audio);sonidos.put(nombre,clip);
-            }
-        } catch(Exception ignorado) { /* El juego conserva las señales visuales si no hay audio. */ }
-    }
-    private void sonar(String nombre) {
-        Clip clip=sonidos.get(nombre);
-        if(clip!=null) {clip.stop();clip.setFramePosition(0);clip.start();}
-    }
+    private void cargarSonido(String nombre) {alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/"+nombre);}
+    private void sonar(String nombre) {sonidos.efecto(nombre,"mision3/audio/"+nombre,.5f,.08);}
+    public alcaldedigital.cliente.audio.Partitura.Contexto contextoAudio(){return new alcaldedigital.cliente.audio.Partitura.Contexto(2,fase.name(),Math.max(1-restante/dificultad.segundos(),(6-red.protegidas())/6f),0,fase!=Fase.DEFENSA,exito,"");}
 
     public java.util.Properties capturar(){
         var p=new java.util.Properties();p.setProperty("version","1");p.setProperty("dificultad",dificultad.name());p.setProperty("critico",Boolean.toString(falloCriticoProgramado));p.setProperty("azar",Long.toString(ataques.estado()));
@@ -220,7 +210,7 @@ public final class MisionDosSketch {
     public boolean pantallaResultado(){return fase==Fase.RESULTADO;}
     public PImage fotograma() {return fotograma==null?p.get():fotograma;}
     public void cerrar() {
-        for(Clip clip:sonidos.values()) clip.close();sonidos.clear();
+        sonidos.close();
         p=null;fotograma=null;pulsadas.clear();
     }
     public void reanudar() {anterior=System.nanoTime();}

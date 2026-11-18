@@ -10,7 +10,7 @@ public final class MapaControles {
     public record Contexto(int mision, boolean dosJugadores, String jugador1, String jugador2,
                            String nombreMando) {
         public Contexto {
-            if(mision<1||mision>7)throw new IllegalArgumentException("Misión inválida");
+            if(mision<1||mision>8)throw new IllegalArgumentException("Misión inválida");
             if(jugador1==null)jugador1="Jugador 1";
             if(jugador2==null)jugador2="Jugador 2";
             if(nombreMando==null)nombreMando="";
@@ -53,9 +53,9 @@ public final class MapaControles {
     public static String nombreMision(int n) {return switch(n){
         case 1->"El parque de Sofi";case 2->"La red Civitas";case 3->"Civitas en Rojo";
         case 4->"Juan en campaña";case 5->"Dentro del servidor";case 6->"Cielos de campaña";
-        case 7->"La carrera por la primicia";default->"Misión";};}
+        case 7->"La carrera por la primicia";case 8->"El futuro de Civitas";default->"Misión";};}
     public static String movilidad(int n){return switch(n){
-        case 2,5->"Saltar";case 4->"Esquivar";case 6->"Impulso";case 7->"Correr";
+        case 2,5,8->"Saltar";case 4->"Esquivar";case 6->"Impulso";case 7->"Correr";
         default->"Moverse";};}
     public static List<Tecla> teclado1(Contexto c){return switch(c.mision()){
         case 1->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar"),new Tecla("C","Civitas"),new Tecla("T","Consultas"));
@@ -63,12 +63,14 @@ public final class MapaControles {
         case 3->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar"),new Tecla("F","PING"),new Tecla("Q","FLASH"),new Tecla("ESPACIO","DASH"),new Tecla("CTRL","Modo privado"));
         case 4->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar"),new Tecla("ESPACIO","Esquivar"),new Tecla("F","Atacar"),new Tecla("Q","Escudo"),new Tecla("V / N","Investigar / responder"));
         case 5->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Confirmar"),new Tecla("ESPACIO","Saltar"),new Tecla("1 2 3","Responder"));
+        case 8->List.of(new Tecla("A / D","Moverse"),new Tecla("ESPACIO","Salto doble"),new Tecla("F / Q / E","Ataque / alcance / protección"),new Tecla("R","Esquivar"));
         case 6->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Confirmar"),new Tecla("ESPACIO","Impulso"),new Tecla("F","Disparar"),new Tecla("Q","Misil"));
         default->List.of(new Tecla("W / S","Cambiar carril"),new Tecla("E","Confirmar / ayuda"),new Tecla("ESPACIO","Correr"),new Tecla("Q","Usar ayuda"),new Tecla("1 2 3","Responder"));
     };}
     public static List<Tecla> teclado2(Contexto c){if(!c.dosJugadores())return List.of();return switch(c.mision()){
         case 5->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("ENTER","Confirmar"),new Tecla("MAYÚS","Saltar"),new Tecla("7 8 9","Responder"));
         case 6->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("ENTER","Confirmar"),new Tecla("MAYÚS","Impulso"),new Tecla("L","Disparar"),new Tecla("K","Misil"));
+        case 8->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("MAYÚS","Salto doble"),new Tecla("L / K / ENTER","Tres ataques"),new Tecla("J","Esquivar"));
         case 7->List.of(new Tecla("FLECHAS","Cambiar carril"),new Tecla("ENTER","Confirmar"),new Tecla("MAYÚS","Correr"),new Tecla("K","Usar ayuda"),new Tecla("7 8 9","Responder"));
         default->List.of();};}
     public static List<Boton> mando(Contexto c){return switch(c.mision()){
@@ -77,6 +79,7 @@ public final class MapaControles {
         case 3->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Hablar"),new Boton("X / RT","PING"),new Boton("Y","LIVE BURST"),new Boton("LT","FLASH"),new Boton("RB","DASH"),new Boton("LB","Modo privado"));
         case 4->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X / RT","Atacar"),new Boton("Y / LT","Escudo"),new Boton("RB","Esquivar"));
         case 5->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X","Saltar"));
+        case 8->List.of(new Boton("STICK","Moverse"),new Boton("A","Salto doble"),new Boton("X / Y","Ataques"),new Boton("LB","Protección"),new Boton("RB","Esquiva"));
         case 6->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X / RT","Disparar"),new Boton("Y / LT","Misil"),new Boton("RB","Impulso"));
         default->List.of(new Boton("STICK / CRUCETA","Cambiar carril"),new Boton("A","Confirmar"),new Boton("X","Correr"),new Boton("Y","Usar ayuda"),new Boton("LB / RB","Elegir respuesta"));
     };}

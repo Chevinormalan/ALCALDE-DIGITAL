@@ -48,7 +48,7 @@ class MisionDosRedTest {
     @Test void selectorPausaYResultadoParcialConservanElFlujoDelJuego() {
         var juego=new JuegoCliente(SesionLocal::new,SesionMisionUnoLocal::new,
             new RegistroIntentosMisionDos(carpetaTemporal.resolve("intento.flag")),()->.9);
-        var sketch=new ClienteSketch(juego);
+        var sketch=new ClienteSketch(juego);sketch.width=960;sketch.height=600;
         alcaldedigital.pruebas.PartidaPrueba.desbloquear(juego);juego.accion("jugar");alcaldedigital.pruebas.PartidaPrueba.elegir(juego,2);
         assertEquals(JuegoCliente.Pantalla.DIFICULTAD_DOS,juego.pantalla);
         var render=new RenderJuego();render.dibujar(juego);
@@ -58,7 +58,7 @@ class MisionDosRedTest {
         assertEquals(MisionDosSketch.Dificultad.DIFICIL,juego.dificultadMisionDos);
         juego.accion("pausa");
         assertTrue(juego.pausa);
-        sketch.mouseX=450;sketch.mouseY=550;sketch.mousePressed();
+        sketch.mouseX=338;sketch.mouseY=442;sketch.mousePressed();
         assertEquals(JuegoCliente.Pantalla.MENU,juego.pantalla);
         assertFalse(juego.pausa);
 
