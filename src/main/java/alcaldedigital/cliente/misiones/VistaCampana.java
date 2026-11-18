@@ -59,6 +59,7 @@ public final class VistaCampana implements AutoCloseable {
     }
     public boolean pausa(){return pausa;}
     public boolean salir(){return salir;}
+    public alcaldedigital.cliente.audio.Partitura.Contexto contextoAudio(){if(cuatro!=null)return cuatro.contextoAudio();var m=seis.motor();return new alcaldedigital.cliente.audio.Partitura.Contexto(6,m.fase.name(),0,m.etapa(),switch(m.fase){case COMBATE,ENTRENAMIENTO,DESPEGUE,LLEGADA->false;default->true;},m.fase==MisionSeisMotor.Fase.FINAL,"");}
     public Properties estado(){return cuatro!=null?cuatro.estado():seis.motor().capturar();}
     private void press(int k){if(cuatro!=null)cuatro.pulsarTecla((char)k,k);else seis.pulsarTecla((char)k,k);}
     private void release(int k){if(cuatro!=null)cuatro.soltarTecla(k);else seis.soltarTecla(k);}

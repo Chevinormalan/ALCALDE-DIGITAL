@@ -28,7 +28,7 @@ public final class TablaPuntajes {
             this(mision,partida,victoria,puntaje,dificultad,datos,decisiones,cambioCiudad,Map.of());
         }
         public Fila {
-            if (mision < 1 || mision > 7 || partida == null || partida.isBlank())
+            if (mision < 1 || mision > 8 || partida == null || partida.isBlank())
                 throw new IllegalArgumentException("Resultado de misión inválido");
             puntaje = Math.max(0, Math.min(100, puntaje));
             dificultad = dificultad == null ? "" : dificultad;
@@ -90,7 +90,7 @@ public final class TablaPuntajes {
     }
 
     public static synchronized List<Fila> historial(int mision) throws IOException {
-        if(mision<1||mision>7)throw new IllegalArgumentException("Misión inválida");
+        if(mision<1||mision>8)throw new IllegalArgumentException("Misión inválida");
         Properties p=ArchivosPartida.leer(archivo());
         if(p==null)return List.of();
         int n;
@@ -117,7 +117,7 @@ public final class TablaPuntajes {
     }
 
     private static Fila leer(int mision, String tipo) throws IOException {
-        if (mision < 1 || mision > 7) throw new IllegalArgumentException("Misión inválida");
+        if (mision < 1 || mision > 8) throw new IllegalArgumentException("Misión inválida");
         Properties p = ArchivosPartida.leer(archivo());
         return p==null?null:leerFila(p,mision,tipo);
     }

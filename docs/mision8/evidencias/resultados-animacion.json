@@ -1,0 +1,30 @@
+[
+  {
+    "caso": "infeccion-0",
+    "correcto": true
+  },
+  {
+    "caso": "infeccion-1",
+    "correcto": true
+  },
+  {
+    "caso": "infeccion-2",
+    "correcto": true
+  },
+  {
+    "caso": "infeccion-3",
+    "correcto": true
+  },
+  {
+    "caso": "ataque-orbes",
+    "correcto": true
+  },
+  {
+    "caso": "ataque-rayos",
+    "correcto": true
+  },
+  {
+    "caso": "reposo",
+    "correcto": true
+  }
+]

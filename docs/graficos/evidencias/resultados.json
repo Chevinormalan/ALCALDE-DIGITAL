@@ -1,0 +1,38 @@
+[
+  {
+    "caso": "panel",
+    "correcto": true
+  },
+  {
+    "caso": "mision1",
+    "correcto": true
+  },
+  {
+    "caso": "mision2",
+    "correcto": true
+  },
+  {
+    "caso": "mision3",
+    "correcto": true
+  },
+  {
+    "caso": "mision4",
+    "correcto": true
+  },
+  {
+    "caso": "mision5",
+    "correcto": true
+  },
+  {
+    "caso": "mision6",
+    "correcto": true
+  },
+  {
+    "caso": "mision7",
+    "correcto": true
+  },
+  {
+    "caso": "mision8",
+    "correcto": true
+  }
+]

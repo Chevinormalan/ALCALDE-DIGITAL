@@ -44,6 +44,13 @@ public final class ControladorMando {
         juego.movimientoMandoX=juego.movimientoMandoY=0;
         if(!estado.conectado()) {anterior=estado;direccionAnterior=0;return;}
 
+        if((juego.pantalla==JuegoCliente.Pantalla.GRAFICOS||juego.pantalla==JuegoCliente.Pantalla.AUDIO)){
+            if(nuevo(estado,Boton.B)||nuevo(estado,Boton.VISTA))juego.accion("volver");
+            else if(nuevo(estado,Boton.A))render.activarFoco(juego);
+            else navegar(estado,juego,render);
+            anterior=estado;return;
+        }
+
         if(juego.pausa) {
             if(nuevo(estado,Boton.MENU)||nuevo(estado,Boton.B)) juego.accion("reanudar");
             else if(juego.pantalla==JuegoCliente.Pantalla.MISION_DOS||juego.pantalla==JuegoCliente.Pantalla.MISION_TRES) {

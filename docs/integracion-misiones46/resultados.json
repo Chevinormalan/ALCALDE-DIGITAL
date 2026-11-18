@@ -1,0 +1,62 @@
+[
+  {
+    "escena": "mision4-car",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-plaza",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-battle",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-battle-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-rumor",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision4-complete",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-discurso",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-combate",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-entrevista",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-combate-pausa",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-modo",
+    "codigo": 0,
+    "ok": true
+  },
+  {
+    "escena": "mision6-final",
+    "codigo": 0,
+    "ok": true
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "correcto": true,
+  "perfil_temporal": true,
+  "audio_real": {
+    "segundos": 9.868480725623582,
+    "pico": 0.2120361328125,
+    "rms": 0.02463488421573403,
+    "clipping": 0
+  }
+}

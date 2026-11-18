@@ -1,0 +1,49 @@
+{
+  "pruebas": 254,
+  "fallos": 0,
+  "errores": 0,
+  "omitidas": 0,
+  "recorridos_completos": 18,
+  "capturas": 15,
+  "sprites_nuevos": 352,
+  "fondos_nuevos": 5,
+  "jar_sha256": "262d4d3d6e299f11de55824e6795126e8f9bdfd9cde5e6eee44c457bb097eec7",
+  "limites_manuales": [
+    "mando físico",
+    "LAN entre computadores distintos",
+    "balance con jugadores humanos"
+  ],
+  "capturas_escenas": 15,
+  "integracion_selector": true,
+  "capturas_totales": 16,
+  "selector_finales": {
+    "acceso_libre_sin_victorias": true,
+    "candidatos_probados": 4,
+    "estados_ciudad_probados": 3,
+    "capturas": [
+      "libre.png",
+      "libre-petrosqui.png"
+    ]
+  },
+  "revision_guion": {
+    "capturas": 15,
+    "pruebas_nuevas": 8,
+    "contacto_candidatos": 4,
+    "dialogo_guardado_lan": true,
+    "registro": "revision-guion-pruebas.log",
+    "resultados_capturas": "revision-guion-capturas.json"
+  },
+  "animaciones": {
+    "sprites_adicionales": 160,
+    "cuadros_infeccion_por_candidato": 16,
+    "cuadros_ataque_por_forma": 8,
+    "formas_por_candidato": 3,
+    "protagonistas_reposo": 3,
+    "encuadre_ascenso": true,
+    "capturas": 13,
+    "secuencias": 7,
+    "pruebas_nuevas": 8,
+    "registro": "animaciones-pruebas.log",
+    "resultados_capturas": "animaciones-capturas.json"
+  }
+}

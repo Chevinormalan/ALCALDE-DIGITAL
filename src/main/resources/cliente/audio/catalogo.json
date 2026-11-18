@@ -1,0 +1,326 @@
+{
+  "version": 1,
+  "frecuencia": 22050,
+  "pistas": [
+    {
+      "id": "G01",
+      "titulo": "Ciudad Nova despierta",
+      "bpm": 104,
+      "contexto": "menu",
+      "segundos": 73.095,
+      "capas": [],
+      "origen": "vidIQ · composición generada",
+      "sha256": "d5e18ac87bf9e0447fc08ce2ce06924ca57856414740acbe5fd544635061c1e5"
+    },
+    {
+      "id": "G02",
+      "titulo": "Escuchar antes de publicar",
+      "bpm": 82,
+      "contexto": "dialogo",
+      "segundos": 60.477,
+      "capas": [],
+      "origen": "vidIQ · composición generada",
+      "sha256": "1cb3dcb104b6133d89c63a28ebf694a064a6812c5dee98d732ae291a4d5f3597"
+    },
+    {
+      "id": "G03",
+      "titulo": "Lo que queda de la ciudad",
+      "bpm": 88,
+      "contexto": "final",
+      "segundos": 60.791,
+      "capas": [],
+      "origen": "vidIQ · composición generada",
+      "sha256": "c64b09c69fe5b640e1efa178bced2cd89ab2a6a8b0d121a9aaf33d0eaa20e54d"
+    },
+    {
+      "id": "M101",
+      "titulo": "Una tarde en Ciudad Nova",
+      "bpm": 92,
+      "contexto": "parque",
+      "segundos": 61.522,
+      "capas": [],
+      "origen": "vidIQ · composición generada",
+      "sha256": "bd0c21225abfa41dbbac28ad3ecaf120f5b0f7bf0e1eeb6e50d59ffb811970b3"
+    },
+    {
+      "id": "M102",
+      "titulo": "El rumor corre",
+      "bpm": 124,
+      "contexto": "urgencia",
+      "segundos": 62.724,
+      "capas": [],
+      "origen": "vidIQ · composición generada",
+      "sha256": "74ea6c0324acdc51b3ec18cc48d7cd44fa4a608a74b1c8a2fd5a15e54776ed93"
+    },
+    {
+      "id": "M201",
+      "titulo": "Turno de redacción",
+      "bpm": 100,
+      "contexto": "oficina",
+      "segundos": 60.086,
+      "capas": [],
+      "origen": "vidIQ · composición generada",
+      "sha256": "c41b20f439e7031c2b68d944580a81d0b53a23956790edc30aa3bc88099620c0"
+    },
+    {
+      "id": "M202",
+      "titulo": "Seis equipos, una red",
+      "bpm": 132,
+      "contexto": "urgencia",
+      "segundos": 58.182,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "882038af4ca923629d05b92151eaf0211d290ef9535ab37542103ead6c7af498"
+    },
+    {
+      "id": "M301",
+      "titulo": "NovaMall después del cierre",
+      "bpm": 110,
+      "contexto": "misterio",
+      "segundos": 69.818,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "7f65d6138c852cdb94606e4edf91765733b4db4979e2abd396417893a4d17db6"
+    },
+    {
+      "id": "M302",
+      "titulo": "Publicaciones con cuerpo",
+      "bpm": 144,
+      "contexto": "combate",
+      "segundos": 53.333,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "96a1bf3abcd6fbfc37ee339ef7c28d203c3ed2771c47a39968108918e4b21fab"
+    },
+    {
+      "id": "M303",
+      "titulo": "Cortar la cadena",
+      "bpm": 152,
+      "contexto": "jefe",
+      "segundos": 50.526,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "af48dec3608dc118412f1e8171ba28ec7652c4bc7f260c88368f1864632d0f31"
+    },
+    {
+      "id": "M401",
+      "titulo": "Camino a la plaza",
+      "bpm": 112,
+      "contexto": "viaje",
+      "segundos": 68.571,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "43f3338fbad1e6b379a51fb7d57d620118c99cf05f43738d8ca97ad024f3a47b"
+    },
+    {
+      "id": "M402",
+      "titulo": "Defender la palabra",
+      "bpm": 144,
+      "contexto": "combate",
+      "segundos": 53.333,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "16adee6363b4a672c789a393e87371b674768e3ab33db51d03cb4498864ea0fd"
+    },
+    {
+      "id": "M501",
+      "titulo": "Dentro de la conexión",
+      "bpm": 96,
+      "contexto": "misterio",
+      "segundos": 80.0,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "dfbf1674bb76425c828fc931b12a0d99760360bba8e3607b5a5f5dd98f761cd8"
+    },
+    {
+      "id": "M502",
+      "titulo": "Dentro del servidor",
+      "bpm": 150,
+      "contexto": "jefe",
+      "segundos": 51.2,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "e9c65e52b8b4a4d50c4d1a78fd15475429a88cdeb351b64dc205aab0c7b9bb6c"
+    },
+    {
+      "id": "M601",
+      "titulo": "Por encima de Ciudad Nova",
+      "bpm": 124,
+      "contexto": "vuelo",
+      "segundos": 61.935,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "28cd01e824ba2bc5a684b4621f4ec55b44947887d8b7e1cba793a7b24882c351"
+    },
+    {
+      "id": "M602",
+      "titulo": "Romper la interferencia",
+      "bpm": 148,
+      "contexto": "jefe",
+      "segundos": 51.892,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "7ae0060eb9f3ae0536b8282c0048854d8e4889c8a49fb06f880c2b11eff4d245"
+    },
+    {
+      "id": "M701",
+      "titulo": "Última hora",
+      "bpm": 104,
+      "contexto": "noticias",
+      "segundos": 73.846,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "7b523b99b6e43347ddcfae96ff48e2dd6014ce2f184fed346996911e4d5f8104"
+    },
+    {
+      "id": "M702",
+      "titulo": "La primicia no espera",
+      "bpm": 160,
+      "contexto": "carrera",
+      "segundos": 48.0,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "c1052ad0c26323f26622fe7bdc911ad5a622314e38fcb9b9f70fa68067f71cb2"
+    },
+    {
+      "id": "M801",
+      "titulo": "La plaza decide",
+      "bpm": 100,
+      "contexto": "ceremonia",
+      "segundos": 76.8,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "7d9475a01e32c1d673835de091b9ca71c004184dc093cf5a87c5ee1a70590fe6"
+    },
+    {
+      "id": "M802",
+      "titulo": "El futuro de Civitas",
+      "bpm": 156,
+      "contexto": "jefe",
+      "segundos": 49.231,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "ed054ea02494b0180fe81083ce1d9aa0e0d5a7b85db96d013fd5e98c38f8f5d8"
+    },
+    {
+      "id": "G03-reconstruccion",
+      "titulo": "Lo que queda · reconstrucción",
+      "bpm": 88,
+      "contexto": "reconstruccion",
+      "segundos": 87.273,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "56440d23f88b9dbebf615c379081a3dd4e77b8a3b464e763c601a720ce57637e"
+    },
+    {
+      "id": "G03-crisis",
+      "titulo": "Lo que queda · ciudad en crisis",
+      "bpm": 76,
+      "contexto": "crisis",
+      "segundos": 101.053,
+      "capas": [
+        "ritmo",
+        "epica"
+      ],
+      "origen": "Partitura original MIDI · GeneralUser GS / FluidSynth",
+      "sha256": "cc2e10a004328ffd7a09bd903b258fcd6406c2dd351e9b13cfeb90cf97693e53"
+    }
+  ],
+  "efectos": [
+    "hover",
+    "click",
+    "volver",
+    "bloqueado",
+    "confirmar",
+    "pausa",
+    "reanudar",
+    "guardar",
+    "dialogo",
+    "civitas",
+    "verificar",
+    "reportar",
+    "compartir",
+    "rectificar",
+    "rumor",
+    "alarma",
+    "reparar",
+    "salto",
+    "aterrizar",
+    "esquiva",
+    "golpe",
+    "escudo",
+    "rayo_aviso",
+    "rayo",
+    "orbe",
+    "espadas",
+    "pinchos",
+    "teletransporte",
+    "fase",
+    "absorcion",
+    "gravedad",
+    "turno",
+    "cuenta",
+    "salida",
+    "recoger",
+    "pacto",
+    "urna",
+    "escrutinio",
+    "inyeccion",
+    "mutacion",
+    "recuperacion",
+    "victoria",
+    "derrota",
+    "disparo_final",
+    "explosion_final",
+    "parque",
+    "oficina",
+    "red",
+    "plaza",
+    "viento"
+  ]
+}

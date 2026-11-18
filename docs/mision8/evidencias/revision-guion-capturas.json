@@ -1,0 +1,62 @@
+[
+  {
+    "caso": "dialogo-sofi",
+    "correcto": true
+  },
+  {
+    "caso": "tarima",
+    "correcto": true
+  },
+  {
+    "caso": "vuelo-0",
+    "correcto": true
+  },
+  {
+    "caso": "inyeccion-0",
+    "correcto": true
+  },
+  {
+    "caso": "vuelo-2",
+    "correcto": true
+  },
+  {
+    "caso": "inyeccion-1",
+    "correcto": true
+  },
+  {
+    "caso": "inyeccion-2",
+    "correcto": true
+  },
+  {
+    "caso": "inyeccion-3",
+    "correcto": true
+  },
+  {
+    "caso": "desaparicion",
+    "correcto": true
+  },
+  {
+    "caso": "epilogo-acercamiento",
+    "correcto": true
+  },
+  {
+    "caso": "epilogo-recuperacion",
+    "correcto": true
+  },
+  {
+    "caso": "epilogo-pulso",
+    "correcto": true
+  },
+  {
+    "caso": "epilogo-neutralizacion",
+    "correcto": true
+  },
+  {
+    "caso": "final",
+    "correcto": true
+  },
+  {
+    "caso": "otro-final",
+    "correcto": true
+  }
+]

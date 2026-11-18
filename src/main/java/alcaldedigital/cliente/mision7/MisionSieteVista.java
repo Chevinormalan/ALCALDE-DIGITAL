@@ -24,7 +24,7 @@ public final class MisionSieteVista implements AutoCloseable {
     private Dificultad dificultad=Dificultad.NORMAL;
     private boolean configurando=true,conectando,continuar,asistido=true,editarIP,pausaPendiente,salir,registrado,controlesConfiguracion;
     private volatile boolean cerrada;private String ip="127.0.0.1",mensaje="",guardado="";
-    private float palomoX=1350;private final Map<String,javax.sound.sampled.Clip> sonidos=new HashMap<>();private Fase faseAnterior;private int puntosAnteriores=-1;
+    private float palomoX=1350;private final alcaldedigital.cliente.presentacion.AudioEscena sonidos=new alcaldedigital.cliente.presentacion.AudioEscena("M7");private Fase faseAnterior;private int puntosAnteriores=-1;
     public MisionSieteVista(long semilla,EstadoCiudad ciudad,boolean reducido,boolean contraste){this.semilla=semilla;ciudadInicial=ciudad;ciudadCampana=ciudad;this.reducido=reducido;this.contraste=contraste;}
     private boolean gestionExterna;
     public void gestionExterna(boolean v){gestionExterna=v;}
@@ -45,10 +45,10 @@ public final class MisionSieteVista implements AutoCloseable {
     public void cerrarConsultaComun(){panel=0;}
     public boolean victoriaComun(){return v!=null&&v.fase()==Fase.RESULTADO&&v.ganador()<2&&v.humano(v.ganador());}
     public void iniciarEn(PApplet p){this.p=p;arte=new ArteCarrera();
-        for(String s:new String[]{"ui","alert","ping","hit"})try(var in=getClass().getResourceAsStream("/cliente/mision3/audio/"+s+".wav")){if(in!=null)try(var audio=javax.sound.sampled.AudioSystem.getAudioInputStream(new BufferedInputStream(in))){var c=javax.sound.sampled.AudioSystem.getClip();c.open(audio);sonidos.put(s,c);}}catch(Exception sinAudio){}
+        for(String s:new String[]{"ui","alert","ping","hit"})alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/"+s);
         String preview=System.getProperty("ad.mision7.vista","");if(!preview.isBlank())previsualizar(preview);
     }
-    private void sonido(String nombre){var c=sonidos.get(nombre);if(c!=null){c.stop();c.setFramePosition(0);c.start();}}
+    private void sonido(String nombre){sonidos.efecto(nombre,"mision3/audio/"+nombre,.42f,.12);}
     private GuardadoCarrera archivo(int modo){return new GuardadoCarrera(GuardadoBatalla.directorio().resolve(modo>=2?"mision7-lan.bin":modo==1?"mision7-dos.bin":"mision7-solo-"+rolElegido+".bin"));}
     private void conectar(){if(conectando)return;conectando=true;mensaje="Preparando la carrera…";
         int seleccionado=modo,rol=rolElegido;boolean cargar=continuar,mantener=asistido;Dificultad nivel=dificultad;String host=ip;var archivo=archivo(modo);EstadoCiudad baseElegida=ciudadCampana;
@@ -79,11 +79,11 @@ public final class MisionSieteVista implements AutoCloseable {
         }
         canal.actualizar(dt);v=canal.vista();
         if(!pausada()&&v.fase()==Fase.ENCUENTRO&&v.linea()>=3)palomoX=Math.max(820,palomoX-450*Math.min(.1f,dt));
-        if(v.fase()!=faseAnterior){sonido(v.fase()==Fase.CUENTA?"alert":"ui");faseAnterior=v.fase();}
+        if(faseAnterior!=null&&v.fase()!=faseAnterior)sonido(v.fase()==Fase.CUENTA?"alert":"ui");faseAnterior=v.fase();
         int pts=v.corredores()[rolLocal].puntos();if(puntosAnteriores>=0&&pts>puntosAnteriores)sonido("ping");puntosAnteriores=pts;
         if(v.fase()==Fase.RESULTADO&&!registrado)try{ciudadCampana=repo.acreditar(v,ciudadCampana);registrado=true;guardado="Resultado y campaña guardados. Elección definitiva pendiente de misión 8.";}catch(IOException e){guardado="Error al guardar: "+e.getMessage();}
     }
-    public void dibujar(){p.pushStyle();p.noSmooth();p.textAlign(PApplet.LEFT,PApplet.BASELINE);p.background(FONDO);
+    public void dibujar(){revisarBotonesAudio();p.pushStyle();p.noSmooth();p.textAlign(PApplet.LEFT,PApplet.BASELINE);p.background(FONDO);
         if(configurando){p.image(arte.avenida,0,0,2160,720);configuracion();if(panel==1){velo();ayuda();}if(controlesConfiguracion)alcaldedigital.cliente.misiones.PantallaControles.dibujar(p,new alcaldedigital.cliente.entrada.MapaControles.Contexto(7,modo==1,"Periodista","Influencer",mando.nombre()));p.popStyle();return;}
         if(v==null){caja(200,220,880,180);texto("Esperando al servidor…",240,310,30,ORO);p.popStyle();return;}
         if(v.fase()==Fase.CARRERA||v.fase()==Fase.CUENTA)carrera();else escena();hud();
@@ -99,7 +99,10 @@ public final class MisionSieteVista implements AutoCloseable {
     private void marco(float x,float y,int w,int h,int fondo,int borde,boolean adornos){String key=w+":"+h+":"+fondo+":"+borde+":"+adornos;PImage im=marcos.computeIfAbsent(key,k->{var b=new java.awt.image.BufferedImage(w+12,h+14,java.awt.image.BufferedImage.TYPE_INT_ARGB);var g=b.createGraphics();g.translate(3,3);TemaPixel.nitido(g);TemaPixel.marco(g,0,0,w,h,new java.awt.Color(fondo,true),new java.awt.Color(borde,true),adornos);g.dispose();return new PImage(b);});p.image(im,x-3,y-3);}
     private void caja(int x,int y,int w,int h){marco(x,y,w,h,contraste?0xff140C1D:PANEL,LILA,true);}
     private void panel(String titulo,int x,int y,int w,int h){caja(x,y,w,h);int ancho=Math.min(w-50,Math.max(200,titulo.length()*15+32));marco(x+25,y-19,ancho,38,FONDO,ORO,false);texto(titulo,x+41,y+8,22,ORO);}
-    private void boton(String s,int x,int y,int w,boolean activo){boolean hover=p.mouseX>=x&&p.mouseX<x+w&&p.mouseY>=y&&p.mouseY<y+42;marco(x,y,w,42,activo?ORO:hover?0xff604077:PANEL,activo?PAPEL:hover?ORO:LILA,false);texto(s,x+14,y+28,18,activo?FONDO:PAPEL);}
+    private final alcaldedigital.cliente.audio.InterfazSonora audioUI=new alcaldedigital.cliente.audio.InterfazSonora();
+    private final java.util.List<java.awt.Rectangle> botonesAudio=new java.util.ArrayList<>();
+    private void revisarBotonesAudio(){if(configurando)audioUI.foco("m7:"+modo+":"+dificultad+":"+rolElegido+":"+eleccion);String clave="";for(var r:botonesAudio)if(r.contains(p.mouseX,p.mouseY)){clave=r.x+":"+r.y;break;}audioUI.hover(clave);botonesAudio.clear();}
+    private void boton(String s,int x,int y,int w,boolean activo){botonesAudio.add(new java.awt.Rectangle(x,y,w,42));boolean hover=p.mouseX>=x&&p.mouseX<x+w&&p.mouseY>=y&&p.mouseY<y+42;marco(x,y,w,42,activo?ORO:hover?0xff604077:PANEL,activo?PAPEL:hover?ORO:LILA,false);texto(s,x+14,y+28,18,activo?FONDO:PAPEL);}
     private void texto(String s,float x,float y,int tam,int color){p.fill(color);p.textSize(tam);p.text(s,x,y);}
     private void parrafo(String s,int x,int y,int w,int h,int tam,int color){p.fill(color);p.textSize(tam);p.text(s,x,y,w,h);}
     private void velo(){p.noStroke();p.fill(13,8,24,215);p.rect(0,0,1280,720);}
@@ -211,7 +214,7 @@ public final class MisionSieteVista implements AutoCloseable {
     private boolean pausada(){return pausaPendiente||v!=null&&v.pausa();}
     private boolean activa(int k){return teclas.contains(k)&&!bloqueadas.contains(k);}
     private void detenerEntrada(){bloqueadas.addAll(teclas);esperarMandoNeutro=true;if(canal!=null)for(int r=0;r<2;r++)canal.movimiento(r,0,false);}
-    private void comando(int rol,String accion,int valor){if(canal==null)return;canal.accion(rol,accion,valor);v=canal.vista();sonido("ui");}
+    private void comando(int rol,String accion,int valor){if(canal==null)return;canal.accion(rol,accion,valor);v=canal.vista();if(!accion.equals("PULSO"))alcaldedigital.cliente.audio.InterfazSonora.activar(accion.equals("GUARDAR")?"guardar":accion.equals("REANUDAR")?"reanudar":"click");}
     private void pausar(int pantalla){detenerEntrada();panel=pantalla;if(!pausada()){focoPausa=0;pausaPendiente=true;comando(rolLocal,"PAUSA",0);}}
     private void reanudar(){detenerEntrada();panel=0;pausaPendiente=false;comando(rolLocal,"REANUDAR",0);}
     private void avanzar(int rol){if(v==null||pausada())return;if(v.fase()==Fase.RESULTADO)salir=true;else comando(rol,v.fase()==Fase.ESPERA?"LISTO":"CONTINUAR",0);}
@@ -243,7 +246,7 @@ public final class MisionSieteVista implements AutoCloseable {
     }
     public void soltar(int k){if(k==13)k=10;teclas.remove(k);bloqueadas.remove(k);}
     private void reiniciar(){cerrarPartida();configurando=true;continuar=false;registrado=false;guardado="";mensaje="";}
-    public void raton(int x,int y){if(conectando)return;
+    public void raton(int x,int y){if(botonesAudio.stream().anyMatch(r->r.contains(x,y)))alcaldedigital.cliente.audio.InterfazSonora.activar("click");if(conectando)return;
         if(configurando){if(controlesConfiguracion){if(x>=alcaldedigital.cliente.misiones.PantallaControles.VOLVER_X&&x<alcaldedigital.cliente.misiones.PantallaControles.VOLVER_X+alcaldedigital.cliente.misiones.PantallaControles.VOLVER_ANCHO&&y>=alcaldedigital.cliente.misiones.PantallaControles.VOLVER_Y&&y<alcaldedigital.cliente.misiones.PantallaControles.VOLVER_Y+alcaldedigital.cliente.misiones.PantallaControles.VOLVER_ALTO)controlesConfiguracion=false;return;}if(panel==1){ratonAyuda(x,y);return;}if(x>=140&&x<560)for(int i=0;i<4;i++)if(y>=180+i*53&&y<222+i*53)elegirModo(i);
             if(y>=180&&y<222){if(x>=610&&x<855)rolElegido=0;if(x>=870&&x<1140)rolElegido=1;}
             if(y>=248&&y<290&&modo!=3)for(int i=0;i<3;i++)if(x>=610+i*180&&x<780+i*180)dificultad=Dificultad.values()[i];
@@ -276,7 +279,7 @@ public final class MisionSieteVista implements AutoCloseable {
     public Vista vistaResultado(){return v;}public boolean salir(){return salir;}
     public EstadoCiudad ciudadResultado(){if(v==null||v.fase()!=Fase.RESULTADO)return ciudadCampana;try{ciudadCampana=repo.acreditar(v,ciudadCampana);return ciudadCampana;}catch(IOException e){mensaje=e.getMessage();return ciudadCampana;}}
     public void cerrarPartida(){detenerEntrada();teclas.clear();bloqueadas.clear();if(canal!=null){canal.close();canal=null;}if(servidor!=null){servidor.close();servidor=null;}v=null;panel=0;focoPausa=0;pausaPendiente=false;faseAnterior=null;puntosAnteriores=-1;palomoX=1350;}
-    @Override public void close(){cerrada=true;if(conexion!=null){if(conexion.isDone())try{var c=conexion.get();if(c!=canal)c.close();}catch(Exception ignored){}conexion.cancel(true);}tareas.shutdownNow();cerrarPartida();for(var c:sonidos.values())c.close();}
+    @Override public void close(){cerrada=true;if(conexion!=null){if(conexion.isDone())try{var c=conexion.get();if(c!=canal)c.close();}catch(Exception ignored){}conexion.cancel(true);}tareas.shutdownNow();cerrarPartida();sonidos.close();}
     private void previsualizar(String tipo){boolean dos=tipo.equals("dos");MotorCarrera m=new MotorCarrera(2026,dos?3:1,Dificultad.NORMAL,ciudadInicial,EstadoElectoral.inicial(ciudadInicial),true);
         for(int r=0;r<2;r++){m.conectar(r,true);m.orden(r,0,false,"LISTO",0);}
         Fase destino=switch(tipo){case "anuncio"->Fase.ANUNCIO;case "rivalidad"->Fase.RIVALIDAD;case "salida"->Fase.SALIDA;case "encuentro"->Fase.ENCUENTRO;default->Fase.CUENTA;};

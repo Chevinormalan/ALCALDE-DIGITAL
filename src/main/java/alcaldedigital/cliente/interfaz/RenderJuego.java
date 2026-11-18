@@ -25,11 +25,12 @@ public final class RenderJuego {
     private final Map<String,Rectangle> limitesGrupo=new HashMap<>();
     private SpritesTranseuntes spritesTranseuntes;
     private final TemaPixel tema=new TemaPixel();
+    private final alcaldedigital.cliente.audio.InterfazSonora audioUI=new alcaldedigital.cliente.audio.InterfazSonora();
     private int ratonX=-1,ratonY=-1;
     private String presionado="";
     private double finPulsacion;
     private boolean fondoMundo;
-    public void apuntar(int x,int y) {ratonX=x;ratonY=y;}
+    public void apuntar(int x,int y) {ratonX=x;ratonY=y;audioUI.hover(botones.stream().filter(b->b.area.contains(x,y)).map(b->b.accion).findFirst().orElse(""));}
     private final List<Boton> botones=new ArrayList<>();
     private final BufferedImage lienzo=new BufferedImage(1280,720,BufferedImage.TYPE_INT_ARGB);
     private Graphics2D g;
@@ -39,7 +40,7 @@ public final class RenderJuego {
     public List<Boton> botones() { return List.copyOf(botones); }
     public void avanzarFoco(JuegoCliente j,int paso) {
         if(botones.isEmpty()) return;
-        j.foco=Math.floorMod(j.foco+paso,botones.size());
+        j.foco=Math.floorMod(j.foco+paso,botones.size());audioUI.foco(botones.get(j.foco).accion);
         j.editandoBusqueda=botones.get(j.foco).accion().equals("campoBusqueda");
         if(j.editandoBusqueda) j.cursorBusqueda=j.busqueda.length();
     }
@@ -58,16 +59,16 @@ public final class RenderJuego {
             double puntaje=avance+lado*2.5;
             if(puntaje<mejor) {mejor=puntaje;elegido=i;}
         }
-        j.foco=elegido;
+        if(j.foco!=elegido)audioUI.foco(botones.get(elegido).accion);j.foco=elegido;
         j.editandoBusqueda=botones.get(elegido).accion().equals("campoBusqueda");
     }
     public void activarFoco(JuegoCliente j) {
         if(j.editandoBusqueda&&!j.tecladoNumericoActivo) {j.accion("buscar");return;}
-        if(!botones.isEmpty()) j.accion(botones.get(Math.floorMod(j.foco,botones.size())).accion());
+        if(!botones.isEmpty()) {String a=botones.get(Math.floorMod(j.foco,botones.size())).accion();alcaldedigital.cliente.audio.InterfazSonora.activar(a);j.accion(a);}
     }
     public void pulsar(JuegoCliente j,int x,int y) {
         for(int i=0;i<botones.size();i++) if(botones.get(i).area().contains(x,y)) {
-            presionado=botones.get(i).accion();finPulsacion=j.animacion+.12;
+            alcaldedigital.cliente.audio.InterfazSonora.activar(botones.get(i).accion());presionado=botones.get(i).accion();finPulsacion=j.animacion+.12;
             j.foco=i;j.editandoBusqueda=false;j.accion(botones.get(i).accion());return;
         }
         j.editandoBusqueda=false;
@@ -79,7 +80,7 @@ public final class RenderJuego {
         oro=TemaPixel.ORO;tenue=juego.contraste?Color.WHITE:PaletaMorada.TEXTO_SUAVE;teal=PaletaMorada.VIOLETA;
         rect(0,0,1280,720,tinta);
         boolean seleccion=juego.pantalla==JuegoCliente.Pantalla.GUARDADO||juego.pantalla==JuegoCliente.Pantalla.MISIONES||
-            juego.pantalla==JuegoCliente.Pantalla.CONTROLES||juego.pantalla==JuegoCliente.Pantalla.CONFIRMAR_REINICIO||
+            juego.pantalla==JuegoCliente.Pantalla.CONTROLES||juego.pantalla==JuegoCliente.Pantalla.GRAFICOS||juego.pantalla==JuegoCliente.Pantalla.AUDIO||juego.pantalla==JuegoCliente.Pantalla.CONFIRMAR_REINICIO||
             juego.pantalla==JuegoCliente.Pantalla.DIFICULTAD||
             juego.pantalla==JuegoCliente.Pantalla.DIFICULTAD_DOS;
         if(juego.misionUno!=null&&!seleccion&&juego.pantalla!=JuegoCliente.Pantalla.MENU&&juego.pantalla!=JuegoCliente.Pantalla.PARQUE) {
@@ -95,6 +96,8 @@ public final class RenderJuego {
             if(juego.pantalla==JuegoCliente.Pantalla.GUARDADO) guardado();
             else if(juego.pantalla==JuegoCliente.Pantalla.MISIONES) misiones();
             else if(juego.pantalla==JuegoCliente.Pantalla.CONTROLES) controles();
+            else if(juego.pantalla==JuegoCliente.Pantalla.GRAFICOS) graficos();
+            else if(juego.pantalla==JuegoCliente.Pantalla.AUDIO) audio();
             else if(juego.pantalla==JuegoCliente.Pantalla.CONFIRMAR_REINICIO) confirmarReinicio();
             else if(juego.pantalla==JuegoCliente.Pantalla.DIFICULTAD_DOS) dificultadDos();
             else dificultad();
@@ -112,7 +115,7 @@ public final class RenderJuego {
             case ROLES -> roles(); case PARQUE -> parque();
             case CIVITAS -> civitas(); case EVIDENCIAS -> evidencias();
             case ARBOLES -> arboles(); case AYUDA -> ayuda(); case RESULTADO -> resultado();
-            case CONTROLES -> controles(); case CONFIRMAR_REINICIO -> confirmarReinicio();
+            case CONTROLES -> controles(); case GRAFICOS -> graficos(); case AUDIO -> audio(); case CONFIRMAR_REINICIO -> confirmarReinicio();
         }
         if(juego.pausa&&!juego.pausaUnificada) pausa();
         else if(juego.tecladoNumericoActivo) tecladoNumerico();
@@ -320,11 +323,12 @@ public final class RenderJuego {
                 texto("La carrera por la primicia",x+16,y+123,18,papel,true);
                 elegirMision(7,x+15,y+157);
             } else {
-                texto("%02d".formatted(i+1),x+18,y+83,49,tenue,true);
-                texto("MISIÓN "+(i+1),x+18,y+121,18,papel,true);
-                texto("En desarrollo",x+18,y+161,15,tenue,false);
+                imagen("mision7/avenida",x+9,y+9,270,88);
+                texto("MISIÓN 8 · EL CIERRE",x+17,y+92,14,oro,true);
+                texto("El futuro de Civitas",x+16,y+123,20,papel,true);
+                elegirMision(8,x+15,y+157);
             }
-            if(i<7){rect(x+9,y+73,270,24,new Color(33,21,47,240));texto("MISIÓN "+(i+1)+" · "+(juego.progreso.disponible(i+1)?juego.progreso.ganada(i+1)?"GANADA":"DISPONIBLE":"BLOQUEADA"),x+17,y+92,14,juego.progreso.disponible(i+1)?oro:tenue,true);}
+            if(i<8){rect(x+9,y+73,270,24,new Color(33,21,47,240));texto("MISIÓN "+(i+1)+" · "+(juego.progreso.disponible(i+1)?juego.progreso.ganada(i+1)?"GANADA":"DISPONIBLE":"BLOQUEADA"),x+17,y+92,14,juego.progreso.disponible(i+1)?oro:tenue,true);}
         }
         if(juego.progreso.todasDesbloqueadas()){
             panel(28,615,350,44,PaletaMorada.PANEL);
@@ -334,7 +338,7 @@ public final class RenderJuego {
         boton("Restablecer juego","pedirRestablecer",952,615,300,false);
         pie(juego.segundosAviso>0?juego.aviso:(juego.mandoActivo?"Stick/cruceta: elegir · A: confirmar · B: volver  |  ":"")+
             "Ciudad: confianza "+juego.estadoCampana.confianza()+" · desinformación "+
-            juego.estadoCampana.desinformacion()+"  |  Misión 8 en desarrollo.");
+            juego.estadoCampana.desinformacion()+"  |  Misión 8: campaña o final de prueba con acceso libre.");
     }
     private void confirmarReinicio(){
         cabecera("Restablecer juego","Comenzar otra vez desde la misión 1.");
@@ -1001,29 +1005,75 @@ public final class RenderJuego {
         if(avisoVisible()) {panel(45,516,682,93,PaletaMorada.SUPERFICIE_CLARA);parrafo(juego.aviso+" [T] Consultar",58,538,654,13,tinta);}
         pie("El historial conserva tus acciones incluso cuando una publicación sale del AVL.");
     }
+    private void audio() {
+        var opciones=juego.audio;var c=opciones.actual();
+        cabecera("Audio","Ajusta la banda sonora y las señales del juego. Los cambios se escuchan y guardan al instante.");
+        panel(28,122,754,454,PaletaMorada.PANEL);panel(806,122,446,454,PaletaMorada.PANEL);
+        String[] nombres={"Volumen general","Música","Efectos del juego","Ambiente","Botones e interfaz"};
+        var buses=alcaldedigital.cliente.audio.OpcionesAudio.Bus.values();
+        for(int i=0;i<5;i++){int y=170+i*79;texto(nombres[i],52,y+24,21,papel,true);boton("−","audio:"+buses[i]+":-10",407,y,73,false);texto(c.valor(buses[i])+" %",518,y+29,22,oro,true);boton("+","audio:"+buses[i]+":10",660,y,73,false);}
+        texto("MEZCLA Y ACCESIBILIDAD",831,159,22,oro,true);
+        boton(c.mudo()?"Sonido: silenciado":"Sonido: activo","audio:mudo",831,192,396,false);
+        boton(c.suave()?"Intensidad: reducida":"Intensidad: dinámica","audio:suave",831,257,396,false);
+        boton(c.voces()?"Tonos de texto: activos":"Tonos de texto: desactivados","audio:voces",831,322,396,false);
+        boton("Probar sonido","audio:prueba",831,387,396,true);
+        parrafo("La música baja durante los diálogos. La pausa conserva la posición de la canción y permite escuchar los botones.",831,471,391,17,papel);
+        texto(opciones.mensaje.isBlank()?"La música y los efectos también tienen señales visuales.":opciones.mensaje,40,608,17,oro,false);
+        boton("Restaurar valores","audio:restaurar",28,638,390,false);boton("Volver a Cómo jugar","volver",848,638,404,true);
+        pie("Esc / B: volver · preferencias de este equipo, independientes de la partida.");
+    }
+    private void graficos() {
+        var opciones=juego.graficos;var c=opciones.edicion();
+        cabecera("Gráficos","Ajusta el juego a tu pantalla. Los personajes, textos y controles conservan sus proporciones.");
+        panel(28,122,754,454,PaletaMorada.PANEL);
+        texto("PANTALLA Y REESCALADO",52,155,23,oro,true);
+        texto("Modo de pantalla",52,203,17,papel,true);
+        boton(c.completa()?"Pantalla completa sin bordes":"Ventana","grafico:modo",52,215,706,false);
+        texto("Tamaño de ventana · según tu monitor",52,290,17,papel,true);
+        boton(c.ventana().toString()+(c.completa()?" · se usa al volver a ventana":""),"grafico:tamano",52,302,706,false);
+        texto("Ampliación",52,376,17,papel,true);
+        boton(c.entero()?"Píxeles uniformes · escalado entero":"Ajustar a la pantalla · proporcional","grafico:escalado",52,388,706,false);
+        texto("Filtro de imagen",52,463,17,papel,true);
+        boton(c.filtro()==alcaldedigital.cliente.graficos.OpcionesGraficas.Filtro.NITIDO?"Nítido · pixel art":"Suave · bordes suavizados","grafico:filtro",52,475,706,false);
+        panel(806,122,446,454,PaletaMorada.PANEL);
+        texto("VISTA DE PANTALLA",831,155,23,oro,true);
+        texto("Resolución original: 1280 × 720",831,195,17,papel,true);
+        texto("Monitor: "+opciones.pantalla,831,225,17,papel,false);
+        texto("Ventana actual: "+opciones.salida,831,255,17,papel,false);
+        parrafo(c.entero()?"El escalado entero mantiene píxeles del mismo tamaño. Puede dejar más márgenes. Si la ventana es pequeña, el juego se reduce para caber.":"El ajuste proporcional aprovecha el espacio disponible. En pantallas de otra proporción se muestran márgenes decorativos.",831,298,393,18,papel);
+        parrafo("F11 alterna pantalla completa durante el juego. Las preferencias se guardan en este equipo.",831,446,393,17,oro);
+        if(!opciones.mensaje.isBlank())texto(opciones.mensaje,40,608,16,oro,false);
+        else texto(opciones.cambios()?"Cambios preparados. Pulsa Aplicar.":"Selecciona una opción para modificarla.",40,608,17,papel,false);
+        boton("Aplicar","grafico:aplicar",28,638,390,true);
+        boton("Restaurar valores","grafico:restaurar",438,638,390,false);
+        boton("Volver a Cómo jugar","volver",848,638,404,false);
+        pie("Esc / B: volver · F11: pantalla completa · la partida conserva sus datos.");
+    }
     private void ayuda() {
-        cabecera("Ayuda / Alcalde Digital","Elige una misión o abre el mapa gráfico de controles. Cada capítulo tiene ayuda durante la partida.");
+        cabecera("Ayuda / Alcalde Digital","Controles, accesibilidad y opciones de pantalla para acompañarte en la ciudad.");
         String[] titulos={"01 · Tu objetivo","02 · Cómo te mueves","03 · Qué significan las acciones","04 · Tu papel","05 · Los indicadores","06 · Accesibilidad"};
-        String[] body={"Acompaña a Sofi y a los demás personajes por Ciudad Nova. Las misiones 1 a 7 están disponibles según tus victorias; la 8 sigue en desarrollo.",
-            "J1 usa WASD, E y Espacio. En partidas locales de dos personas, J2 usa flechas, Enter y Mayús. Esc/P pausa; H abre Ayuda; G guarda; T abre consultas. Pulsa Ver controles para revisar cada misión.",
+        String[] body={"Acompaña a Sofi y a los demás personajes por Ciudad Nova. Las ocho misiones se abren según tus victorias. Cada capítulo tiene ayuda durante la partida.",
+            "J1: WASD, E y Espacio. J2 local: flechas, Enter y Mayús. Esc/P pausa; H ayuda; G guarda; T consultas. Ver controles muestra las acciones de cada misión.",
             "Compartir puede aumentar el daño. Verificar inicia una búsqueda. Reportar requiere pruebas y validación. Ignorar evita tu retransmisión, pero otros pueden continuar. Rectificar recupera parcialmente.",
             "Sofi escucha a sus vecinos; la periodista contrasta; el influencer publica; Juan responde por su campaña. Cada misión indica sus acciones propias y sus condiciones de victoria.",
             "Información, confianza, convivencia, bienestar y participación: cuidar. Desinformación y conflicto: reducir. Todos van de 0 a 100. Popularidad y verdad no son equivalentes.",
-            "Activa alto contraste o movimiento reducido. La misión 1 ofrece tres plazos de crisis; otras misiones tienen sus propias dificultades. Hay etiquetas y formas además del color. Toda información esencial es visual y textual."};
+            "Activa alto contraste o movimiento reducido. Cada misión ofrece sus dificultades. Las señales combinan colores, formas y texto; la información esencial también aparece en pantalla."};
         String[] iconos={"06_fuente","19_mapa","07_compartir","01_celular","13_confianza","24_accesibilidad"};
         for(int i=0;i<6;i++) {
-            int x=28+(i%2)*624,y=135+(i/2)*163;
-            panel(x,y,596,153,PaletaMorada.PANEL);
-            TemaPixel.marco(g,x+14,y+19,88,113,TemaPixel.NOCHE,TemaPixel.CIAN,false);
+            int x=28+(i%2)*624,y=123+(i/2)*154;
+            panel(x,y,596,144,PaletaMorada.PANEL);
+            TemaPixel.marco(g,x+14,y+15,88,108,TemaPixel.NOCHE,TemaPixel.CIAN,false);
             if(i==3) imagen("actores/ciudadano_00",x+26,y+37,64,64);
             else imagen("iconos/"+iconos[i],x+26,y+40,64,64);
             texto(titulos[i],x+118,y+29,20,oro,true);
             parrafo(body[i],x+118,y+56,461,16,papel);
         }
-        boton("Contraste: "+(juego.contraste?"alto":"normal"),"contraste",28,639,288,false);
-        boton("Animaciones: "+(juego.movimientoReducido?"reducidas":"activas"),"movimiento",338,639,302,false);
-        boton(juego.avisos?"Avisos: visibles":"Avisos: solo al consultar","avisos",660,639,286,false);
-        boton("Ver controles","verControles",964,639,289,true);
-        pie("Esc / B: volver · Misiones 5 y 7 admiten dos personas en un teclado o una sala LAN.");
+        boton("Contraste: "+(juego.contraste?"alto":"normal"),"contraste",28,584,288,false);
+        boton("Animaciones: "+(juego.movimientoReducido?"reducidas":"activas"),"movimiento",338,584,302,false);
+        boton(juego.avisos?"Avisos: visibles":"Avisos: solo al consultar","avisos",660,584,286,false);
+        boton("Ver controles","verControles",28,638,390,true);
+        boton("Gráficos","graficos",438,638,390,false);
+        boton("Audio","audio",848,638,404,false);
+        pie("Esc / B: volver · F11: pantalla completa · Gráficos conserva las proporciones del juego.");
     }
 }

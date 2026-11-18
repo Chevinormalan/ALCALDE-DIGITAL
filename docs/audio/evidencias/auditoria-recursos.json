@@ -1,0 +1,413 @@
+{
+  "pistas": 22,
+  "stems": 32,
+  "efectos": 50,
+  "musica": [
+    {
+      "id": "G01",
+      "segundos": 73.095,
+      "pico_capas_completas": 0.73996,
+      "rms": 0.14477,
+      "salto_bucle": 0.00336
+    },
+    {
+      "id": "G02",
+      "segundos": 60.477,
+      "pico_capas_completas": 0.73996,
+      "rms": 0.14353,
+      "salto_bucle": 0.00278
+    },
+    {
+      "id": "G03",
+      "segundos": 60.791,
+      "pico_capas_completas": 0.73996,
+      "rms": 0.14263,
+      "salto_bucle": 0.00052
+    },
+    {
+      "id": "M101",
+      "segundos": 61.522,
+      "pico_capas_completas": 0.73996,
+      "rms": 0.14417,
+      "salto_bucle": 0.00244
+    },
+    {
+      "id": "M102",
+      "segundos": 62.724,
+      "pico_capas_completas": 0.73996,
+      "rms": 0.14373,
+      "salto_bucle": 0.00995
+    },
+    {
+      "id": "M201",
+      "segundos": 60.086,
+      "pico_capas_completas": 0.73996,
+      "rms": 0.14404,
+      "salto_bucle": 0.0058
+    },
+    {
+      "id": "M202",
+      "segundos": 58.182,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.13124,
+      "salto_bucle": 0.00119
+    },
+    {
+      "id": "M301",
+      "segundos": 69.818,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.10404,
+      "salto_bucle": 0.00635
+    },
+    {
+      "id": "M302",
+      "segundos": 53.333,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.11921,
+      "salto_bucle": 0.00974
+    },
+    {
+      "id": "M303",
+      "segundos": 50.526,
+      "pico_capas_completas": 0.74991,
+      "rms": 0.13459,
+      "salto_bucle": 0.00323
+    },
+    {
+      "id": "M401",
+      "segundos": 68.571,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.11118,
+      "salto_bucle": 0.0029
+    },
+    {
+      "id": "M402",
+      "segundos": 53.333,
+      "pico_capas_completas": 0.74991,
+      "rms": 0.12001,
+      "salto_bucle": 0.00427
+    },
+    {
+      "id": "M501",
+      "segundos": 80.0,
+      "pico_capas_completas": 0.74991,
+      "rms": 0.1134,
+      "salto_bucle": 0.00455
+    },
+    {
+      "id": "M502",
+      "segundos": 51.2,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.13989,
+      "salto_bucle": 0.00735
+    },
+    {
+      "id": "M601",
+      "segundos": 61.935,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.09948,
+      "salto_bucle": 0.00739
+    },
+    {
+      "id": "M602",
+      "segundos": 51.892,
+      "pico_capas_completas": 0.74997,
+      "rms": 0.12893,
+      "salto_bucle": 0.00735
+    },
+    {
+      "id": "M701",
+      "segundos": 73.846,
+      "pico_capas_completas": 0.74991,
+      "rms": 0.11655,
+      "salto_bucle": 0.00232
+    },
+    {
+      "id": "M702",
+      "segundos": 48.0,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.13335,
+      "salto_bucle": 0.00418
+    },
+    {
+      "id": "M801",
+      "segundos": 76.8,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.10025,
+      "salto_bucle": 0.0036
+    },
+    {
+      "id": "M802",
+      "segundos": 49.231,
+      "pico_capas_completas": 0.74994,
+      "rms": 0.13499,
+      "salto_bucle": 0.01562
+    },
+    {
+      "id": "G03-reconstruccion",
+      "segundos": 87.273,
+      "pico_capas_completas": 0.74991,
+      "rms": 0.10464,
+      "salto_bucle": 0.01031
+    },
+    {
+      "id": "G03-crisis",
+      "segundos": 101.053,
+      "pico_capas_completas": 0.74991,
+      "rms": 0.12596,
+      "salto_bucle": 0.00381
+    }
+  ],
+  "fx": [
+    {
+      "id": "absorcion",
+      "pico": 0.22617,
+      "segundos": 0.28
+    },
+    {
+      "id": "alarma",
+      "pico": 0.22717,
+      "segundos": 0.28
+    },
+    {
+      "id": "aterrizar",
+      "pico": 0.22476,
+      "segundos": 0.28
+    },
+    {
+      "id": "bloqueado",
+      "pico": 0.21896,
+      "segundos": 0.28
+    },
+    {
+      "id": "civitas",
+      "pico": 0.22589,
+      "segundos": 0.28
+    },
+    {
+      "id": "click",
+      "pico": 0.22672,
+      "segundos": 0.28
+    },
+    {
+      "id": "compartir",
+      "pico": 0.22504,
+      "segundos": 0.28
+    },
+    {
+      "id": "confirmar",
+      "pico": 0.30365,
+      "segundos": 0.28
+    },
+    {
+      "id": "cuenta",
+      "pico": 0.22421,
+      "segundos": 0.28
+    },
+    {
+      "id": "derrota",
+      "pico": 0.24734,
+      "segundos": 1.5
+    },
+    {
+      "id": "dialogo",
+      "pico": 0.12799,
+      "segundos": 0.04498866213151927
+    },
+    {
+      "id": "disparo_final",
+      "pico": 0.22565,
+      "segundos": 0.28
+    },
+    {
+      "id": "escrutinio",
+      "pico": 0.22617,
+      "segundos": 0.28
+    },
+    {
+      "id": "escudo",
+      "pico": 0.22617,
+      "segundos": 0.28
+    },
+    {
+      "id": "espadas",
+      "pico": 0.45004,
+      "segundos": 0.28
+    },
+    {
+      "id": "esquiva",
+      "pico": 0.22565,
+      "segundos": 0.28
+    },
+    {
+      "id": "explosion_final",
+      "pico": 0.58817,
+      "segundos": 1.5
+    },
+    {
+      "id": "fase",
+      "pico": 0.22504,
+      "segundos": 0.28
+    },
+    {
+      "id": "golpe",
+      "pico": 0.43604,
+      "segundos": 0.28
+    },
+    {
+      "id": "gravedad",
+      "pico": 0.22482,
+      "segundos": 0.28
+    },
+    {
+      "id": "guardar",
+      "pico": 0.29971,
+      "segundos": 0.28
+    },
+    {
+      "id": "hover",
+      "pico": 0.15903,
+      "segundos": 0.06498866213151927
+    },
+    {
+      "id": "inyeccion",
+      "pico": 0.22678,
+      "segundos": 0.28
+    },
+    {
+      "id": "mutacion",
+      "pico": 0.5401,
+      "segundos": 1.5
+    },
+    {
+      "id": "oficina",
+      "pico": 0.04745,
+      "segundos": 4.0
+    },
+    {
+      "id": "orbe",
+      "pico": 0.22421,
+      "segundos": 0.28
+    },
+    {
+      "id": "pacto",
+      "pico": 0.22565,
+      "segundos": 0.28
+    },
+    {
+      "id": "parque",
+      "pico": 0.0448,
+      "segundos": 4.0
+    },
+    {
+      "id": "pausa",
+      "pico": 0.22617,
+      "segundos": 0.28
+    },
+    {
+      "id": "pinchos",
+      "pico": 0.42477,
+      "segundos": 0.28
+    },
+    {
+      "id": "plaza",
+      "pico": 0.04568,
+      "segundos": 4.0
+    },
+    {
+      "id": "rayo",
+      "pico": 0.44678,
+      "segundos": 0.28
+    },
+    {
+      "id": "rayo_aviso",
+      "pico": 0.22482,
+      "segundos": 0.28
+    },
+    {
+      "id": "reanudar",
+      "pico": 0.22482,
+      "segundos": 0.28
+    },
+    {
+      "id": "recoger",
+      "pico": 0.22476,
+      "segundos": 0.28
+    },
+    {
+      "id": "rectificar",
+      "pico": 0.22617,
+      "segundos": 0.28
+    },
+    {
+      "id": "recuperacion",
+      "pico": 0.30243,
+      "segundos": 0.28
+    },
+    {
+      "id": "red",
+      "pico": 0.05334,
+      "segundos": 4.0
+    },
+    {
+      "id": "reparar",
+      "pico": 0.22421,
+      "segundos": 0.28
+    },
+    {
+      "id": "reportar",
+      "pico": 0.22565,
+      "segundos": 0.28
+    },
+    {
+      "id": "rumor",
+      "pico": 0.22482,
+      "segundos": 0.28
+    },
+    {
+      "id": "salida",
+      "pico": 0.22589,
+      "segundos": 0.28
+    },
+    {
+      "id": "salto",
+      "pico": 0.22589,
+      "segundos": 0.28
+    },
+    {
+      "id": "teletransporte",
+      "pico": 0.22565,
+      "segundos": 0.28
+    },
+    {
+      "id": "turno",
+      "pico": 0.22772,
+      "segundos": 0.28
+    },
+    {
+      "id": "urna",
+      "pico": 0.22504,
+      "segundos": 0.28
+    },
+    {
+      "id": "verificar",
+      "pico": 0.22476,
+      "segundos": 0.28
+    },
+    {
+      "id": "victoria",
+      "pico": 0.33456,
+      "segundos": 1.5
+    },
+    {
+      "id": "viento",
+      "pico": 0.04318,
+      "segundos": 4.0
+    },
+    {
+      "id": "volver",
+      "pico": 0.22739,
+      "segundos": 0.28
+    }
+  ]
+}

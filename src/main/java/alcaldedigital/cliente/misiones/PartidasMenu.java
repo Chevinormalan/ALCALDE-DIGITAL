@@ -28,7 +28,7 @@ public final class PartidasMenu {
     /** El cero selecciona la partida más reciente de toda la campaña. */
     public static Partida reciente(ProgresoMisiones progreso,int mision) {
         List<Partida> partidas=new ArrayList<>();
-        for(int n:new int[]{1,2,3,4,6})if(progreso.disponible(n)){
+        for(int n:new int[]{1,2,3,4,6,8})if(progreso.disponible(n)){
             try{
                 Properties p=GuardadoCampana.cargar(n);
                 if(p!=null)partidas.add(new Partida(n,estadoPropiedades(n,p,progreso),-1,-1,
@@ -53,6 +53,7 @@ public final class PartidasMenu {
 
     private static Estado estadoPropiedades(int n,Properties p,ProgresoMisiones progreso){
         boolean completo=switch(n){
+            case 8->"FINAL".equals(p.getProperty("escena"))||"DERROTA".equals(p.getProperty("escena"));
             case 1->"RESULTADO".equals(p.getProperty("sesion.fase"));
             case 2->"RESULTADO".equals(p.getProperty("estado.fase"));
             case 3->Boolean.parseBoolean(p.getProperty("completada"));
@@ -66,6 +67,7 @@ public final class PartidasMenu {
             case 1->"BUENO".equals(p.getProperty("sesion.desenlace"));
             case 2->Boolean.parseBoolean(p.getProperty("estado.exito"))&&
                 !Boolean.parseBoolean(p.getProperty("estado.falloCriticoActivado"));
+            case 8->"FINAL".equals(p.getProperty("escena"));
             case 3,4,6->!"DERROTA".equals(p.getProperty("fase"));
             default->false;
         };

@@ -1,0 +1,94 @@
+{
+  "pruebas": 267,
+  "fallos": 0,
+  "errores": 0,
+  "omitidas": 0,
+  "pruebas_graficos": 13,
+  "casos_ventana_real": [
+    {
+      "caso": "panel",
+      "correcto": true
+    },
+    {
+      "caso": "mision1",
+      "correcto": true
+    },
+    {
+      "caso": "mision2",
+      "correcto": true
+    },
+    {
+      "caso": "mision3",
+      "correcto": true
+    },
+    {
+      "caso": "mision4",
+      "correcto": true
+    },
+    {
+      "caso": "mision5",
+      "correcto": true
+    },
+    {
+      "caso": "mision6",
+      "correcto": true
+    },
+    {
+      "caso": "mision7",
+      "correcto": true
+    },
+    {
+      "caso": "mision8",
+      "correcto": true
+    }
+  ],
+  "monitor_fisico": [
+    1920,
+    1080
+  ],
+  "reescalado_verificado": [
+    [
+      1920,
+      1080
+    ],
+    [
+      2560,
+      1440
+    ],
+    [
+      3840,
+      2160
+    ],
+    [
+      1920,
+      1200
+    ],
+    [
+      3440,
+      1440
+    ],
+    [
+      960,
+      600
+    ]
+  ],
+  "render_4k_en_buffer": true,
+  "pausa_y_reanudacion_clic_reescalado": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "apuntado_mision3": true,
+  "preferencias": "graficos.properties",
+  "jar_sha256": "9c7017239a5f22ba2a5adddfb562327d5d1be3c030e78eeccbb11d353c917eef",
+  "comprobacion_manual_pendiente": [
+    "mando físico",
+    "varios monitores y sus densidades",
+    "monitores físicos 1440p/4K y ultrapanorámicos"
+  ]
+}
