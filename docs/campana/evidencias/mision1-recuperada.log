@@ -1,0 +1,84 @@
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event0): Failed to open device /dev/input/event0 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event1): Failed to open device /dev/input/event1 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event10): Failed to open device /dev/input/event10 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event11): Failed to open device /dev/input/event11 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event12): Failed to open device /dev/input/event12 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event13): Failed to open device /dev/input/event13 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event14): Failed to open device /dev/input/event14 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event15): Failed to open device /dev/input/event15 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event16): Failed to open device /dev/input/event16 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event17): Failed to open device /dev/input/event17 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event18): Failed to open device /dev/input/event18 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event19): Failed to open device /dev/input/event19 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event2): Failed to open device /dev/input/event2 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event20): Failed to open device /dev/input/event20 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event21): Failed to open device /dev/input/event21 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event22): Failed to open device /dev/input/event22 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event23): Failed to open device /dev/input/event23 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event24): Failed to open device /dev/input/event24 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event25): Failed to open device /dev/input/event25 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event26): Failed to open device /dev/input/event26 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event3): Failed to open device /dev/input/event3 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event4): Failed to open device /dev/input/event4 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event5): Failed to open device /dev/input/event5 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event6): Failed to open device /dev/input/event6 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event7): Failed to open device /dev/input/event7 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event8): Failed to open device /dev/input/event8 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Failed to open device (/dev/input/event9): Failed to open device /dev/input/event9 (13)
+
+Nov 14, 2026 11:58:41 PM net.java.games.input.ControllerEnvironment log
+INFO: Linux plugin claims to have found 0 controllers
+SISTEMA_CAMPANA_OK: misión 1 · pausa true
