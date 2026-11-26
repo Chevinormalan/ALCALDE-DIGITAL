@@ -14,7 +14,15 @@ public final class AnimacionOcho {
   if(h.vida<=0)col=15;
   else if(h.invulnerable>55&&h.accion>0)col=14;
   else if(h.esquiva>40)col=7;
-  else if(h.accion>0){int tecla=m.entradas[i];col=(tecla&MotorOcho.TRES)!=0?13:(tecla&MotorOcho.DOS)!=0?(h.accion>10?11:12):8+Math.min(2,(18-h.accion)/6);}
+  else if(h.accion>0){
+   // Recarga y acción se descuentan en el mismo paso, incluso tras soltar el botón o recibir un snapshot LAN.
+   int recargaInicial=h.recarga+18-h.accion;
+   col=switch(recargaInicial){
+    case 140->13;
+    case 38->h.accion>10?11:12;
+    default->8+Math.clamp((18-h.accion)/6,0,2);
+   };
+  }
   else if(h.vy<-.5)col=4;
   else if(h.vy>.5)col=5;
   else if(Math.abs(h.vx)>.01)col=1+(m.ticks/8)%2;

@@ -1,4 +1,4 @@
-# Alcalde Digital: Promesas, Palomas y Wi-Fi
+# Digital Mayor: Runaway Rumors
 
 Videojuego educativo 2D top-down desarrollado en Java con Processing para el laboratorio de Estructura de Datos II.
 
@@ -8,9 +8,11 @@ En un perfil nuevo solo está disponible la misión 1. Ganar cada misión desblo
 
 La campaña comienza con la misión 1 disponible. Ganar una misión desbloquea la siguiente. El selector también ofrece **Desbloquear todas las misiones** como opción manual; no marca niveles como ganados y se conserva en el perfil. **Restablecer juego** pide confirmación, archiva el perfil completo en una carpeta de respaldo y vuelve a bloquear las misiones 2 a 8. El menú inicial permite continuar la partida más reciente o reintentar una misión perdida.
 
-Todas usan la misma pausa con **Esc/P/Menú**: Continuar, Ayuda y controles, Guardar, Consultas y Guardar y salir. **G** guarda; **H/Vista** abre ayuda. Al seleccionar una misión con checkpoint se ofrece Continuar o Nueva partida. Se conservan los guardados previos y las modalidades LAN de 5/7. La misión 3 recupera desde el inicio de la zona actual de NovaMall. [Reglas de victoria, controles, guardados y verificación](docs/campana/README.md). [Tabla de puntajes y antecedentes](docs/campana/PUNTAJES_Y_ANTECEDENTES.md).
+En un perfil nuevo, **Jugar → Tutorial de Mr. Palomo → Elige una misión**. El tutorial practica los controles de las ocho misiones y adapta las indicaciones al teclado o al mando conectado. Mantén **Esc**, **B** en Xbox, **Círculo** en PlayStation o el clic sobre el botón superior derecho durante 1,5 segundos para omitirlo. Al terminar u omitir, el juego recuerda la decisión. Tras restablecer el perfil, el tutorial vuelve a aparecer al pulsar **Jugar**.
 
-Desde **Cómo jugar → Ver controles** en el menú inicial, o **Pausa → Ayuda → Ver controles** durante una misión, se muestra un mapa gráfico del teclado y del mando. En el menú inicial se puede recorrer las misiones 1 a 8 y ver el modo de dos personas de las misiones 5 a 7. J1 usa WASD, E y Espacio; J2, cuando comparte teclado, usa flechas, Enter y Mayús. F es la acción principal y Q la secundaria en los combates que las tienen. La pantalla distingue los dos personajes y cambia las etiquetas Xbox/PlayStation según el mando detectado.
+Todas usan la misma pausa con **Esc/P/Menú**: Continuar, Ayuda y controles, Guardar, Consultas y Guardar y salir. **G** guarda; **H/Vista** abre ayuda. Al seleccionar una misión con checkpoint se ofrece Continuar o Nueva partida. Se conservan los guardados previos y las modalidades LAN de 5, 6, 7 y 8. La misión 3 recupera desde el inicio de la zona actual de NovaMall. [Reglas de victoria, controles, guardados y verificación](docs/campana/README.md). [Tabla de puntajes y antecedentes](docs/campana/PUNTAJES_Y_ANTECEDENTES.md).
+
+Desde **Cómo jugar → Ver controles** en el menú inicial, o **Pausa → Ayuda → Ver controles** durante una misión, se muestra un mapa gráfico del teclado y del mando. En el menú inicial se puede recorrer las misiones 1 a 8 y ver el modo de dos personas de las misiones 5 a 8. La lámina de la misión 8 indica además las teclas de J3 y J4. J1 usa WASD, E y Espacio; J2, cuando comparte teclado, usa flechas, Enter y Mayús. F es la acción principal y Q la secundaria en los combates que las tienen. La misión 8 reserva E/Enter para confirmar fuera del combate y usa C/O para la tercera acción de J1/J2. La pantalla distingue los dos personajes y cambia las etiquetas Xbox/PlayStation según el mando detectado. [Controles globales y excepciones por misión](docs/campana/CONTROLES_GLOBALES.md).
 
 ## Gráficos y pantalla completa
 
@@ -18,9 +20,9 @@ Desde **Cómo jugar → Ver controles** en el menú inicial, o **Pausa → Ayuda
 
 ## Nueva misión 1 · Sofi y Mr. Palomo
 
-Desde el menú principal, «Jugar» abre la selección de ocho espacios de misión. Las ocho misiones están implementadas. La misión 8 permite jugar según los antecedentes de siete victorias o elegir finales de prueba al desbloquear todas las misiones. Después de elegir la misión 1 se selecciona Fácil, Normal o Difícil. Sofi escucha a Mr. Palomo, examina tres publicaciones en Civitas y conversa con ocho peatones mientras el rumor se propaga por un grafo social. Cada pareja calmada sale por uno de los cuatro caminos. Las publicaciones se ordenan en el AVL y las opciones forman un árbol n-ario; T muestra las tres estructuras de la misión.
+El selector que sigue a «Jugar» contiene las ocho misiones. La misión 8 permite jugar según los antecedentes de siete victorias o elegir finales de prueba al desbloquear todas las misiones. Después de elegir la misión 1 se selecciona Fácil, Normal o Difícil. Sofi escucha a Mr. Palomo, recoge cuatro pergaminos y examina con la lupa sus evidencias. Prepara los avisos y reúne a cuatro vecinos en el tablón del parque. El AVL conserva las publicaciones, el árbol n-ario registra las decisiones y T abre la consulta de estructuras.
 
-La crisis dura 60 segundos en Fácil, 30 en Normal y 12 en Difícil. La introducción y Civitas no consumen ese tiempo. WASD/flechas mueven a Sofi; E escucha o continúa el diálogo; C abre Civitas; T muestra estructuras; H abre ayuda. El resultado puede ser bueno, neutral o malo según las decisiones informativas, las conversaciones y el estado de la ciudad.
+La crisis dura 60 segundos en Fácil, 30 en Normal y 12 en Difícil. El reloj empieza cuando los vecinos llegan. WASD/flechas mueven a Sofi, E recoge e interactúa, Q activa la lupa, Tab abre la libreta, T muestra estructuras y H abre ayuda. El resultado puede ser bueno, neutral o malo según las decisiones informativas, las conversaciones y el estado de la ciudad.
 
 El arte nuevo está en `src/main/resources/cliente/arte/mision1/` y las cinco referencias recibidas están en `tools/arte/referencias-mision1/`. [Detalles de implementación y límites](docs/mision1/README.md). El caso anterior de «El helipuerto de palomas» se conserva como resguardo en el código, recursos y pruebas, sin acceso desde el menú del juego.
 
@@ -34,7 +36,7 @@ La misión 3 se elige desde el mismo selector y utiliza el lienzo lógico compar
 
 ## Misiones 4 y 6 integradas desde la entrega recibida
 
-La misión 4, «La plaza que dejó de escuchar», sigue a Juan durante su campaña: conducción, plaza, preguntas del público, rumores y tres combates. La misión 6, «Cielos de campaña», permite uno o dos jugadores en teclado, con vuelo, dron de tres fases e entrevista. Ambas se seleccionan desde Jugar y utilizan la misma ventana de 1280 × 720, tipografía, marcos, pausa y guardados del proyecto. Esc/P pausa; H abre controles. Mando compatible para el primer jugador. Sus modalidades son locales; las salas TCP siguen disponibles en las misiones 5 y 7. [Misión 4](docs/mision4/README.md) · [Misión 6](docs/mision6/README.md) · [Integración y validación](docs/integracion-misiones46/README.md).
+La misión 4, «La plaza que dejó de escuchar», sigue a Juan durante su campaña: conducción, preguntas en la plaza y un laberinto de Civita con linterna, cuatro expedientes y tres combates. La misión 6, «Cielos de campaña», permite uno o dos jugadores en teclado, con vuelo, dron de tres fases e entrevista. Ambas se seleccionan desde Jugar y utilizan la misma ventana de 1280 × 720, tipografía, marcos, pausa y guardados del proyecto. Esc/P pausa; H abre controles. Mando compatible para el primer jugador. La misión 6 también dispone de una sala LAN cooperativa para dos personas. [Misión 4](docs/mision4/README.md) · [Misión 6](docs/mision6/README.md) · [Integración y validación](docs/integracion-misiones46/README.md).
 
 ## Entrega 1 implementada
 
@@ -91,7 +93,7 @@ mvn exec:java -Dexec.mainClass=alcaldedigital.app.ServidorApp
 
 ## Controles y demostración
 
-El juego reconoce un mando Xbox o PlayStation conectado al iniciar y permite recorrer el menú, elegir dificultad, jugar las tres misiones disponibles y usar la pausa sin teclado. Conecta el mando y ejecuta `bash jugar.sh` (o `jugar.bat` en Windows) después de construir el paquete. El paquete incluye JInput y sus bibliotecas nativas; al iniciar desde Maven o el IDE, estas se preparan automáticamente desde la dependencia. El teclado y el ratón siguen disponibles.
+El juego reconoce mandos Xbox y PlayStation. En Linux y Windows busca dispositivos mientras el juego está abierto. El menú muestra «Mando detectado · Jugador 1» al conectar el primero. Los mandos adicionales quedan disponibles hasta elegir cooperativo local. En las misiones 5, 6, 7 y 8 cada mando asignado controla su puesto. En LAN, el aviso muestra el puesto que la sala asignó a ese equipo. **Cómo jugar → Ver controles** muestra el esquema de botones. El paquete incluye JInput y sus bibliotecas nativas.
 
 | Mando | Menús y misión 1 | Misión 3 |
 | --- | --- | --- |
@@ -99,9 +101,9 @@ El juego reconoce un mando Xbox o PlayStation conectado al iniciar y permite rec
 | Stick derecho | — | Apuntar PING |
 | A / ✕ | Confirmar; hablar | Interactuar, avanzar diálogo; repetir al final |
 | B / ○ | Volver; abrir o cerrar pausa durante la misión | Abrir o cerrar pausa |
-| X / □ | Abrir Civitas en el parque | PING |
+| X / □ | Abrir la libreta de Sofi | PING |
 | Y / △ | Abrir estructuras | LIVE BURST |
-| LB / L1 | Mover el foco hacia arriba | MODO PRIVADO mientras se mantenga |
+| LB / L1 | Activar la lupa del expediente | MODO PRIVADO mientras se mantenga |
 | RB / R1 | Mover el foco hacia abajo | SIGNAL DASH |
 | LT / L2 | — | FLASH |
 | RT / R2 | — | PING |
@@ -110,9 +112,9 @@ El juego reconoce un mando Xbox o PlayStation conectado al iniciar y permite rec
 
 En la misión 2, el stick izquierdo mueve a la periodista, RB/R1 permite correr, X/□ lanza el salto hacia delante y A/✕ avanza los diálogos o repara la terminal cercana con una pulsación. Menú/Options abre la pausa. B/○ también abre la pausa; allí se puede volver al menú principal.
 
-En el Laboratorio, el campo de búsqueda abre un teclado numérico manejable con la cruceta o el stick y A; X borra y B cierra. En pausa, elige «Continuar», «Ver controles» o «Salir al selector». Si el mando se desconecta durante una misión, el juego se pausa. La detección de un mando nuevo se realiza al iniciar la aplicación. En Linux, la cuenta que ejecuta el juego necesita acceso a los dispositivos `/dev/input/event*`.
+En el Laboratorio, el campo de búsqueda abre un teclado numérico manejable con la cruceta o el stick y A; X borra y B cierra. En pausa, elige «Continuar», «Ver controles» o «Salir al selector». Si el mando se desconecta durante una misión, el juego se pausa. Al reconectar, el juego recupera el puesto si sigue libre. En Linux, la cuenta necesita acceso al dispositivo del mando en `/dev/input`.
 
-WASD/flechas: movimiento; E: interactuar; en misión 2, Shift corre y Espacio salta durante la defensa. C: Civitas; I/J: evidencias; T: abrir/cerrar la consulta de árboles; H: ayuda; Esc: volver/menú. Tab, Mayús+Tab y Enter permiten activar los controles. En el Laboratorio AVL, enfoca el campo ID antes de escribir; admite cursor, flechas, Inicio/Fin, Retroceso, Suprimir y Enter. Busca y recorre el **estado mostrado**, incluso si es histórico. «Animar nodos» conserva ese estado; «Anterior/Siguiente» cambian la operación. Con movimiento reducido se avanza manualmente.
+WASD/flechas: movimiento; E: interactuar; en misión 2, Shift corre y Espacio salta durante la defensa. En la misión 1, Q activa la lupa, Tab abre la libreta y las flechas con Enter permiten examinar pistas del expediente. T abre o cierra estructuras, H abre ayuda y Esc vuelve o abre el menú según la escena. En el Laboratorio AVL, enfoca el campo ID antes de escribir; admite cursor, flechas, Inicio/Fin, Retroceso, Suprimir y Enter. Busca y recorre el **estado mostrado**, incluso si es histórico. «Animar nodos» conserva ese estado; «Anterior/Siguiente» cambian la operación. Con movimiento reducido se avanza manualmente.
 
 Las pruebas y capturas de la Entrega 1 siguen comprobando el caso preservado. La misión 1 tiene pruebas propias de vuelo, difusión, desenlaces, interfaz y viabilidad en Difícil. La misión 3 conserva su autoprueba integrada y se comprobó el flujo selector → misión 3 → regreso al selector desde el JAR.
 
@@ -131,6 +133,12 @@ El informe formal consolidado se encuentra en [entregas/entrega1/README.md](entr
 - Los recursos maestros permanecen en `../Diseño Visual y Dirección de Arte/`; solo se copiarán a `src/main/resources` los archivos adaptados para ejecución.
 - No se suben archivos generados por Maven, configuraciones personales ni secretos.
 
+
+## Partidas LAN
+
+Las misiones 5, 6 y 7 tienen salas para dos personas. La misión 8 permite crear una sala de dos, tres o cuatro. En la misma red local, el anfitrión elige **Crear partida LAN** y el resto elige **Unirse a partida LAN** dentro de la misma misión. La lista muestra el número de salas, sus cupos libres y los puestos disponibles. La misión arranca automáticamente cuando se completa la sala.
+
+El buscador usa difusión IPv4 por UDP en los puertos 48515–48518. Cada misión juega por TCP en su puerto 48505–48508. Si el buscador muestra cero salas y el anfitrión sigue esperando, **Conectar por IP** permite indicar su dirección directamente. Ambos equipos necesitan una versión del juego que tenga las salas LAN. Tras perder la conexión aparece **Reconectar al mismo puesto**.
 
 ## Misión 5 · El servidor crítico y sala LAN
 

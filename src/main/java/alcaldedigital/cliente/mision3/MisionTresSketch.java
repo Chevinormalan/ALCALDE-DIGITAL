@@ -1,5 +1,9 @@
 package alcaldedigital.cliente.mision3;
 
+import alcaldedigital.cliente.audio.SonidosRemaster;
+
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PVector;
@@ -25,6 +29,8 @@ public final class MisionTresSketch extends PApplet {
   public record Resultado(boolean completada, int confianza, int desinformacion, int amenazas) {}
   private PApplet anfitrion;
   private PImage fotogramaPausa;
+  private boolean movimientoReducido;
+  public void movimientoReducido(boolean v) { movimientoReducido=v; }
 
   public void iniciarEn(PApplet anfitrion) {
     Objects.requireNonNull(anfitrion);
@@ -60,7 +66,6 @@ public final class MisionTresSketch extends PApplet {
   public void dibujarEnJuego() {
     if (anfitrion == null) throw new IllegalStateException("La misión 3 no está iniciada");
     fotogramaPausa = null;
-    frameCount++;
     anfitrion.pushStyle();
     anfitrion.pushMatrix();
     anfitrion.scale(anfitrion.width / (float) VW, anfitrion.height / (float) VH);
@@ -215,10 +220,21 @@ public void draw() {
   simulationDebt+=Math.min(0.10f,(now-previousFrameNanos)/1000000000.0f);
   previousFrameNanos=now;
   int steps=0;
-  while(simulationDebt>=1.0f/60.0f&&steps++<6){game.update();simulationDebt-=1.0f/60.0f;}
+  while(simulationDebt>=1.0f/60.0f&&steps++<6){
+    frameCount++;
+    game.update();
+    simulationDebt-=1.0f/60.0f;
+  }
   game.render();
   fill(245, 232, 251); textAlign(RIGHT, BOTTOM); textSize(12);
   text(mandoActivo?"MENÚ · PAUSA / SELECTOR":"ESC / P · PAUSA", VW-18, VH-12);
+}
+
+private float azarVisual(int canal) {
+  int h=frameCount*0x9e3779b9+canal*0x85ebca6b;
+  h=(h^(h>>>16))*0x7feb352d;
+  h=(h^(h>>>15))*0x846ca68b;
+  return ((h^(h>>>16))>>>8)*0x1.0p-24f;
 }
 
 public void keyPressed() {
@@ -295,7 +311,6 @@ class Assets {
   PImage[] palomoIdle = new PImage[4];
   PImage[] palomoWalk = new PImage[4];
   PImage[] palomoTalk = new PImage[4];
-  PImage[] palomoFly = new PImage[4];
 
   Assets() {
     bgAtrio = loadImageResource("redisenio/fondo-atrio.png");
@@ -332,7 +347,6 @@ class Assets {
       palomoIdle[i] = loadImageResource("redisenio/palomo_idle_"+(i+1)+".png");
       palomoWalk[i] = loadImageResource("redisenio/palomo_walk_"+(i+1)+".png");
       palomoTalk[i] = loadImageResource("redisenio/palomo_talk_"+(i+1)+".png");
-      palomoFly[i] = loadImageResource("redisenio/palomo_fly_"+(i+1)+".png");
     }
   }
 }
@@ -342,10 +356,21 @@ class Assets {
 class AudioManager {
   final alcaldedigital.cliente.presentacion.AudioEscena salida=new alcaldedigital.cliente.presentacion.AudioEscena("M3");
   String musicId="ambient";
-  AudioManager(){for(String id:new String[]{"ping","hit","flash","dash","alert","live","boss","dialogue","private","ui"})alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/"+id);}
+  AudioManager(){for(String id:new String[]{"ping","hit","flash","dash","alert","live","boss","private","ui"})alcaldedigital.cliente.audio.MotorAudio.global().precargar(rutaSonido(id));}
+  String rutaSonido(String id){
+    return switch(id){
+      case "ping"->SonidosRemaster.ruta("nova-ping");
+      case "hit"->SonidosRemaster.ruta("nova-impacto");
+      case "flash"->SonidosRemaster.ruta("nova-flash");
+      case "dash"->SonidosRemaster.ruta("nova-deslizar");
+      case "live"->SonidosRemaster.ruta("nova-live");
+      case "private"->SonidosRemaster.ruta("nova-privado");
+      default->"mision3/audio/"+id;
+    };
+  }
   void music(String id){musicId=id;}
   void close(){salida.close();}
-  void play(String id){if(id.equals("dialogue")){if(alcaldedigital.cliente.audio.MotorAudio.global().voces())salida.efecto("dialogue","audio/fx/dialogo",.22f,.12);}else salida.efecto(id,"mision3/audio/"+id,.45f,.07);}
+  void play(String id){if(id.equals("dialogue")){if(alcaldedigital.cliente.audio.MotorAudio.global().voces())salida.efecto("dialogue","audio/fx/dialogo",.22f,.12);}else salida.efecto(id,rutaSonido(id),.49f,.07);}
 }
 
   // Procedencia: CameraManager.pde
@@ -397,7 +422,12 @@ class CameraManager {
     shake=max(shake,amount);
   }
   void pulse(float amount){pulseZoom=max(pulseZoom,amount);}
-  void begin(){pushMatrix();translate(VW/2+random(-shake,shake),VH/2+random(-shake,shake));scale(zoom);translate(-pos.x,-pos.y);}
+  void begin(){
+    float amplitud=movimientoReducido?0:shake;
+    pushMatrix();
+    translate(VW/2+(azarVisual(1)*2-1)*amplitud,VH/2+(azarVisual(2)*2-1)*amplitud);
+    scale(zoom);translate(-pos.x,-pos.y);
+  }
   void end(){popMatrix();}
   PVector screenToWorld(float sx,float sy){return new PVector((sx-VW/2)/zoom+pos.x,(sy-VH/2)/zoom+pos.y);}
 }
@@ -462,23 +492,27 @@ class CivitasSystem {
   }
   float corruption(){return stage==0?0:constrain((stage+min(1,g.disinfo))/6.0f,0,1);}
   void renderWorldSignals(int zone){
-    int glow=stage==0?color(45,180,255):color(255,45,75);
+    var lienzo = MisionTresSketch.this.g;
+    var luz = stage == 0 ? LuzEscena.CIAN : LuzEscena.MAGENTA;
     float flicker=stage==0?1:(frameCount%17<2?.35f:1);
-    blendMode(ADD);noStroke();
-    if(zone==0){
-      fill(glow,22*flicker);ellipse(215,365,240,195);
-      fill(glow,18*flicker);ellipse(810,290,190,155);
-    }else if(zone==1){
-      fill(glow,20*flicker);ellipse(415,260,185,135);
-      ellipse(720,320,180,130);ellipse(925,250,175,130);
-    }else if(zone==2){
-      fill(glow,22*flicker);ellipse(195,220,355,200);
-      ellipse(1000,220,285,195);
-    }else{
-      fill(glow,27*flicker);ellipse(575,205,520,260);
-      fill(45,190,255,9);ellipse(575,460,600,210);
+    switch (zone) {
+      case 0 -> {
+        luz.dibujar(lienzo,215,360,350,225,158*flicker);
+        LuzEscena.AMBAR.dibujar(lienzo,810,260,340,230,118);
+      }
+      case 1 -> {
+        luz.dibujar(lienzo,415,290,355,255,128*flicker);
+        LuzEscena.VIOLETA.dibujar(lienzo,920,250,440,335,141);
+      }
+      case 2 -> {
+        luz.dibujar(lienzo,220,245,430,270,145*flicker);
+        luz.dibujar(lienzo,970,260,365,325,145*flicker);
+      }
+      default -> {
+        luz.dibujar(lienzo,575,247,630,420,176*flicker);
+        LuzEscena.VIOLETA.dibujar(lienzo,575,475,600,225,119);
+      }
     }
-    blendMode(BLEND);
     if(zone==0&&stage>0){
       noStroke();fill(125,0,22,min(215,stage*43)*flicker);
       rect(928,60,224,525);
@@ -488,8 +522,8 @@ class CivitasSystem {
     }
     if(stage>0 && frameCount%29<3){
       noStroke();fill(255,65,90,65);
-      float y=random(175,430);
-      rect(zone==0?125:zone==1?310:180,y,random(35,100),2);
+      float y=lerp(175,430,azarVisual(10+zone));
+      rect(zone==0?125:zone==1?310:180,y,lerp(35,100,azarVisual(20+zone)),2);
     }
   }
   void renderScreens(){
@@ -504,7 +538,10 @@ class CivitasSystem {
     text(post,x+10,y+37,w-20,59);
     fill(stage==0?color(244,203,106):color(255,172,85));textSize(12);
     text(stage==0?"TENDENCIAS NORMALES":"COMPARTIDOS  "+shareCount(),x+10,y+103);
-    if(stage>0 && frameCount%23<2){fill(255,45,70,95);rect(x+random(w),y,random(20,80),random(2,7));}
+    if(stage>0 && frameCount%23<2){
+      fill(255,45,70,95);
+      rect(x+azarVisual(31)*w,y,lerp(20,80,azarVisual(32)),lerp(2,7,azarVisual(33)));
+    }
   }
 }
 
@@ -949,6 +986,7 @@ abstract class Enemy implements DepthDrawable {
   Hurtbox hurtbox;
   PImage sprite;
   PImage[][] walk;
+  final PosesRemaster posesRival;
   int facingDirection=0,walkingTick=0;
   float hp,maxHp,speed,hitRadius=25;
   boolean dead=false;
@@ -964,6 +1002,12 @@ abstract class Enemy implements DepthDrawable {
   Enemy(ActionScene s,float x,float y,PImage img,float hp_,float sp,int type) {
     scene=s;pos=new PVector(x,y);hurtbox=new Hurtbox(new PVector(x,y-32),hitRadius);
     sprite=img;walk=s.g.assets.enemyWalk[type];maxHp=hp=hp_;speed=sp;cooldown=parseInt(random(22,48));
+    posesRival=switch(type){
+      case 0 -> PosesRemaster.TROLL;
+      case 1 -> PosesRemaster.SPAMBOT;
+      case 3 -> PosesRemaster.DEEPFAKE;
+      default -> null;
+    };
   }
 
   abstract void ai();
@@ -1063,13 +1107,16 @@ abstract class Enemy implements DepthDrawable {
       pixelTarget(lockedTarget.x,lockedTarget.y,color(255,75,85,180));
     }
 
-    pushMatrix();translate(pos.x,pos.y-h*.45f+bob);
-    float breath=1+sin(frameCount*.09f+pos.x*.014f)*.023f;
-    if(state==1)scale(1.045f,.965f);
-    else if(state==3)scale(1.025f,.985f);
-    else scale(breath,1/breath);
-    if(hitFlash>0)tint(255);
-    imageMode(CENTER);image(frame,0,0,w,h);noTint();popMatrix();
+    imageMode(CENTER);
+    if(posesRival!=null&&(state!=0||hitFlash>0)) {
+      int pose=hitFlash>0?3:state==1?0:state==2||timer>26?1:2;
+      boolean espejo=state==1||state==2?lockedTarget.x<pos.x:facingDirection==2;
+      posesRival.dibujar(MisionTresSketch.this.g,pose,pos.x,pos.y+h*.05f+bob,h*.94f,espejo);
+    } else {
+      pushMatrix();translate(pos.x,pos.y-h*.45f+bob);
+      if(hitFlash>0)tint(255);
+      image(frame,0,0,w,h);noTint();popMatrix();
+    }
 
     if(hp<maxHp){
       float bw=54;
@@ -1532,15 +1579,17 @@ class PalomoNPC implements DepthDrawable {
     int f=(frameCount/7)%4;
     boolean flying=mode==2||mode==4;
     // La primera fila del atlas de la misión 1 son vistas, no cuadros consecutivos.
-    PImage im=flying?g.assets.palomoFly[f]:
-        mode==3?g.assets.palomoWalk[targetX<pos.x?1:2]:
-        mode==1?g.assets.palomoTalk[0]:g.assets.palomoIdle[0];
+    PImage im=mode==3?g.assets.palomoWalk[targetX<pos.x?1:2]:
+        mode==1?g.assets.palomoTalk[movimientoReducido?0:(frameCount/9)%4]:g.assets.palomoIdle[0];
     float paso=mode==3&&f%2==1?2:0;
     float t=flightDuration==0?0:constrain(flightTick/(float)flightDuration,0,1);
     float altura=mode==4?(1-t)*18:mode==2?t*18:0;
-    pushMatrix();translate(pos.x,pos.y-29-paso-altura+sin(frameCount*.06f)*2);
-    if(flying&&flightEnd.x<flightStart.x)scale(-1,1);
-    imageMode(CENTER);image(im,0,0,57,60);popMatrix();
+    float y=pos.y-29-paso-altura+(movimientoReducido?0:sin(frameCount*.06f)*2);
+    imageMode(CENTER);
+    if(flying) {
+      int cuadro=movimientoReducido?2:PosesRemaster.paso(flightTick, .38, 8);
+      PosesRemaster.PALOMO.dibujar(MisionTresSketch.this.g,cuadro,pos.x,y+28,54,flightEnd.x<flightStart.x);
+    } else image(im,pos.x,y,57,60);
   }
 }
 
@@ -1761,11 +1810,21 @@ class Player implements DepthDrawable {
 
     noStroke();fill(0,70);ellipse(pos.x,pos.y+2,42,12);
     noFill();stroke(65,225,255,130);strokeWeight(1.5f);ellipse(pos.x,pos.y+2,45,15);noStroke();
+    int perfil = dir < 2 ? -1 : switch (animState) {
+      case WALK -> movimientoReducido ? 0 : PosesRemaster.paso(animTick,.15,4);
+      case ATTACK -> flashWindup > 4 ? 5 : 4;
+      case DASH -> 6;
+      case HIT -> 5;
+      case DEAD -> 7;
+      default -> -1;
+    };
     pushMatrix();translate(pos.x,pos.y-(animState==DEAD?20:32));
-    if(animState==DEAD)rotate(HALF_PI);
+    if(animState==DEAD&&perfil<0)rotate(HALF_PI);
     if(animState==HIT)tint(255,160,160);
-    else if(invuln>0&&frameCount%4<2)tint(255,130);
-    imageMode(CENTER);image(im,0,0,47,64);noTint();
+    else if(!movimientoReducido&&invuln>0&&frameCount%4<2)tint(255,130);
+    if(perfil>=0) PosesRemaster.INFLUENCER.dibujar(MisionTresSketch.this.g,perfil,0,animState==DEAD?20:32,62,dir==2);
+    else {imageMode(CENTER);image(im,0,0,47,64);}
+    noTint();
     if(animState==LIVE){
       noFill();stroke(244,203,106,225);strokeWeight(2);
       rect(19,-26,9,14,2);point(23,-15);noStroke();
@@ -1994,8 +2053,18 @@ abstract class ActionScene extends SceneBase {
 
   // Procedencia: SceneHelpers.pde
 void drawExitMarker(float x,float y,String labelText){
-  noFill();stroke(60,235,255,170);strokeWeight(3);
-  ellipse(x,y,68+sin(frameCount*.08f)*8,68+sin(frameCount*.08f)*8);noStroke();
+  LuzEscena.CIAN.dibujar(g,x,y,144,100,160);
+  pushStyle();
+  ellipseMode(CENTER);
+  noFill();stroke(63,206,220,130);strokeWeight(1.5f);
+  ellipse(x,y,66,34);
+  stroke(165,250,242,205);strokeWeight(2);
+  for(int lado=-1;lado<=1;lado+=2) {
+    line(x+lado*31,y-14,x+lado*41,y-14);
+    line(x+lado*41,y-14,x+lado*41,y+14);
+    line(x+lado*41,y+14,x+lado*31,y+14);
+  }
+  popStyle();noStroke();
   fill(0,180);rect(x-55,y-58,110,25,8);
   fill(80,235,255);textAlign(CENTER,CENTER);textSize(11);text(labelText,x,y-46);
 }

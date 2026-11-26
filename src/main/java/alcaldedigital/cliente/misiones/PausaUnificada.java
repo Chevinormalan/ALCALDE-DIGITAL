@@ -8,7 +8,7 @@ import static java.awt.event.KeyEvent.*;
 public final class PausaUnificada {
  public interface Sesion {
   int numero();boolean lista();boolean pausada();void pausar();void reanudar();String guardar()throws Exception;void salir();
-  default boolean consultaAbierta(){return true;}default boolean tieneConsultas(){return false;}default void abrirConsulta(){}default void cerrarConsulta(){}
+  default boolean consultaAbierta(){return true;}default boolean tieneConsultas(){return false;}default void abrirConsulta(){}default boolean abrirCampana(){return false;}default void cerrarConsulta(){}
   default MapaControles.Contexto controles(){return new MapaControles.Contexto(numero(),false,"Jugador 1","Jugador 2","");}
  }
  private final alcaldedigital.cliente.audio.InterfazSonora audioUI=new alcaldedigital.cliente.audio.InterfazSonora();
@@ -31,7 +31,8 @@ public final class PausaUnificada {
   if(k==VK_G){guardar();return true;}
   if(k==VK_H){if(consulta){sesion.cerrarConsulta();consulta=false;}if(!visible)abrir();ayuda=!ayuda;return true;}
   if(consulta)return false;
-  if(k==VK_T||k==VK_V){if(sesion.tieneConsultas()){if(!visible)abrir();consulta=true;sesion.abrirConsulta();return true;}}
+  if(k==VK_T&&sesion.tieneConsultas()){if(!visible)abrir();consulta=true;sesion.abrirConsulta();return true;}
+  if(k==VK_V&&sesion.numero()==7){if(!visible)abrir();if(sesion.abrirCampana()){consulta=true;ayuda=false;return true;}}
   if(!visible)return false;
   if(consulta)return false;
   if(ayuda){if(k==VK_LEFT)pagina=Math.max(0,pagina-1);if(k==VK_RIGHT)pagina++;if(k==VK_ENTER||k==VK_C)controles=true;else if(k==VK_E)ayuda=false;return true;}
@@ -83,9 +84,9 @@ public final class PausaUnificada {
    case 3->new String[]{"WASD / stick: mover · E/A: hablar.","F/X/RT: PING · Q/LT: FLASH · Espacio/RB: DASH.","L/Y: LIVE BURST · Ctrl/LB: modo privado.","Se guarda al inicio de la zona actual.","Las zonas completadas permanecen superadas."};
    case 4->new String[]{"WASD / stick: mover y conducir · E/A: hablar.","F/X/RT: ataque · Q/Y/LT: escudo · Espacio/RB: esquiva.","V: investigar rumor · N: responder sin investigar.","Supera los tres combates y termina el epílogo."};
    case 5->new String[]{"Ciudadano: WASD/E/Espacio.","Periodista en dos: flechas/Enter/Shift.","Cinco rondas, quince ataques; sobrevive para ganar.","Cian: detén el movimiento real; rosado: esquiva.","Consulta las páginas siguientes para cada patrón."};
-   case 8->new String[]{"A/D + Espacio: mover y salto doble · F/Q/E: ataques.","R: esquiva · J2: flechas, Mayús, L/K/Enter, J.","J3: numérico 4/6, 0, 1/2/3 y decimal.","J4 jefe: Z/X/C/B/N/M eligen los seis patrones.","T abre antecedentes, AVL, decisiones, grafo y controles."};
+   case 8->new String[]{"A/D + Espacio: mover y salto doble · F/Q/C: acciones.","R: esquiva · J2: flechas, Mayús, L/K/O, J.","E/Enter/A: confirmar fuera del combate.","J3: numérico 4/6, 0, 1/2/3 y decimal.","J4 jefe: números 1–6 de la fila superior."};
    case 6->new String[]{"Solo: WASD/flechas, F disparo, Q misil, Espacio impulso.","Dos: J1 Juan · WASD + F/Q + Espacio.","J2 Influencer · flechas + L/K + Mayús.","Mando J1: X/RT disparo, Y/LT misil, RB impulso.","Vence al dron y termina cualquiera de las entrevistas."};
-   default->new String[]{"Espacio/Mayús/X: correr · W/S/flechas: carril.","Q/K/Y: ayuda · 1/2/3 o 7/8/9: noticia.","En solo debes llegar antes que la CPU.","La reputación y los apoyos siguen afectando la ciudad.","El empate no cuenta como victoria de campaña."};};
+   default->new String[]{"Espacio/Mayús/RB o X: correr · W/S/flechas: carril.","Q/K/Y: ayuda · 1/2/3 o 7/8/9: noticia.","Mando: cruceta izq./der. elige noticia; A confirma.","La reputación y los apoyos siguen afectando la ciudad.","El empate no cuenta como victoria de campaña."};};
   paginas.add(controles);if(sesion.numero()==5)for(var a:alcaldedigital.cliente.mision5.GuiaBatalla.PATRONES)paginas.add(new String[]{a.nombre(),a.situacion(),a.respuesta()});return paginas;
  }
  private void dibujarAyuda(PApplet p){var paginas=ayuda();pagina=Math.floorMod(pagina,paginas.size());p.textSize(20);p.text("AYUDA · "+(pagina+1)+" / "+paginas.size(),355,210);p.textSize(17);int y=260;

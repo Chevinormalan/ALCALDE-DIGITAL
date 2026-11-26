@@ -8,12 +8,18 @@ import java.util.Properties;
 
 /** Rendered inside Alcalde Digital's existing Processing window. */
 public final class MisionCuatroSketch {
-    public record Resultado(boolean completada,int publicacionesValidadas,int respuestasResponsables,int enemigos,String partida,java.util.List<Integer> respuestas){
+    public record Resultado(boolean completada,int publicacionesValidadas,int respuestasResponsables,int enemigos,String partida,java.util.List<Integer> respuestas,int totalPublicaciones){
         public Resultado(boolean c,int v,int r,int e){this(c,v,r,e,java.util.UUID.randomUUID().toString(),java.util.List.of());}
         public Resultado(boolean c,int v,int r,int e,String partida){this(c,v,r,e,partida,java.util.List.of());}
+        public Resultado(boolean c,int v,int r,int e,String partida,java.util.List<Integer> respuestas){this(c,v,r,e,partida,respuestas,3);}
         public Resultado {respuestas=java.util.List.copyOf(respuestas);}
     }
-    public alcaldedigital.cliente.audio.Partitura.Contexto contextoAudio(){return new alcaldedigital.cliente.audio.Partitura.Contexto(4,game==null?"CAR":game.scenes.current.name(),0,game==null?0:game.encounter,game!=null&&game.dialogue.active(),game!=null&&game.completed,"");}
+    public alcaldedigital.cliente.audio.Partitura.Contexto contextoAudio(){
+        String fase=game==null?"CAR":game.scenes.current.name();
+        if(enCivita()&&game.civita.combate>=0)fase="BATTLE";
+        return new alcaldedigital.cliente.audio.Partitura.Contexto(4,fase,0,game==null?0:game.encounter,
+            game!=null&&game.dialogue.active(),game!=null&&game.completed,"");
+    }
     private PGraphics canvas;
     private MisionCuatroGame game;
     private boolean pruebaSinGuardar=Boolean.getBoolean("ad.mision4.sinGuardar");
@@ -22,7 +28,8 @@ public final class MisionCuatroSketch {
     private final SoundEffects sound=new SoundEffects();
     private final Autoguardado saves=new Autoguardado(Autoguardado.defaultPath());
     private Properties saved;
-    private boolean gestionExterna;
+    private boolean gestionExterna, movimientoReducido;
+    public void movimientoReducido(boolean valor){movimientoReducido=valor;}
     public void gestionExterna(boolean v){gestionExterna=v;}
     public void guardarAhora()throws Exception{saveIfNeeded(true);saves.esperar();}
     private boolean chooseSave;
@@ -40,6 +47,7 @@ public final class MisionCuatroSketch {
     public PImage dibujarEnJuego(){
         if(canvas==null)throw new IllegalStateException("Misión 4 sin iniciar");
         canvas.beginDraw();canvas.pushMatrix();canvas.scale(1.25f);
+        game.civita.arte.reducido=movimientoReducido;
         game.draw(canvas);
         if(chooseSave){
             canvas.noStroke();canvas.fill(15,10,25,225);canvas.rect(0,0,1024,576);
@@ -62,6 +70,7 @@ public final class MisionCuatroSketch {
         if(fase.equals("ANSWER")&&y>=261&&y<=319){if(x>=661&&x<=806)pulsarTecla('s',83);else if(x>=817&&x<=962)pulsarTecla('n',78);}
         else if(fase.equals("RUMOR")&&y>=365&&y<=413){if(x>=228&&x<=506)pulsarTecla('v',86);else if(x>=518&&x<=796)pulsarTecla('n',78);}
         else if(fase.equals("DOWNLOAD")&&x>=322&&x<=702&&y>=329&&y<=384)pulsarTecla('\n',10);
+        else if(fase.equals("CIVITA")&&game.civita.hoja!=Civita.Hoja.NINGUNA&&x>=319&&x<=710&&y>=496&&y<=536)pulsarTecla('\n',10);
     }
     public PImage fotograma(){return canvas;}
     public void actualizar(float dt){if(game==null||chooseSave)return;debt+=Math.min(.1f,Math.max(0,dt));
@@ -106,15 +115,18 @@ public final class MisionCuatroSketch {
     }
     public void soltarTecla(int code){if(game!=null)game.release(code);}
     public boolean enCombate(){return game!=null&&game.scenes.current==MisionCuatroGame.Phase.BATTLE;}
+    public boolean enCivita(){return game!=null&&game.scenes.current==MisionCuatroGame.Phase.CIVITA;}
+    public void nombreMando(String nombre){if(game!=null)game.nombreMando=nombre;}
     public void perderFoco(){if(game!=null)game.loseFocus();sound.pause();reanudar();} public void reanudar(){previous=0;debt=0;}
     public Resultado resultado(){return game==null?new Resultado(false,0,0,0):
         new Resultado(game.ending(),game.approval,Math.max(0,game.reputation),game.combat.kills,game.partida,
-            java.util.Arrays.stream(game.respuestas).boxed().toList());}
+            java.util.Arrays.stream(game.respuestas).boxed().toList(),game.civita.activa?4:3);}
     private void saveIfNeeded(boolean force){
         if(game==null||chooseSave||pruebaSinGuardar||gestionExterna&&!force)return;
         Properties p=game.checkpoint();
         String signature=p.getProperty("phase")+":"+p.getProperty("question")+":"+p.getProperty("encounter")+":"+
-            p.getProperty("approval")+":"+p.getProperty("answered")+":"+p.getProperty("kills")+":"+p.getProperty("citizen0")+":"+p.getProperty("citizen1");
+            p.getProperty("approval")+":"+p.getProperty("answered")+":"+p.getProperty("kills")+":"+p.getProperty("citizen0")+":"+p.getProperty("citizen1")+
+            ":"+p.getProperty("civita.vistos")+":"+p.getProperty("civita.guardianes")+":"+p.getProperty("civita.fichas");
         long now=System.nanoTime();
         if(force||!signature.equals(lastCheckpoint)||now-lastSaveNanos>=5_000_000_000L){
             saves.save(p);lastCheckpoint=signature;lastSaveNanos=now;

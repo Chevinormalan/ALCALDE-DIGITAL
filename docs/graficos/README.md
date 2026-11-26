@@ -5,11 +5,11 @@ Acceso: **Menú principal → Cómo jugar → Gráficos**. Se conserva la paleta
 ## Uso
 
 - **Modo de pantalla:** ventana o pantalla completa sin bordes en el monitor donde se encuentra el juego.
-- **Tamaño de ventana:** recorre los tamaños predefinidos que caben en el área útil del monitor. Los tamaños disponibles van de 640 × 360 a 3840 × 2160, según el monitor. En pantalla completa se usa el tamaño detectado de la pantalla y la selección se conserva para volver a ventana.
+- **Resolución:** recorre los tamaños de ventana que caben en el área útil del monitor y termina con la resolución del propio monitor. Aplica esa última opción para ocupar toda la pantalla sin bordes. F11 recupera la ventana anterior. Si eliges un tamaño de ventana mientras estás en pantalla completa, se usa al volver a ventana.
 - **Ampliación:** ajustar proporcionalmente para aprovechar el espacio, o escalado entero para mantener píxeles uniformes. El escalado entero puede dejar márgenes mayores; en ventanas menores que 1280 × 720 se reduce para conservar toda la imagen.
-- **Filtro:** nítido con vecino más cercano o suave con interpolación bilineal.
+- **Filtro:** al ampliar, Nítido usa vecino más cercano y Suave usa interpolación bilineal. Al reducir, ambos suavizan la imagen para mantener legibles los trazos delgados.
 - **Aplicar:** activa y guarda la selección. **Restaurar valores** prepara la configuración original y se confirma con Aplicar. Volver abandona las ediciones pendientes al abrir de nuevo el panel.
-- **F11:** alterna pantalla completa desde el menú o durante una misión. Una pulsación mantenida cambia el modo una sola vez. Las reglas habituales de pausa por pérdida de foco siguen protegiendo la partida durante los cambios de ventana.
+- **F11:** alterna pantalla completa desde el menú o durante una misión. Una pulsación mantenida cambia el modo una sola vez. Al volver a ventana, se recuperan el tamaño y la posición anteriores si el preajuste sigue siendo el mismo y el monitor sigue conectado. Las reglas habituales de pausa por pérdida de foco siguen protegiendo la partida durante los cambios de ventana.
 
 La ventana también puede redimensionarse libremente. Al reiniciar se recupera el tamaño elegido en Gráficos. Las preferencias se guardan en `graficos.properties`, dentro del perfil local; no forman parte de los snapshots de las misiones ni se transmiten a los compañeros de una sala LAN. Se usa la escritura atómica del proyecto y se conservan las partidas.
 
@@ -27,12 +27,12 @@ El contenido se dibuja siempre en **1280 × 720** y se presenta una sola vez en 
 
 Los márgenes usan un fondo decorativo morado. Se mantiene la imagen completa y sus proporciones. Ampliar los recursos conserva su detalle original; no produce arte nuevo de mayor resolución.
 
-El ratón se transforma mediante el mismo rectángulo usado para presentar la imagen. Esto incluye el resaltado de botones, los clics de menú y pausa, y el apuntado de la misión 3. Los clics sobre los márgenes se ignoran. Teclado y mando conservan sus controles; Gráficos admite navegación y retorno con ambos.
+El panel Gráficos muestra el tamaño disponible para dibujar y el tamaño de la imagen después del reescalado. El ratón usa el mismo rectángulo que la imagen presentada. Esto incluye el resaltado de botones, los clics de menú y pausa, y el apuntado de la misión 3. Los clics sobre los márgenes se ignoran. Teclado y mando conservan sus controles; Gráficos admite navegación y retorno con ambos.
 
 ## Implementación y comprobación
 
 - `EscaladoPantalla`: rectángulo de presentación y conversión del ratón.
-- `LienzoJuego`: contexto Processing independiente de 1280 × 720 y presentación con filtro. Las dimensiones reales de la ventana no se sustituyen mientras dibujan las misiones.
+- `LienzoJuego`: contexto Processing independiente de 1280 × 720 y presentación con filtro. Usa las dimensiones del búfer activo y espera el siguiente fotograma si un redimensionado dejó pendientes las nuevas coordenadas del ratón.
 - `VentanaJuego`: tamaño y decoraciones mediante AWT, detectando el monitor actual. No cambia la resolución del sistema operativo. Refresca la información al mover o redimensionar la ventana.
 - `OpcionesGraficas`: selección editable, persistencia local y recuperación ante preferencias inválidas.
 

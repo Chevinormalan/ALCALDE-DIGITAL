@@ -9,6 +9,7 @@ public final class MezclaMusical {
   public Pista(String id,Pcm base,Pcm ritmo,Pcm epica){this.id=id;this.base=base;this.ritmo=ritmo;this.epica=epica;if(ritmo!=null&&ritmo.frames()!=base.frames()||epica!=null&&epica.frames()!=base.frames())throw new IllegalArgumentException("Capas desalineadas");}
  }
  private Pista actual,saliendo;private float intensidad=.3f,volumen=1;
+ public void limpiar(){actual=saliendo=null;}
  public void cambiar(Pista pista){if(actual!=null&&actual.id.equals(pista.id))return;saliendo=actual;actual=pista;}
  public void objetivo(float intensidad,float volumen){this.intensidad=Math.clamp(intensidad,0,1);this.volumen=Math.clamp(volumen,0,1);}
  public String id(){return actual==null?"":actual.id;}public long posicion(){return actual==null?0:actual.posicion;}

@@ -1,6 +1,8 @@
 package alcaldedigital.servidor.batalla;
 
 import alcaldedigital.compartido.batalla.EstadoBatalla.*;
+import alcaldedigital.compartido.batalla.PaqueteCruzado;
+import alcaldedigital.compartido.batalla.PaqueteRastreador;
 import alcaldedigital.compartido.modelo.*;
 import alcaldedigital.compartido.estructuras.avl.ArbolAVLPublicaciones;
 import alcaldedigital.compartido.estructuras.decisiones.ArbolDecisiones;
@@ -12,7 +14,7 @@ public final class MotorBatalla {
     public static final float ENTRADA_X=640,ENTRADA_Y=185,CONVERSACION_Y=230;
     public static final float PERIODISTA_X=790,PERIODISTA_Y=555,PERIODISTA_CONVERSACION_Y=445;
     public static final String[] PATRONES={"Paquetes cruzados","Tráfico cian: quietud","Ventana cambiante","Suelo corrupto","Plataformas de respaldo","Columnas del archivo","Pulso dirigido","Cruce de servidores","Pasillo intermitente","Gravedad lateral","Escalera de caché","Ráfaga alterna","Antenas gemelas","Anillo de señal","Tormenta del cortafuegos"};
-    public static final String[] CONSEJOS={"Busca los huecos entre paquetes.","Los paquetes cian solo dañan si te mueves de verdad.","Sigue el hueco de la columna.","Salta desde el suelo. Soltar salto reduce la altura.","Usa las plataformas para esquivar el suelo.","Observa las columnas antes de aterrizar.","El haz fija tu posición al avisar. Sal de esa línea.","Hay huecos compartidos para los dos corazones.","El pulso se anuncia antes de cruzar.","La pared derecha será suelo. Salta hacia la izquierda.","La gravedad vuelve al suelo inferior.","Alterna movimiento y quietud según el símbolo.","El haz alterna objetivo: 1 y 2.","Rodea el centro siguiendo la abertura.","Mantén libre la salida. No te encierres en una esquina."};
+    public static final String[] CONSEJOS={"Cambia de carril cuando veas el aviso.","Quietud durante el pulso cian.","Alinea el corazón con la ventana.","Salta sobre la descarga del suelo.","Las plataformas te levantan sobre el primer pulso.","Salta ante el suelo y baja cuando se cargue el techo.","El haz fija tu posición: sal de la línea.","Las columnas libres cambian.","El último pulso cierra columnas.","Salta alejándote de la pared derecha.","Mira qué columna quedará libre al aterrizar.","Alterna esquiva y quietud según el símbolo.","Al marcarse la ruta del cuadrito, esquiva hacia un lado.","Alterna el interior y el borde.","Lee la línea, las columnas y la señal cian."};
     public final ArbolAVLPublicaciones publicaciones=new ArbolAVLPublicaciones();
     public final ArbolDecisiones decisiones=new ArbolDecisiones("m5","El servidor crítico");
     private final String id;private final long semilla;private final boolean solo;private final Dificultad dificultad;
@@ -20,7 +22,6 @@ public final class MotorBatalla {
     public synchronized void ciudadBase(EstadoCiudad base){this.base=base;}
     public static final int[][] GRAFO={{1,2},{3},{3,4},{5},{5},{}};
     public static java.util.List<Integer> difusionDesde(int origen){java.util.List<Integer> r=new java.util.ArrayList<>();java.util.Queue<Integer> q=new java.util.ArrayDeque<>();java.util.Set<Integer> vistos=new java.util.HashSet<>();q.add(origen);vistos.add(origen);while(!q.isEmpty()){int v=q.remove();r.add(v);for(int vecino:GRAFO[v])if(vistos.add(vecino))q.add(vecino);}return r;}
-    private int nodoAtaque(){var r=difusionDesde(patron%6);return r.get(Math.floorMod(reloj/60,r.size()));}
     private long tick;private Fase fase=Fase.ESPERA;private int ronda,patron,reloj,jefe=100,linea,verificados,rumores=15,gravedadDir;
     private boolean pausa,gano;private String mensaje="Conecta a ambos jugadores y marca Listo.";
     private final List<String> historial=new ArrayList<>();
@@ -54,6 +55,11 @@ public final class MotorBatalla {
         if(accion.equals("ACCION")&&fase==Fase.TURNO&&j.vidas>0&&!j.accion&&valor>=0&&valor<=2){j.accion=true;elecciones[rol]=valor;golpes[rol]=reloj;}
         if(accion.equals("DECISION")&&fase==Fase.DECISION&&!j.accion&&valor>=0&&valor<=1){j.accion=true;elecciones[rol]=valor;}
     }
+    /** Las instantáneas antiguas conservan la ronda y vuelven al aviso del patrón en curso. */
+    synchronized void adaptarOleadaAnterior(){
+        if(fase==Fase.ESQUIVA)cambiar(Fase.AVISO);
+        else if(fase==Fase.TRAICION)cambiar(Fase.TRAICION);
+    }
     private static float finito(float v){return Float.isFinite(v)?Math.max(-1,Math.min(1,v)):0;}
     private void detenerEntradas(){for(J j:js){j.dx=j.dy=0;j.salto=false;}}
     private void cambiar(Fase siguiente){if(siguiente==Fase.TURNO){var prioridad=publicaciones.recorrer("inverso");mensaje=prioridad.isEmpty()?"Todas las publicaciones fueron verificadas.":"Prioridad de Civitas: "+prioridad.getFirst().texto();}fase=siguiente;reloj=0;linea=0;obs.clear();for(J j:js){j.accion=false;j.movido=false;j.dx=j.dy=0;j.vx=j.vy=0;}if(siguiente==Fase.INTRO)entrada();if(siguiente==Fase.EPILOGO){js[0].x=515;js[0].y=530;js[0].orientacion=0;js[1].x=PERIODISTA_X;js[1].y=PERIODISTA_CONVERSACION_Y;js[1].orientacion=0;}if(siguiente==Fase.AVISO){js[0].x=500;js[1].x=770;for(int i=0;i<participantes();i++){js[i].y=550;js[i].inv=60;}normalizarIndividual();}}
@@ -84,7 +90,8 @@ public final class MotorBatalla {
         jefe=Math.max(0,jefe-12);rumores=Math.max(0,rumores-1);ronda++;
         if(ronda>=5){jefe=0;cambiar(Fase.DECISION);elecciones[0]=elecciones[1]=-1;}else{patron=ronda*3;cambiar(Fase.AVISO);elecciones[0]=elecciones[1]=-1;}}
     public static float indicador(int pasos){return (float)(.5-.5*Math.cos(pasos*.075));}
-    public static int duracion(int p){return new int[]{360,330,390,390,420,360,360,390,390,390,420,390,420,420,480}[Math.floorMod(p,15)];}
+    private static final int[] DURACIONES={360,330,390,390,420,360,360,390,390,390,420,390,420,420,480};
+    public static int duracion(int p){return DURACIONES[Math.floorMod(p,DURACIONES.length)];}
     private int duracionPatron(){return duracion(patron);}
     private boolean gravedad(){return fase==Fase.ESQUIVA&&(patron==3||patron==4||patron==5||patron==9||patron==10);}
     private void moverOficina(J j){float nx=j.x+j.dx*3.5f,ny=j.y+j.dy*3.5f;if(oficinaLibre(nx,j.y))j.x=nx;if(oficinaLibre(j.x,ny))j.y=ny;j.movido=Math.abs(j.dx)+Math.abs(j.dy)>.1;if(j.movido)j.orientacion=Math.abs(j.dx)>Math.abs(j.dy)?j.dx<0?2:3:j.dy<0?1:0;}
@@ -104,28 +111,308 @@ public final class MotorBatalla {
         float rapidez=tipo==3?1:dificultad.velocidad;
         if(obs.size()<300)obs.add(new Obstaculo(x,y,w,h,vx*rapidez,vy*rapidez,tipo,0,espera,espera+dur-aviso,obj));
     }
-    private int cadencia(int base){return Math.max(12,Math.round(base*dificultad.cadencia));}
-    private float apertura(float base){return base*dificultad.apertura;}
-    private int azar(int sal,int limite){long z=semilla+tick*0x9e3779b97f4a7c15L+sal*31L;z=(z^(z>>>30))*0xbf58476d1ce4e5b9L;return Math.floorMod((int)(z^(z>>>27)),limite);}
-    private void dirigido(int objetivo){if(solo)objetivo=0;if(!solo&&js[objetivo].vidas<=0)objetivo=1-objetivo;J j=js[objetivo];agregar(AX,j.y-13,AW,26,0,0,2,60,92,objetivo);mensaje="Pulso dirigido al jugador "+(objetivo+1)+": sal de la línea anunciada.";}
-    private void generar(){int t=reloj;int p=fase==Fase.TRAICION?14:patron;gravedadDir=p==9?1:0;
-        switch(p){
-            case 0 -> {if(t%cadencia(42)==0){agregar(AX-35,AY+20+azar(0,195),28,28,4,0,0,0,260,-1);agregar(AX+AW+5,AY+20+azar(1,195),28,28,-4,0,0,0,260,-1);}}
-            case 1 -> {if(t%cadencia(90)==0)agregar(AX,AY+25+azar(1,190),AW,26,0,0,1,40,70,-1);if(t%cadencia(60)==0)agregar(AX-30,AY+30+azar(0,175),24,24,3.5f,0,0,0,260,-1);}
-            case 2,8 -> {if(t%cadencia(100)==0){float hueco=AY+50+azar(0,100);agregar(AX+AW+25,AY,28,hueco-AY,-3.5f,0,0,0,280,-1);agregar(AX+AW+25,hueco+apertura(90),28,AY+AH-hueco-apertura(90),-3.5f,0,0,0,280,-1);}}
-            case 3 -> {if(t%cadencia(72)==0)agregar(AX+AW,AY+AH-35,30,35,-4.2f,0,0,0,220,-1);}
-            case 4,10 -> {if(t==1){agregar(AX+120,AY+AH-65,160,12,.3f,0,3,0,500,-1);agregar(AX+410,AY+AH-115,180,12,-.25f,0,3,0,500,-1);}if(t%cadencia(100)==0)agregar(AX,AY+AH-29,AW,29,0,0,0,50,80,-1);}
-            case 5 -> {if(t%cadencia(90)==0){agregar(AX+AW,AY+AH-55,40,55,-3.5f,0,0,0,260,-1);agregar(AX+AW+170,AY,40,65,-3.5f,0,0,0,260,-1);}}
-            case 6,12 -> {if(t%cadencia(100)==1)dirigido((t/cadencia(100))%2);if(p==12&&t%cadencia(65)==0)agregar(AX+azar(0,660),AY-30,26,26,0,3.5f,0,0,150,-1);}
-            case 7 -> {if(t%cadencia(65)==0){float hueco=AX+100+azar(0,450);for(int k=0;k<9;k++){float x=AX+k*80;if(Math.abs(x-hueco)>90)agregar(x,AY-30,24,24,0,3,0,0,160,-1);}}}
-            case 9 -> {if(t%cadencia(90)==0)agregar(AX+AW-35,AY-30,35,30,0,3.3f,0,0,140,-1);}
-            case 11 -> {if(t%cadencia(110)==0)agregar(AX,AY,AW,AH,0,0,1,55,75,-1);if(t%cadencia(110)==Math.round(80*dificultad.cadencia))agregar(AX-30,AY+60+azar(0,130),24,24,4.5f,0,0,0,220,-1);}
-            case 13 -> {if(t%cadencia(45)==0){double abertura=t*.012;for(int k=0;k<14;k++){double a=k*Math.PI*2/14;double dif=Math.atan2(Math.sin(a-abertura),Math.cos(a-abertura));if(Math.abs(dif)<.6)continue;agregar(640+(float)Math.cos(a)*365,480+(float)Math.sin(a)*160,16,16,-(float)Math.cos(a)*2.8f,-(float)Math.sin(a)*2.0f,0,25,170,-1);}}}
-            default -> {if(t%cadencia(95)==1)dirigido((t/cadencia(95))%2);if(t%cadencia(50)==0){float x=AX+50+nodoAtaque()*110;agregar(x,AY-25,20,20,0,3.8f,0,0,130,-1);}if(t%cadencia(150)==0)agregar(AX,AY+50+azar(1,140),AW,20,0,0,1,45,72,-1);}
+    private float velocidadPorVerificaciones(){
+        return 1-Math.min(.25f,verificados*.025f);
+    }
+    private static final int[][] HUECOS = {{0,1,2},{2,1,0},{1,0,2},{1,2,0}};
+
+    private void generar(){
+        int p=fase==Fase.TRAICION?14:patron;
+        gravedadDir=p==9?1:0;
+        int duracion=fase==Fase.TRAICION?420:duracionPatron();
+        // El inicio de la fase se conserva al pausar, guardar o reconectar.
+        long inicio=tick-reloj;
+        int variante=variante(p,inicio);
+        boolean cortafuegosDificil=p==14&&fase==Fase.ESQUIVA&&dificultad==Dificultad.DIFICIL;
+        if(cortafuegosDificil&&reloj==84+variante)generarRastreador(variante^2,0);
+        if(reloj==1&&(p==4||p==10))plataformas(p,variante);
+        for(int oleada=0;oleada<3;oleada++){
+            // La primera oleada de pared deja que ambos corazones se apoyen antes de pedir un salto.
+            int esperaPared=p==9&&oleada==0?28:0;
+            int inicioOleada=1+oleada*duracion/3+desfase(oleada,variante)+esperaPared;
+            // Deja terminar al primer rastreador y al pulso cian antes de la siguiente oleada.
+            if(cortafuegosDificil&&oleada>0)inicioOleada+=oleada==1?44:25;
+            if(reloj==inicioOleada)oleada(p,oleada,variante,inicioOleada);
+            if(p==14&&oleada==1){
+                if(fase==Fase.TRAICION){
+                    if(reloj==inicioOleada+78)cian(27,14);
+                }else{
+                    // Al continuar una partida anterior, termina la descarga que ya estaba en curso.
+                    if(reloj==inicioOleada+14&&obs.stream().noneMatch(a->a.tipo()==0))
+                        cuadritosDelCortafuegos(inicio,1);
+                    if(reloj==inicioOleada+98&&obs.stream().noneMatch(a->a.tipo()==1))
+                        cian(27,14);
+                }
+            }
         }
     }
-    private void actualizarObstaculos(){for(int i=0;i<obs.size();i++){var a=obs.get(i);int edad=a.edad()+1;float x=a.x()+(edad>=a.aviso()?a.vx()*(1-Math.min(.25f,verificados*.025f)):0),y=a.y()+(edad>=a.aviso()?a.vy()*(1-Math.min(.25f,verificados*.025f)):0);obs.set(i,new Obstaculo(x,y,a.w(),a.h(),a.vx(),a.vy(),a.tipo(),edad,a.aviso(),a.duracion(),a.objetivo()));}obs.removeIf(a->a.edad()>a.duracion());}
-    private void colisiones(){for(J j:js)if(j.vidas>0&&j.inv==0)for(var a:obs){if(a.tipo()==3||a.edad()<a.aviso()||a.tipo()==1&&!j.movido)continue;if(j.x+7>a.x()&&j.x-7<a.x()+a.w()&&j.y+7>a.y()&&j.y-7<a.y()+a.h()){j.vidas--;j.inv=75;j.puntos=Math.max(0,j.puntos-3);break;}}}
+
+    private int variante(int patron,long inicio){
+        return (int)(mezclarSemilla(patron,inicio)&3);
+    }
+
+    private long mezclarSemilla(int patron,long inicio){
+        long z=semilla+inicio*0x9e3779b97f4a7c15L+patron*0x632be59bd9b4e019L;
+        z=(z^(z>>>30))*0xbf58476d1ce4e5b9L;
+        z=(z^(z>>>27))*0x94d049bb133111ebL;
+        return z^(z>>>31);
+    }
+
+    private int desfase(int oleada,int variante){
+        // La dificultad modifica el momento del ataque además del aviso y la velocidad.
+        int paso=variante+Math.round((dificultad.cadencia-Dificultad.DIFICIL.cadencia)*8);
+        int cambio=oleada==1?switch(variante){case 1->3;case 2->-2;case 3->4;default->0;}:0;
+        return oleada*paso+cambio;
+    }
+
+    private void oleada(int patron,int oleada,int variante,int inicioOleada){
+        int lado=(oleada+variante)&1;
+        int aviso=52;
+        switch(patron){
+            case 0 -> carriles(false,lado,variante,aviso,24);
+            case 1 -> {
+                if(oleada==1)cian(45,22);
+                else carriles(false,(variante+(oleada/2))&1,variante,aviso,20);
+            }
+            case 2 -> ventana(HUECOS[variante][oleada],lado==0);
+            case 3 -> suelo(33+4*(variante&1),aviso,13);
+            case 4,10 -> {
+                if(oleada==0)suelo(44,aviso,13);
+                else carriles(true,lado,(variante+(patron==10?2:0))%4,aviso,21);
+            }
+            case 5 -> {
+                if(oleada==1){
+                    float x=(variante&1)==0?AX:AX+AW/3;
+                    pulso(x,AY,AW*2/3,161,0,aviso,22,-1);
+                }else suelo(28+7*(1+lado),aviso,14);
+            }
+            case 6 -> dirigido(oleada%2,false);
+            case 7 -> carriles(true,lado,variante,aviso,25);
+            case 8 -> carriles(oleada==2, lado, variante,aviso,21);
+            case 9 -> {
+                if(oleada==1)carriles(false,lado,variante,aviso,23);
+                else pulso(AX+AW-36-4*(variante&1),AY,36+4*(variante&1),AH,0,aviso,13,-1);
+            }
+            case 11 -> {
+                if(oleada==1)cian(47,22);
+                else carriles((variante&2)!=0,(variante+(oleada/2))&1,variante,aviso,22);
+            }
+            case 12 -> {
+                if(oleada==0)dirigido(0,false);
+                else if(oleada==1)carriles(true,lado,variante,aviso,20);
+                else generarRastreador(variante,1);
+            }
+            case 13 -> anillo(lado==0,variante,aviso);
+            case 14 -> {
+                if(oleada==1){
+                    if(fase==Fase.TRAICION)carriles(true,lado,(variante+nodoDifusion(inicioOleada))%4,43,15);
+                    else if(obs.stream().noneMatch(a->a.tipo()==0))cuadritosDelCortafuegos(tick-reloj,0);
+                }else if(oleada==2&&fase==Fase.ESQUIVA&&dificultad==Dificultad.DIFICIL){
+                    generarRastreador(variante,1);
+                }else dirigido(oleada/2,oleada!=0&&(variante&1)!=0);
+            }
+            default -> throw new IllegalArgumentException("Patrón desconocido: "+patron);
+        }
+    }
+
+    private int nodoDifusion(int paso){
+        var nodos=difusionDesde(patron%6);
+        return nodos.get((paso/60)%nodos.size());
+    }
+
+    private void pulso(float x,float y,float w,float h,int tipo,int aviso,int activo,int objetivo){
+        agregar(x,y,w,h,0,0,tipo,aviso,aviso+activo,objetivo);
+    }
+
+    private void cian(int aviso,int activo){
+        pulso(AX,AY,AW,AH,1,aviso,activo,-1);
+    }
+
+    private void suelo(float alto,int aviso,int activo){
+        pulso(AX,AY+AH-alto,AW,alto,0,aviso,activo,-1);
+    }
+
+    private void dirigido(int objetivo,boolean vertical){
+        if(solo)objetivo=0;
+        if(!solo&&js[objetivo].vidas<=0)objetivo=1-objetivo;
+        J j=js[objetivo];
+        if(vertical)pulso(j.x-15,AY,30,AH,2,58,25,objetivo);
+        else pulso(AX,j.y-13,AW,26,2,60,28,objetivo);
+        mensaje="Pulso dirigido al jugador "+(objetivo+1)+": sal de la línea anunciada.";
+    }
+
+    private void generarRastreador(int variante,int objetivoPreferido) {
+        int objetivo=solo?0:objetivoPreferido;
+        if(!solo&&js[objetivo].vidas<=0)objetivo=1-objetivo;
+        J j=js[objetivo];
+        float lado=24, mitad=lado/2, distancia=124;
+        boolean horizontal=(variante&2)==0;
+        int signo=(variante&1)==0?-1:1;
+        float posicion=horizontal?j.x:j.y;
+        float min=(horizontal?AX:AY)+mitad, max=(horizontal?AX+AW:AY+AH)-mitad;
+        float origen=posicion+signo*distancia;
+        if (origen<min||origen>max) {
+            origen=posicion-signo*distancia;
+            signo=-signo;
+        }
+        origen=Math.clamp(origen,min,max);
+        float x=horizontal?origen:j.x;
+        float y=horizontal?j.y:origen;
+        var ritmo=PaqueteRastreador.para(dificultad);
+        obs.add(new Obstaculo(x-mitad,y-mitad,lado,lado,horizontal?-signo:0,horizontal?0:-signo,
+            PaqueteRastreador.TIPO,0,ritmo.aviso(),ritmo.duracion(),objetivo));
+    }
+
+    private void cuadritosDelCortafuegos(long inicio,int tanda){
+        int cantidad=dificultad==Dificultad.FACIL?2:3;
+        float lado=22, reduccion=velocidadPorVerificaciones();
+        int aviso=24, pasosActivos=38;
+        for(int i=0;i<cantidad;i++){
+            long azar=mezclarSemilla(15+tanda*cantidad+i,inicio);
+            int signo=(azar&1)==0?1:-1;
+            float ajuste=((azar>>>8)%81)-40;
+            float x=AX+(i+.5f)*(AW-lado)/cantidad+ajuste;
+            float y=signo>0?AY:AY+AH-lado;
+            float vx=((azar>>>16)%7)-3;
+            if(i==0&&vx==0)vx=2*signo;
+            float vy=signo*(7+((azar>>>24)%3));
+            if(tanda==1&&i==cantidad-1){
+                x=signo>0?AX:AX+AW-lado;
+                y=AY+25+((azar>>>32)%155);
+                vx=signo*9;
+                vy=((azar>>>48)%5)-2;
+            }
+            agregar(x,y,lado,lado,vx*reduccion,vy*reduccion,PaqueteCruzado.TIPO,aviso,
+                aviso+pasosActivos+PaqueteCruzado.DISIPACION-1,-1);
+        }
+    }
+
+    private void plataformas(int patron,int variante){
+        float signo=(variante&1)==0?1:-1;
+        float ajuste=(variante&2)==0?0:24;
+        agregar(AX+120+ajuste,AY+AH-65,160,12,.3f*signo,0,3,0,500,-1);
+        agregar(AX+410-ajuste,AY+AH-(patron==10?108:115),180,12,-.25f*signo,0,3,0,500,-1);
+    }
+
+    private void carriles(boolean vertical,int lado,int variante,int aviso,int activo){
+        int total=vertical?8:switch(dificultad){case FACIL->4;case NORMAL->6;case DIFICIL->8;};
+        // Cada variante corta sectores distintos. Las dos polaridades juntas cubren toda la arena.
+        // Los grupos tienen como máximo dos sectores contiguos, incluso en Difícil.
+        int mascara=switch(variante){case 0->0b01010101;case 1->0b10011001;case 2->0b01100110;default->0b10101010;};
+        float origen=vertical?AX:AY;
+        float medida=(vertical?AW:AH)/total;
+        for(int i=0;i<total;i++){
+            if(((mascara>>>i)&1)!=lado)continue;
+            float comienzo=origen+i*medida;
+            if(vertical)pulso(comienzo,AY,medida,AH,0,aviso,activo,-1);
+            else pulso(AX,comienzo,AW,medida,0,aviso,activo,-1);
+        }
+    }
+
+    private void ventana(int hueco,boolean desdeDerecha){
+        float ancho=28;
+        float centro=AY+63+72*hueco;
+        float apertura=90*dificultad.apertura;
+        float arriba=centro-apertura/2;
+        float abajo=centro+apertura/2;
+        float x=desdeDerecha?AX+AW:AX-ancho;
+        float vx=desdeDerecha?-24:24;
+        int aviso=44;
+        float reduccion=velocidadPorVerificaciones();
+        int cruce=(int)Math.ceil((AW+ancho)/(24*dificultad.velocidad*reduccion))+2;
+        agregar(x,AY,ancho,arriba-AY,vx,0,0,aviso,aviso+cruce,-1);
+        agregar(x,abajo,ancho,AY+AH-abajo,vx,0,0,aviso,aviso+cruce,-1);
+    }
+
+    private void anillo(boolean exterior,int variante,int aviso){
+        float lado=82+14*variante;
+        float borde=42+6*variante;
+        if(exterior){
+            pulso(AX,AY,AW,borde,0,aviso,25,-1);
+            pulso(AX,AY+AH-borde,AW,borde,0,aviso,25,-1);
+            pulso(AX,AY+borde,lado,AH-2*borde,0,aviso,25,-1);
+            pulso(AX+AW-lado,AY+borde,lado,AH-2*borde,0,aviso,25,-1);
+        }else{
+            float x=lado-15,y=borde-12;
+            pulso(AX+x,AY+y,AW-2*x,AH-2*y,0,aviso,22,-1);
+        }
+    }
+    private void actualizarObstaculos() {
+        float reduccion=velocidadPorVerificaciones();
+        for (int i=0;i<obs.size();i++) {
+            var a=obs.get(i);
+            if (a.tipo()==PaqueteRastreador.TIPO) {
+                obs.set(i,actualizarRastreador(a,reduccion));
+                continue;
+            }
+            int edad=a.edad()+1;
+            boolean cruzado=a.tipo()==PaqueteCruzado.TIPO;
+            if(cruzado&&edad>=a.aviso()&&edad<PaqueteCruzado.inicioDisipacion(a)){
+                obs.set(i,desplazarPaquete(a,edad,a.vx(),a.vy(),PaqueteCruzado.inicioDisipacion(a),true));
+                continue;
+            }
+            float avance=!cruzado&&edad>=a.aviso()?reduccion:0;
+            obs.set(i,new Obstaculo(a.x()+a.vx()*avance,a.y()+a.vy()*avance,a.w(),a.h(),
+                a.vx(),a.vy(),a.tipo(),edad,a.aviso(),a.duracion(),a.objetivo()));
+        }
+        obs.removeIf(a->a.edad()>a.duracion());
+    }
+
+    private Obstaculo actualizarRastreador(Obstaculo a,float reduccion) {
+        var ritmo=PaqueteRastreador.para(dificultad);
+        int edad=a.edad()+1;
+        J objetivo=js[a.objetivo()];
+        if (objetivo.vidas<=0 || !objetivo.conectado) edad=Math.max(edad,ritmo.inicioDisipacion(a));
+        var fase=ritmo.fase(a,edad);
+        float x=a.x(),y=a.y(),vx=a.vx(),vy=a.vy();
+        boolean persigue=fase==PaqueteRastreador.Fase.SEGUIMIENTO;
+        boolean empiezaFijado=fase==PaqueteRastreador.Fase.FIJADO&&ritmo.fase(a)!=fase;
+        if (persigue||empiezaFijado) {
+            double dx=objetivo.x-(x+a.w()/2),dy=objetivo.y-(y+a.h()/2);
+            double rumbo=Math.atan2(vy,vx);
+            double direccion=dx==0&&dy==0?rumbo:Math.atan2(dy,dx);
+            if (persigue) {
+                double giro=Math.IEEEremainder(direccion-rumbo,2*Math.PI);
+                direccion=rumbo+Math.clamp(giro,-.09,.09);
+            }
+            float rapidez=reduccion*(persigue?ritmo.velocidadSeguimiento():ritmo.velocidadEmbestida());
+            vx=(float)Math.cos(direccion)*rapidez;
+            vy=(float)Math.sin(direccion)*rapidez;
+        }
+        if (fase.haceDanio())
+            return desplazarPaquete(a,edad,vx,vy,ritmo.inicioDisipacion(a),!persigue);
+        return new Obstaculo(x,y,a.w(),a.h(),vx,vy,a.tipo(),edad,a.aviso(),a.duracion(),a.objetivo());
+    }
+
+    private static Obstaculo desplazarPaquete(Obstaculo a,int edad,float vx,float vy,int disipacion,boolean detenerAlBorde){
+        float siguienteX=a.x()+vx,siguienteY=a.y()+vy;
+        float x=Math.clamp(siguienteX,AX,AX+AW-a.w());
+        float y=Math.clamp(siguienteY,AY,AY+AH-a.h());
+        if(detenerAlBorde&&(siguienteX!=x||siguienteY!=y)){
+            edad=disipacion;
+            x=a.x();
+            y=a.y();
+        }
+        return new Obstaculo(x,y,a.w(),a.h(),vx,vy,a.tipo(),edad,a.aviso(),a.duracion(),a.objetivo());
+    }
+
+    private void colisiones() {
+        var ritmo=PaqueteRastreador.para(dificultad);
+        for (J j:js) {
+            if (j.vidas<=0||j.inv>0) continue;
+            for (var a:obs) {
+                if (a.tipo()==3||a.edad()<a.aviso()||a.tipo()==1&&!j.movido) continue;
+                if (a.tipo()==PaqueteRastreador.TIPO&&!ritmo.fase(a).haceDanio()) continue;
+                if (a.tipo()==PaqueteCruzado.TIPO&&a.edad()>=PaqueteCruzado.inicioDisipacion(a)) continue;
+                if (j.x+7>a.x()&&j.x-7<a.x()+a.w()&&j.y+7>a.y()&&j.y-7<a.y()+a.h()) {
+                    j.vidas--;
+                    j.inv=75;
+                    j.puntos=Math.max(0,j.puntos-3);
+                    break;
+                }
+            }
+        }
+    }
     private int[] ciudadActual(){int signo=fase==Fase.FINAL||fase==Fase.EPILOGO?(gano?1:-1):0;return new int[]{Math.min(100,base.informacionVerificada()+verificados*2),Math.max(0,Math.min(100,base.confianza()+signo*6)),Math.max(0,Math.min(100,base.convivencia()+signo*3)),Math.max(0,Math.min(100,base.bienestar()+signo*3)),Math.max(0,Math.min(100,base.participacion()+signo*3)),Math.max(0,Math.min(100,base.desinformacion()-signo*8)),Math.max(0,Math.min(100,base.conflictos()-signo*4))};}
     public synchronized Vista vista(){Jugador[] jugadores=new Jugador[2];for(int i=0;i<2;i++){J j=js[i];jugadores[i]=new Jugador(j.nombre,j.x,j.y,j.vx,j.vy,j.vidas,j.puntos,j.inv,j.recuperaciones,j.orientacion,j.movido,j.listo,j.conectado,j.accion);}return new Vista(id,semilla,tick,fase,ronda,patron,reloj,jefe,linea,golpes.clone(),elecciones.clone(),jugadores,List.copyOf(obs),pausa,gravedad(),gravedadDir,solo,gano,verificados,rumores,ciudadActual(),new int[]{base.informacionVerificada(),base.confianza(),base.convivencia(),base.bienestar(),base.participacion(),base.desinformacion(),base.conflictos()},mensaje,historial.toArray(String[]::new),publicaciones.recorrer("inverso").stream().map(a->"#"+a.id()+" · riesgo "+a.riesgo()+" · "+a.texto()).toArray(String[]::new),dificultad);}
     public static MotorBatalla restaurar(Vista v){MotorBatalla m=new MotorBatalla(v.id(),v.semilla(),v.solo(),v.dificultad());int[] c=v.base();m.base=new EstadoCiudad(c[0],c[1],c[2],c[3],c[4],c[5],c[6]);m.gravedadDir=v.gravedadDir();m.tick=v.tick();m.fase=v.fase();m.ronda=v.ronda();m.patron=v.patron();m.reloj=v.reloj();m.jefe=v.jefe();m.linea=v.linea();m.pausa=v.pausa();m.gano=v.gano();m.verificados=v.verificados();m.rumores=v.rumores();m.mensaje=v.mensaje();m.historial.addAll(List.of(v.historial()));m.obs.addAll(v.obstaculos());for(int i=0;i<2;i++){Jugador a=v.jugadores()[i];J j=m.js[i];j.nombre=a.nombre();j.x=a.x();j.y=a.y();j.vx=a.vx();j.vy=a.vy();j.vidas=a.vidas();j.puntos=a.puntos();j.inv=a.invulnerable();j.recuperaciones=a.recuperaciones();j.orientacion=a.orientacion();j.movido=a.movido();j.listo=a.listo();j.conectado=a.conectado();j.accion=a.accionLista();m.golpes[i]=v.golpes()[i];m.elecciones[i]=v.elecciones()[i];}for(int n=0;n<v.verificados();n++){var prioridad=m.publicaciones.recorrer("inverso");if(!prioridad.isEmpty())m.publicaciones.eliminar(prioridad.getFirst().id());}

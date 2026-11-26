@@ -4,6 +4,7 @@ import java.util.Objects;
 
 /** Acumula cambios de cada misión respecto a su propio estado inicial. */
 public final class ProgresoCampana {
+    private static final int MAX_FUENTES_MISION_CUATRO=4;
     private ProgresoCampana() { }
 
     public static EstadoCiudad aplicarMisionUno(EstadoCiudad anterior, EstadoCiudad resultado) {
@@ -44,9 +45,9 @@ public final class ProgresoCampana {
     }
     public static EstadoCiudad aplicarMisionCuatro(EstadoCiudad anterior,int validadas,int respuestasResponsables) {
         Objects.requireNonNull(anterior);
-        if(validadas<0||validadas>3||respuestasResponsables<0||respuestasResponsables>4)
+        if(validadas<0||validadas>MAX_FUENTES_MISION_CUATRO||respuestasResponsables<0||respuestasResponsables>4)
             throw new IllegalArgumentException("Resultado de misión 4 fuera de rango");
-        // Three rumors circulate either way. Checking evidence offsets their effect.
+        // Contrastar los expedientes reduce el efecto de los rumores en la campaña.
         return new EstadoCiudad(anterior.informacionVerificada()+validadas*4,
             anterior.confianza()+respuestasResponsables+validadas,
             anterior.convivencia()+respuestasResponsables,
@@ -57,7 +58,7 @@ public final class ProgresoCampana {
     /** Balance de respuestas explícitas de la plaza; la tercera pregunta no tiene polaridad. */
     public static EstadoCiudad aplicarMisionCuatro(EstadoCiudad anterior,int validadas,int favorables,int desfavorables){
         Objects.requireNonNull(anterior);
-        if(validadas<0||validadas>3||favorables<0||desfavorables<0||favorables+desfavorables>3)
+        if(validadas<0||validadas>MAX_FUENTES_MISION_CUATRO||favorables<0||desfavorables<0||favorables+desfavorables>3)
             throw new IllegalArgumentException("Respuestas de misión 4 fuera de rango");
         int balance=favorables-desfavorables;
         return new EstadoCiudad(anterior.informacionVerificada()+validadas*4,

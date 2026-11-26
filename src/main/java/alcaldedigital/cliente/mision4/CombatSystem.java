@@ -23,11 +23,16 @@ final class CombatSystem {
     final Random random=new Random(44);
     Enemy enemy;
     float swordTime, swordCooldown, shieldLeft=5, shieldRecover, screenShake, dodgeCooldown;
+    private static final float[] DURACION_GOLPES={.32f,.34f,.46f}, PREPARACION={.075f,.09f,.12f};
+    private float tiempoGolpe, golpeEnCola, ventanaCombo;
+    private int combo,direccionGolpe;
+    private boolean impacto;
     boolean guarding;
     int health=5, maxHealth=5, kills;
     record Particle(float x,float y,float vx,float vy,float time,int color) {}
     void spawn(int index,float x,float y){
         shots.clear();particles.clear();shieldLeft=5;shieldRecover=0;guarding=false;dodgeCooldown=0;
+        tiempoGolpe=golpeEnCola=ventanaCombo=0;combo=0;
         enemy=new Enemy(Pattern.values()[index],x,y,3+index*2);
         enemy.cooldown=1;health=Math.max(health,3);
     }
@@ -38,11 +43,52 @@ final class CombatSystem {
         float dist=(float)Math.hypot(dx,dy);
         float facing=switch(hero.direction){case 0->dy;case 1->-dy;case 2->-dx;default->dx;};
         if(dist<62 && facing>dist*.3f && enemy.flash<=0){
-            enemy.hp--;enemy.flash=.28f;enemy.recovery=.52f;enemy.windup=0;enemy.dashTime=0;
-            float n=Math.max(1,dist);enemy.knockX=dx/n*18;enemy.knockY=dy/n*18;
-            burst(enemy.x,enemy.y,0xfff4cb6a,12);screenShake=7;
-            if(enemy.hp<=0){kills++;burst(enemy.x,enemy.y,0xffd998ef,28);enemy=null;shots.clear();}
+            impacto(dx,dy,dist,1);
         }
+    }
+    boolean golpeCivitaActivo(){return tiempoGolpe>0;}
+    int direccionCivita(){return direccionGolpe;}
+    float progresoGolpe(){return golpeCivitaActivo()?1-tiempoGolpe/DURACION_GOLPES[combo]:0;}
+    float faseArco(){
+        return Math.clamp((DURACION_GOLPES[combo]-tiempoGolpe-PREPARACION[combo])/.15f,0,1);
+    }
+    void ataqueCivita(Actor hero){
+        if(enemy==null||guarding||hero.dodge>0)return;
+        if(golpeCivitaActivo()){
+            if(tiempoGolpe<=.16f&&combo<2)golpeEnCola=.19f;
+            return;
+        }
+        iniciarGolpe(hero,ventanaCombo>0&&combo<2?combo+1:0);
+    }
+    private void iniciarGolpe(Actor hero,int siguiente){
+        combo=siguiente;direccionGolpe=hero.direction;
+        tiempoGolpe=DURACION_GOLPES[combo];golpeEnCola=0;ventanaCombo=0;impacto=false;
+        swordTime=.16f;
+    }
+    private void avanzarGolpe(float dt,Actor hero,CollisionWorld world){
+        golpeEnCola=Math.max(0,golpeEnCola-dt);ventanaCombo=Math.max(0,ventanaCombo-dt);
+        if(!golpeCivitaActivo())return;
+        tiempoGolpe=Math.max(0,tiempoGolpe-dt);
+        if(!impacto&&DURACION_GOLPES[combo]-tiempoGolpe>=PREPARACION[combo]){
+            impacto=true;
+            if(enemy!=null){
+                float dx=enemy.x-hero.x,dy=enemy.y-hero.y,dist=(float)Math.hypot(dx,dy);
+                float frente=switch(direccionGolpe){case 0->dy;case 1->-dy;case 2->-dx;default->dx;};
+                float radio=combo==2?75:66;
+                if(dist<=radio&&(dist<9||frente>=dist*.30f)&&enemy.flash<=0&&
+                    !world.blocked(hero.x+dx*.5f,hero.y+dy*.5f,3))impacto(dx,dy,dist,combo==2?2:1);
+            }
+        }
+        if(tiempoGolpe==0){
+            if(golpeEnCola>0&&combo<2&&enemy!=null&&!guarding)iniciarGolpe(hero,combo+1);
+            else ventanaCombo=.20f;
+        }
+    }
+    private void impacto(float dx,float dy,float dist,int fuerza){
+        enemy.hp-=fuerza;enemy.flash=.23f;enemy.recovery=.48f;enemy.windup=0;enemy.dashTime=0;
+        float n=Math.max(1,dist);enemy.knockX=dx/n*(fuerza==2?19:13);enemy.knockY=dy/n*(fuerza==2?19:13);
+        burst(enemy.x,enemy.y,fuerza==2?0xffffe5a4:0xfff4cb6a,fuerza==2?22:13);screenShake=fuerza==2?8:5;
+        if(enemy.hp<=0){kills++;burst(enemy.x,enemy.y,0xffd998ef,28);enemy=null;shots.clear();}
     }
     void dodge(Actor hero) {if(hero.dodge>0||hero.invulnerable>0||dodgeCooldown>0)return;hero.dodge=.22f;hero.invulnerable=.30f;dodgeCooldown=.8f;}
     void defend(boolean value){guarding=value && shieldLeft>0 && shieldRecover<=0;}
@@ -51,6 +97,7 @@ final class CombatSystem {
         dodgeCooldown=Math.max(0,dodgeCooldown-dt);
         shieldRecover=Math.max(0,shieldRecover-dt);screenShake=Math.max(0,screenShake-dt*25);
         hero.dodge=Math.max(0,hero.dodge-dt);
+        avanzarGolpe(dt,hero,world);
         if(guarding){shieldLeft=Math.max(0,shieldLeft-dt);if(shieldLeft==0){guarding=false;shieldRecover=1.2f;}}
         else if(shieldRecover<=0)shieldLeft=Math.min(5,shieldLeft+dt*.3f);
         for(int i=particles.size()-1;i>=0;i--){Particle p=particles.get(i);if(p.time<=dt)particles.remove(i);else particles.set(i,new Particle(p.x+p.vx*dt,p.y+p.vy*dt,p.vx,p.vy,p.time-dt,p.color));}
@@ -110,7 +157,15 @@ final class CombatSystem {
         a.noStroke();
         for(Shot s:shots){a.fill(42,23,59,130);a.rect(s.x-8,s.y-7,25,17,3);a.fill(236,144,200);a.textSize(16);a.text("!",s.x+1,s.y+6);}
         for(Particle p:particles){a.fill(p.color);a.rect(p.x,p.y,4,4);}
-        if(swordTime>0){a.noFill();a.stroke(245,223,142,230);a.strokeWeight(6);
+        if(golpeCivitaActivo()&&faseArco()>0&&faseArco()<1){
+            float ang=switch(direccionGolpe){case 0->PApplet.HALF_PI;case 1->-PApplet.HALF_PI;case 2->PApplet.PI;default->0;};
+            float fase=combo==1?1-faseArco():faseArco(),barrido=ang-1.27f+fase*2.54f;
+            float ancho=combo==2?142:124;
+            a.noFill();a.stroke(181,100,228,165);a.strokeWeight(10);
+            a.arc(hero.x,hero.y-8,ancho,ancho,barrido-.36f,barrido+.36f);
+            a.stroke(255,224,153,227);a.strokeWeight(4);
+            a.arc(hero.x,hero.y-8,ancho,ancho,barrido-.29f,barrido+.29f);a.noStroke();
+        }else if(swordTime>0&&!golpeCivitaActivo()){a.noFill();a.stroke(245,223,142,230);a.strokeWeight(6);
             float ang=switch(hero.direction){case 0->PApplet.HALF_PI;case 1->-PApplet.HALF_PI;case 2->PApplet.PI;default->0;};
             a.arc(hero.x,hero.y-12,100,100,ang-.75f,ang+.75f);a.noStroke();}
         if(guarding){a.noFill();a.stroke(240,202,104,210);a.strokeWeight(4);a.arc(hero.x,hero.y-18,80,80,0,PApplet.TWO_PI);a.noStroke();}

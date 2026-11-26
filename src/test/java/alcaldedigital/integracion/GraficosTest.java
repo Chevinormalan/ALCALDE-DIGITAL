@@ -43,7 +43,25 @@ class GraficosTest {
  }
  @Test void lasResolucionesDisponiblesRespetanElMonitor(){
   var o=new OpcionesGraficas(carpeta.resolve("graficos.properties"));o.detectar(1920,1080,1896,1024);
-  assertFalse(o.compatibles().contains(new OpcionesGraficas.Tamano(3840,2160)));for(int i=0;i<20;i++){o.tamano();assertTrue(o.edicion().ventana().ancho()<=1896);assertTrue(o.edicion().ventana().alto()<=1024);}
+  var monitor=new OpcionesGraficas.Tamano(1920,1080);
+  assertTrue(o.compatibles().contains(monitor));
+  assertTrue(o.compatibles().stream().allMatch(t->t.equals(monitor)||t.ancho()<=1896&&t.alto()<=1024));
+  o.detectar(1024,768,1014,738);
+  assertTrue(o.compatibles().contains(new OpcionesGraficas.Tamano(1024,768)));
+ }
+ @Test void aplicarLaResolucionDelMonitorAbrePantallaCompletaYConservaLaVentana(){
+  Path archivo=carpeta.resolve("graficos.properties");
+  var o=new OpcionesGraficas(archivo);
+  o.detectar(1024,768,1014,738);
+  var nativa=new OpcionesGraficas.Tamano(1024,768);
+  for(int i=0;i<o.compatibles().size()&&!o.edicion().ventana().equals(nativa);i++)o.tamano();
+  assertEquals(nativa,o.edicion().ventana());
+  o.aplicar();
+  assertEquals(o.actual(),o.edicion());
+  assertTrue(new OpcionesGraficas(archivo).actual().completa());
+  assertEquals(OpcionesGraficas.ORIGINAL.ventana(),o.actual().ventana());
+  o.alternarCompleta();
+  assertEquals(OpcionesGraficas.ORIGINAL,o.actual());
  }
  @Test void graficosVuelveACómoJugarYDespuesAlMenu(){
   var j=juego();j.accion("ayuda");var r=new RenderJuego();r.dibujar(j);var b=r.botones().stream().filter(x->x.accion().equals("graficos")).findFirst().orElseThrow();r.pulsar(j,b.area().x+10,b.area().y+10);assertEquals(JuegoCliente.Pantalla.GRAFICOS,j.pantalla);
@@ -59,6 +77,35 @@ class GraficosTest {
   var p=ventana(1920,1200);p.mouseX=960;p.mouseY=600;var l=new LienzoJuego(p);p.g.beginDraw();
   l.dibujar(OpcionesGraficas.ORIGINAL,()->{var a=l.escena();assertEquals(1280,a.width);assertEquals(720,a.height);assertEquals(640,a.mouseX);assertEquals(360,a.mouseY);a.background(255,0,0);});p.g.endDraw();
   assertEquals(1920,p.width);assertEquals(1200,p.height);assertEquals(0xffff0000,p.g.get(960,600));assertNotEquals(0xffff0000,p.g.get(960,20));assertNotSame(p.g,l.escena().g);
+ }
+ @Test void unRedimensionadoUsaElBuferVigenteYEsperaElSiguienteFotogramaParaAceptarClics(){
+  var p=ventana(1280,720);var l=new LienzoJuego(p);
+  p.g.beginDraw();
+  p.setSize(960,600);p.g.setSize(960,600);
+  l.dibujar(OpcionesGraficas.ORIGINAL,()->l.escena().background(255,0,0));
+  assertEquals(1280,l.marco().ancho());assertEquals(0xffff0000,p.g.get(1279,719));
+  assertFalse(l.aLogico(480,300).dentro());
+  p.g.endDraw();p.g.beginDraw();
+  l.dibujar(OpcionesGraficas.ORIGINAL,()->l.escena().background(255,0,0));
+  assertEquals(new EscaladoPantalla.Marco(0,30,960,540),l.marco());
+  assertEquals(new EscaladoPantalla.Punto(640,360),l.aLogico(480,300));
+  assertFalse(l.aLogico(480,29).dentro());
+  p.g.endDraw();
+ }
+ @Test void laReduccionMapaElCentroDelPixelMostrado(){
+  var m=EscaladoPantalla.ajustar(640,360,false);
+  assertEquals(new EscaladoPantalla.Punto(1,1),m.aLogico(0,0));
+  assertEquals(new EscaladoPantalla.Punto(1279,719),m.aLogico(639,359));
+ }
+ @Test void elModoNitidoMantieneVisiblesLosTrazosAlReducir(){
+  var p=ventana(640,360);var l=new LienzoJuego(p);p.g.beginDraw();
+  l.dibujar(OpcionesGraficas.ORIGINAL,()->{
+   var a=l.escena();a.background(0);a.noStroke();a.fill(255);a.rect(0,0,1,720);
+  });
+  p.g.endDraw();
+  int intensidad=p.g.get(0,180)&0xff;
+  assertTrue(intensidad>0&&intensidad<255);
+  assertEquals(0xff000000,p.g.get(1,180));
  }
  @Test void elFiltroNitidoConservaLosColoresYElSuaveInterpola(){
   var p=ventana(1920,1080);var l=new LienzoJuego(p);var original=OpcionesGraficas.ORIGINAL;

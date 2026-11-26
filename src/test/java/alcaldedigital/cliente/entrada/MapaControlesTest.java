@@ -8,6 +8,7 @@ class MapaControlesTest {
         var xbox=new MapaControles.Contexto(6,true,"Juan","Influencer","Xbox Controller");
         var sony=new MapaControles.Contexto(6,true,"Juan","Influencer","DualSense Wireless Controller");
         assertFalse(xbox.playStation());assertTrue(sony.playStation());
+        assertFalse(new MapaControles.Contexto(6,false,"Juan","","Xbox Wireless Controller").playStation());
         assertEquals("X / RT",MapaControles.etiquetaBoton(xbox,"X / RT"));
         assertEquals("Cuadrado / R2",MapaControles.etiquetaBoton(sony,"X / RT"));
         assertEquals("STICK / CRUCETA",MapaControles.etiquetaBoton(sony,"STICK / CRUCETA"));

@@ -55,6 +55,21 @@ class PuntajesMisionTest {
         assertEquals(0,fila.puntaje()-Math.round(30f*restaurada.naves[0].vida/5));
     }
 
+    @Test void cuatroExpedientesSeMuestranYSeAcreditanUnaSolaVez(@org.junit.jupiter.api.io.TempDir java.nio.file.Path perfil)throws Exception{
+        var resultado=new MisionCuatroSketch.Resultado(true,4,1,3,"civita-cuatro-expedientes",List.of(1,0,0,0),4);
+        var fila=PuntajesMision.cuatro(resultado);
+        assertTrue(fila.victoria());
+        assertEquals("Fuentes investigadas: 4/4",fila.datos().getFirst());
+        assertEquals(4,fila.senales().get("fuentes_validadas"));
+        var base=alcaldedigital.compartido.modelo.EstadoCiudad.inicial();
+        var repo=new alcaldedigital.servidor.carrera.RepositorioCarrera(perfil.resolve("campana.properties"));
+        var acreditado=repo.acreditarMisionCuatro(resultado.partida(),4,2,1,base);
+        assertEquals(base.informacionVerificada()+16,acreditado.informacionVerificada());
+        assertEquals(acreditado,repo.acreditarMisionCuatro(resultado.partida(),4,2,1,acreditado));
+        var antiguoSinRespuestas=new MisionCuatroSketch.Resultado(true,4,2,3,"civita-sin-respuestas",List.of(),4);
+        assertTrue(PuntajesMision.cuatro(antiguoSinRespuestas).victoria());
+    }
+
     @Test void tablaSeisMuestraVictoriaAntesDeConfirmarSinAcreditarla(){
         var motor=new MisionSeisMotor();
         motor.fase=MisionSeisMotor.Fase.FINAL;

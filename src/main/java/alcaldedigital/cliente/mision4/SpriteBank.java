@@ -57,4 +57,20 @@ final class SpriteBank {
         }
         PImage im=image(name);a.image(im,x-w/2,feet-h,w,h);
     }
+    /** Four walking poses assembled from each neighbor's own sprite. */
+    void drawCitizenWalking(processing.core.PGraphics a,int sprite,float x,float feet,float w,float h,int frame,int direction){
+        PImage im=image("vecino_"+sprite);
+        int split=(int)(im.height*.72f),mid=im.width/2;
+        float upper=h*.72f,lower=h-upper;
+        float[] stride={0,-2,0,2};
+        float left=stride[frame%4],right=-left;
+        float bob=frame%2==0?0:-1;
+        a.pushMatrix();
+        a.translate(x,feet);
+        if(direction==2)a.scale(-1,1);
+        a.image(im,-w/2+bob*.3f,-h+bob,w,upper,0,0,im.width,split);
+        a.image(im,-w/2+left,-lower,w/2,lower,0,split,mid,im.height);
+        a.image(im,right,-lower,w/2,lower,mid,split,im.width,im.height);
+        a.popMatrix();
+    }
 }

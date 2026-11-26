@@ -9,6 +9,8 @@ import java.util.List;
 
 /** Vista pública y solicitudes de la primera misión; la sesión conserva la verdad y el reloj. */
 public interface SesionMisionUno {
+    default void activarInvestigacion() { }
+    default alcaldedigital.compartido.modelo.InvestigacionCiudadana.Vista investigacion() {return null;}
     enum Fase { INTRO, CIVITAS, CRISIS, RESULTADO }
     enum Dificultad {
         FACIL(60), NORMAL(30), DIFICIL(12);

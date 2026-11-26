@@ -4,6 +4,23 @@ import alcaldedigital.cliente.presentacion.SalidaAudioPrueba;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class PresentacionMisionCuatroTest {
+ @Test void vecinosSalenPorLaAberturaDeLaPlazaSinCruzarObstaculos(){
+  var g=new MisionCuatroGame();g.set(MisionCuatroGame.Phase.PALOMO);
+  boolean huboPasos=false;
+  for(int tick=0;tick<500&&g.scenes.current==MisionCuatroGame.Phase.PALOMO;tick++){
+   g.update(1f/60);
+   for(var c:g.audience){
+    assertFalse(g.salidaPlaza.blocked(c.x,c.y,8),"Vecino dentro de una pared");
+    if(!c.exited&&c.walkDistance>18)huboPasos|=c.frame()!=0;
+    if(c.exited){assertTrue(c.x>=605&&c.x<=756);assertTrue(c.y>=547);}
+   }
+  }
+  assertTrue(huboPasos,"La marcha debe recorrer varios fotogramas");
+  assertTrue(g.audience.stream().allMatch(c->c.exited));
+  assertEquals(MisionCuatroGame.Phase.DOWNLOAD,g.scenes.current);
+  var restored=MisionCuatroGame.restore(g.checkpoint());
+  assertNotNull(restored);assertTrue(restored.audience.stream().allMatch(c->c.exited));
+ }
  @Test void laPoseDeAtaqueNoQuedaPegadaDespuesDeLaVictoria(){
   var g=new MisionCuatroGame();g.combat.swordTime=.14f;g.set(MisionCuatroGame.Phase.VICTORY);assertNotEquals("attack",g.heroVisualPose(true));
   g.set(MisionCuatroGame.Phase.ROAD);g.keys[KeyEvent.VK_D]=true;assertTrue(g.heroVisualPose(true).startsWith("walk_"));assertEquals(.14f,g.combat.swordTime,"La presentación no toca el temporizador de combate");

@@ -1,9 +1,16 @@
 package alcaldedigital.cliente.mision8;
 
+import alcaldedigital.cliente.audio.SonidosRemaster;
+
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import processing.core.*;
 import alcaldedigital.cliente.JuegoCliente;
+import alcaldedigital.cliente.red.PantallaLan;
 import alcaldedigital.cliente.interfaz.MarcosProcessing;
 import alcaldedigital.cliente.entrada.EstadoMando;
+import alcaldedigital.cliente.entrada.EntradaMandoLocal;
+import alcaldedigital.cliente.entrada.MandosJugadores;
 import alcaldedigital.compartido.carrera.EstadoElectoral;
 import java.awt.event.KeyEvent;
 import java.util.*;import java.io.*;
@@ -12,46 +19,187 @@ import java.util.*;import java.io.*;
 public final class MisionOchoVista implements AutoCloseable {
  private final JuegoCliente juego;private PApplet p;private ArteOcho arte;private MotorOcho motor;private AntecedentesOcho antecedentes;private volatile RedOcho red;
  private final Set<Integer> teclas=new HashSet<>(),bloqueadas=new HashSet<>();private EstadoMando anteriorMando=EstadoMando.desconectado();private int mascaraMando;
- private final alcaldedigital.cliente.presentacion.AudioEscena audio=new alcaldedigital.cliente.presentacion.AudioEscena("mision8");private MotorOcho.Escena escenaAudio;private int danioAudio,ataqueAudio=-1;private boolean audioInyeccion,audioNeutralizacion;
- private boolean esperarMando=true;private boolean previaControles;private boolean salir,consulta,editarHost;private volatile boolean config=true,conectando;private int jugadores=1,dificultad=1,rolSolo,modo,puesto=1,pagina,foco;
+ private final alcaldedigital.cliente.presentacion.AudioEscena audio=new alcaldedigital.cliente.presentacion.AudioEscena("mision8");private MotorOcho.Escena escenaAudio;private int danioAudio,ataqueAudio=-1,emisionAudio=-1;
+ private String partidaAudio="";private boolean audioInyeccion,audioNeutralizacion;
+ private boolean esperarMando=true;private boolean previaControles;private boolean salir,consulta;private boolean config=true,conectando;private int jugadores=1,dificultad=1,rolSolo,modo,puesto=1,pagina,foco;
  private int finalElegido=-1,ciudadPrueba;
+ private final PantallaLan pantallaLan=new PantallaLan(8,RedOcho.PUERTO,"Sofi","Periodista","Influencer","Jefe");
+ private boolean cerrada;
+ private PantallaLan.Destino destinoLan;
+ private RedOcho enlacePendiente;
+ private String falloEnlace;
+ private int puertoRecordado=RedOcho.PUERTO;
  private String host="127.0.0.1",error="",token="";private double acumulado,tiempo;private float autoguardado;
  private record Boton(int x,int y,int w,int h,String texto,Runnable accion){}
  private final List<Boton> botones=new ArrayList<>();
- public MisionOchoVista(JuegoCliente j){juego=j;}
- public void iniciarEn(PApplet p){this.p=p;arte=new ArteOcho();try{var enlace=alcaldedigital.compartido.guardado.ArchivosPartida.leer(alcaldedigital.compartido.guardado.ArchivosPartida.directorio().resolve("mision8-red.properties"));if(enlace!=null){host=enlace.getProperty("host",host);puesto=Integer.parseInt(enlace.getProperty("puesto","1"));token=enlace.getProperty("token","");}try{antecedentes=AntecedentesOcho.cargar();}catch(IOException falta){if(!juego.progreso.todasDesbloqueadas())throw falta;finalElegido=0;}if(juego.continuarGuardado){motor=GuardadoOcho.cargar();if(!motor.prueba()&&(antecedentes==null||antecedentes.electoral().juanCorrupto()!=motor.antecedentes.electoral().juanCorrupto()))throw new IOException("La elegibilidad cambió en la campaña. Inicia una nueva misión 8.");jugadores=motor.jugadores;dificultad=motor.dificultad;rolSolo=motor.rolSolo;modo=motor.lan?1:0;finalElegido=motor.finalElegido();ciudadPrueba=motor.antecedentes.estadoCiudad().equals("CIUDAD EN CRISIS")?2:motor.antecedentes.estadoCiudad().equals("CONFIANZA CÍVICA")?0:1;motor.pausar(false);config=true;}}catch(Exception e){motor=null;juego.continuarGuardado=false;error=e.getMessage();}}
+ public MisionOchoVista(JuegoCliente j){
+  juego=j;
+  SonidosRemaster.precargar("final-carga","final-orbe","final-descarga","final-impacto");
+ }
+ public void iniciarEn(PApplet p){this.p=p;arte=new ArteOcho();try{var enlace=alcaldedigital.compartido.guardado.ArchivosPartida.leer(alcaldedigital.compartido.guardado.ArchivosPartida.directorio().resolve("mision8-red.properties"));if(enlace!=null){host=enlace.getProperty("host",host);puesto=Integer.parseInt(enlace.getProperty("puesto","1"));token=enlace.getProperty("token","");puertoRecordado=Integer.parseInt(enlace.getProperty("puerto",""+RedOcho.PUERTO));}try{antecedentes=AntecedentesOcho.cargar();}catch(IOException falta){if(!juego.progreso.todasDesbloqueadas())throw falta;finalElegido=0;}if(juego.continuarGuardado){motor=GuardadoOcho.cargar();if(!motor.prueba()&&(antecedentes==null||antecedentes.electoral().juanCorrupto()!=motor.antecedentes.electoral().juanCorrupto()))throw new IOException("La elegibilidad cambió en la campaña. Inicia una nueva misión 8.");jugadores=motor.jugadores;dificultad=motor.dificultad;rolSolo=motor.rolSolo;modo=motor.lan?1:0;finalElegido=motor.finalElegido();ciudadPrueba=motor.antecedentes.estadoCiudad().equals("CIUDAD EN CRISIS")?2:motor.antecedentes.estadoCiudad().equals("CONFIANZA CÍVICA")?0:1;motor.pausar(false);config=true;}}catch(Exception e){motor=null;juego.continuarGuardado=false;error=e.getMessage();}}
  public MotorOcho motor(){return motor;}
- public boolean salir(){return salir;}public boolean listaComun(){return !config&&!previaControles&&motor!=null;}
+ public alcaldedigital.compartido.guardado.TablaPuntajes.Fila filaPuntajes(){
+  return listaComun()&&!consulta&&(motor.escena==MotorOcho.Escena.FINAL||motor.escena==MotorOcho.Escena.DERROTA)?GuardadoOcho.fila(motor):null;
+ }
+ public String partidaPuntajes(){return listaComun()?motor.id:null;}
+ public boolean lanPuntajes(){return red!=null;}
+ public boolean pruebaPuntajes(){return listaComun()&&motor.prueba();}
+ public int puestoPuntajes(){return red==null?0:red.puesto;}
+ public int heroesPuntajes(){return motor.heroes.length;}
+ public boolean reintentarPuntajes(){
+  if(!listaComun()||motor.escena!=MotorOcho.Escena.DERROTA||(red!=null&&red.puesto!=0))return false;
+  orden("RETRY");return true;
+ }
+ public boolean salir(){return salir;}public boolean listaComun(){return !config&&!previaControles&&!pantallaLan.activa()&&motor!=null;}
+ private final EntradaMandoLocal[] mandosLocales={
+  new EntradaMandoLocal(),new EntradaMandoLocal(),new EntradaMandoLocal()
+ };
+ public MandosJugadores.Contexto contextoMandos(){
+  if(red!=null)return new MandosJugadores.Contexto(1,red.puesto);
+  if(pantallaLan.reconectando()&&destinoLan!=null)return new MandosJugadores.Contexto(1,destinoLan.puesto());
+  return new MandosJugadores.Contexto(modo==0&&!previaControles?jugadores:1,0);
+ }
+ private void bloquearMandosLocales(){for(var mando:mandosLocales)mando.bloquear();}
+ public void mandoLocal(int puesto,EstadoMando estado){
+  EntradaMandoLocal mando=mandosLocales[puesto-1];
+  mando.leer(estado,red==null&&listaComun()&&!motor.pausa&&puesto<motor.jugadores);
+  if(mando.pulso(EstadoMando.Boton.MENU)){pausarComun();return;}
+  if(motor!=null&&motor.escena==MotorOcho.Escena.VOTO&&motor.votosEmitidos==puesto&&!botones.isEmpty()){
+   if(mando.pulso(EstadoMando.Boton.IZQUIERDA))foco=Math.floorMod(foco-1,botones.size());
+   if(mando.pulso(EstadoMando.Boton.DERECHA))foco=(foco+1)%botones.size();
+   if(mando.pulso(EstadoMando.Boton.A))activarBotonAudio();
+  }
+ }
+ public boolean dosTeclados(){return motor!=null&&motor.jugadores>1&&!motor.lan;}
  public boolean pausaComun(){return motor!=null&&motor.pausa;}
- public void pausarComun(){teclas.clear();mascaraMando=0;orden("PAUSE");}
- public void reanudarComun(){bloqueadas.addAll(teclas);teclas.clear();mascaraMando=0;orden("RESUME");}
+ public void pausarComun(){bloquearMandosLocales();teclas.clear();mascaraMando=0;orden("PAUSE");}
+ public void reanudarComun(){bloquearMandosLocales();bloqueadas.addAll(teclas);teclas.clear();mascaraMando=0;orden("RESUME");}
  public boolean consultaAbiertaComun(){return consulta;}
  public void abrirConsultaComun(){consulta=true;pagina=0;}
  public void cerrarConsultaComun(){consulta=false;}
  public String guardarComun()throws IOException{if(motor==null)return "Configura la partida para guardar.";if(red!=null){red.orden(red.puesto,"SAVE");return red.puesto==0?"Partida LAN guardada.":"Guardado solicitado al anfitrión.";}GuardadoOcho.guardar(motor);return "Misión 8 guardada.";}
  public void salirComun(){salir=true;}
- public void perderFoco(){teclas.clear();mascaraMando=0;}
+ public void perderFoco(){bloquearMandosLocales();teclas.clear();mascaraMando=0;}
  public void bloquearTeclas(Set<Integer>k){bloqueadas.addAll(k);}
- private void orden(String cmd){if(cmd.equals("NEXT")||cmd.equals("RETRY")){bloqueadas.addAll(teclas);teclas.clear();mascaraMando=0;esperarMando=true;}try{if(red!=null)red.orden(red.puesto,cmd);else if(motor!=null){String[]a=cmd.split(" ");switch(a[0]){case "PAUSE"->motor.pausar(true);case "RESUME"->motor.pausar(false);case "NEXT"->motor.avanzar();case "AUDIT"->motor.auditar(Integer.parseInt(a[1]),Boolean.parseBoolean(a[2]));case "VOTE"->motor.votar(0,Integer.parseInt(a[1]));case "RETRY"->{GuardadoOcho.guardar(motor);motor.reintentar();}default->{}}}}catch(Exception e){error=e.getMessage();}}
+ private void orden(String cmd){if(cmd.equals("NEXT")||cmd.equals("RETRY")){bloquearMandosLocales();bloqueadas.addAll(teclas);teclas.clear();mascaraMando=0;esperarMando=true;}try{if(red!=null)red.orden(red.puesto,cmd);else if(motor!=null){String[]a=cmd.split(" ");switch(a[0]){case "PAUSE"->motor.pausar(true);case "RESUME"->motor.pausar(false);case "NEXT"->motor.avanzar();case "AUDIT"->motor.auditar(Integer.parseInt(a[1]),Boolean.parseBoolean(a[2]));case "VOTE"->motor.votar(0,Integer.parseInt(a[1]));case "RETRY"->{GuardadoOcho.guardar(motor);motor.reintentar();}default->{}}}}catch(Exception e){error=e.getMessage();}}
  public void elegirFinal(int candidato){if(candidato< -1||candidato>3)throw new IllegalArgumentException("Final inválido");finalElegido=candidato;juego.continuarGuardado=false;motor=null;error="";}
- private void iniciar(){if(antecedentes==null&&finalElegido<0&&modo!=2){error="Elige un final de prueba para jugar sin completar la campaña.";return;}error="";if(modo==2){if(conectando)return;conectando=true;Thread t=new Thread(()->{try{RedOcho conexion=RedOcho.unir(host,RedOcho.PUERTO,puesto,token);red=conexion;token=conexion.token;var enlace=new Properties();enlace.setProperty("version","1");enlace.setProperty("host",host);enlace.setProperty("puesto",""+puesto);enlace.setProperty("token",token);alcaldedigital.compartido.guardado.ArchivosPartida.guardar(alcaldedigital.compartido.guardado.ArchivosPartida.directorio().resolve("mision8-red.properties"),enlace);config=false;}catch(Exception e){error="Conexión: "+e.getMessage();}finally{conectando=false;}},"m8-conectar");t.setDaemon(true);t.start();return;}
-  try{if(juego.continuarGuardado&&motor!=null){config=false;motor.pausar(false);}else{motor=new MotorOcho(finalElegido<0?antecedentes:FinalesPruebaOcho.antecedentes(finalElegido,ciudadPrueba),jugadores,dificultad,rolSolo,jugadores==4,juego.semilla++);if(finalElegido>=0)motor.elegirFinalPrueba(finalElegido);}if(modo==1)red=RedOcho.alojar(motor,RedOcho.PUERTO);config=false;guardarComun();}catch(Exception e){error=e.getMessage();}}
- public void actualizar(float dt){tiempo+=Math.min(.1,dt);if(config||previaControles)return;if(red!=null&&red.puesto!=0){MotorOcho remoto=red.vista.get();if(remoto!=null)motor=remoto;if(!red.error.isBlank()){error="Conexión perdida: "+red.error+". Pulsa Comenzar para reconectar.";red.close();red=null;modo=2;config=true;return;}red.mascara=mascara(0)|mascaraMando;return;}if(motor==null)return;
-  synchronized(motor){for(int i=0;i<motor.jugadores;i++)if(red==null||i==0)motor.entrada(i,mascara(i)|(i==0?mascaraMando:0));if(red==null){acumulado+=Math.min(.15,dt);while(acumulado>=1d/60){motor.paso();acumulado-=1d/60;}}if(motor.escena==MotorOcho.Escena.FINAL&&!motor.credito)try{GuardadoOcho.acreditar(motor);if(!motor.prueba())juego.victoria(8);}catch(IOException e){error=e.getMessage();}}
+ private void buscarLan(){
+  modo=2;error="";
+  pantallaLan.buscar(destino->{destinoLan=destino;conectarLan();},()->{pantallaLan.close();error="";});
+ }
+ private void conectarLan(){
+  if(conectando||destinoLan==null)return;
+  conectando=true;error="Conectando con el anfitrión…";
+  var destino=destinoLan;
+  String reserva=host.equals(destino.ip())&&puesto==destino.puesto()&&puertoRecordado==destino.puerto()?token:"";
+  Thread hilo=new Thread(()->{
+   try{
+    RedOcho enlace=RedOcho.unir(destino.ip(),destino.puerto(),destino.puesto(),reserva);
+    synchronized(this){if(cerrada)enlace.close();else enlacePendiente=enlace;}
+   }catch(IOException e){synchronized(this){falloEnlace=e.getMessage();}}
+  },"m8-conectar");
+  hilo.setDaemon(true);hilo.start();
+ }
+ private synchronized void recibirEnlace(){
+  if(falloEnlace!=null){error="Conexión: "+falloEnlace;falloEnlace=null;conectando=false;}
+  if(enlacePendiente==null)return;
+  red=enlacePendiente;enlacePendiente=null;conectando=false;config=false;motor=null;
+  host=destinoLan.ip();puesto=destinoLan.puesto();puertoRecordado=destinoLan.puerto();token=red.token;
+  var enlace=new Properties();
+  enlace.setProperty("version","1");enlace.setProperty("host",host);enlace.setProperty("puesto",""+puesto);
+  enlace.setProperty("token",token);enlace.setProperty("puerto",""+puertoRecordado);
+  try{alcaldedigital.compartido.guardado.ArchivosPartida.guardar(alcaldedigital.compartido.guardado.ArchivosPartida.directorio().resolve("mision8-red.properties"),enlace);}
+  catch(IOException e){error="No se pudo guardar el acceso para reconectar.";}
+  pantallaLan.esperar(()->salir=true);
+ }
+ private void iniciar(){
+  if(modo==2){buscarLan();return;}
+  if(antecedentes==null&&finalElegido<0){error="Elige un final de prueba para jugar sin completar la campaña.";return;}
+  String partida=juego.continuarGuardado&&motor!=null?motor.id:null;
+  if(modo==0&&juego.asignarPuestos(8,partida,jugadores,this::iniciarAhora))return;
+  iniciarAhora();
+ }
+ private void iniciarAhora(){
+  error="";
+  try{
+   if(!(juego.continuarGuardado&&motor!=null)){
+    motor=new MotorOcho(finalElegido<0?antecedentes:FinalesPruebaOcho.antecedentes(finalElegido,ciudadPrueba),jugadores,dificultad,rolSolo,jugadores==4,juego.semilla++);
+    if(finalElegido>=0)motor.elegirFinalPrueba(finalElegido);
+   }
+   if(modo==1){
+    if(motor.jugadores<2){error="Selecciona entre dos y cuatro jugadores para LAN.";return;}
+    red=RedOcho.alojar(motor,RedOcho.PUERTO,true);
+    try{red.anunciar();}catch(IOException e){error="Búsqueda automática no disponible. Los invitados pueden conectar por IP.";}
+    pantallaLan.esperar(()->salir=true);
+   }else{motor.pausar(false);guardarComun();}
+   config=false;
+  }catch(IOException e){error=e.getMessage();}
+ }
+ private void actualizarVestibulo(){
+  if(red==null)return;
+  if(red.puesto!=0&&!red.error.isBlank()){
+   error="Conexión perdida: "+red.error;red.close();red=null;modo=2;config=true;
+   pantallaLan.reconectar(this::conectarLan,()->salir=true);return;
+  }
+  if(pantallaLan.esperando()&&red.iniciada()&&motor!=null){
+   pantallaLan.close();bloqueadas.addAll(teclas);teclas.clear();mascaraMando=0;esperarMando=true;foco=0;
+  }
+ }
+ public void actualizar(float dt){
+  tiempo+=Math.min(.1,dt);recibirEnlace();if(config||previaControles)return;
+  if(red!=null&&red.puesto!=0){
+   MotorOcho remoto=red.vista.get();if(remoto!=null){motor=remoto;jugadores=remoto.jugadores;}
+   actualizarVestibulo();if(red!=null)red.mascara=pantallaLan.activa()?0:entradaLan();
+   return;
+  }
+  actualizarVestibulo();if(motor==null||pantallaLan.activa())return;
+  synchronized(motor){for(int i=0;i<motor.jugadores;i++)if(red==null||i==0)motor.entrada(i,mascara(i)|(i==0?mascaraMando:entradaMandoLocal(i)));if(red==null){acumulado+=Math.min(.15,dt);while(acumulado>=1d/60){motor.paso();acumulado-=1d/60;}}if(motor.escena==MotorOcho.Escena.FINAL&&!motor.credito)try{GuardadoOcho.acreditar(motor);if(!motor.prueba())juego.victoria(8);}catch(IOException e){error=e.getMessage();}}
   if(!motor.pausa){autoguardado+=dt;if(autoguardado>=10){autoguardado=0;try{guardarComun();}catch(IOException e){error=e.getMessage();}}}
  }
- private static final int[][] CONTROLES={{65,68,32,70,81,69,82},{37,39,16,76,75,10,74},{100,102,96,97,98,99,110}};
- private int mascara(int jugador){if(jugador>=3){int mask=0;int[]k={90,88,67,66,78,77};for(int i=0;i<6;i++)if(teclas.contains(k[i]))mask|=1<<i;return mask;}int mask=0;int[]b={1,2,4,8,16,32,64};for(int i=0;i<7;i++)if(teclas.contains(CONTROLES[jugador][i]))mask|=b[i];return mask;}
- public void pulsar(char c,int k){if(bloqueadas.contains(k)||!teclas.add(k))return;if(editarHost){if(k==10)editarHost=false;else if(k==8&&!host.isEmpty())host=host.substring(0,host.length()-1);else if(host.length()<100&&(Character.isLetterOrDigit(c)||c=='.'||c=='-'||c==':'))host+=c;return;}
+ private static final int[][] CONTROLES={{KeyEvent.VK_A,KeyEvent.VK_D,KeyEvent.VK_SPACE,KeyEvent.VK_F,KeyEvent.VK_Q,KeyEvent.VK_C,KeyEvent.VK_R},
+  {KeyEvent.VK_LEFT,KeyEvent.VK_RIGHT,KeyEvent.VK_SHIFT,KeyEvent.VK_L,KeyEvent.VK_K,KeyEvent.VK_O,KeyEvent.VK_J},
+  {KeyEvent.VK_NUMPAD4,KeyEvent.VK_NUMPAD6,KeyEvent.VK_NUMPAD0,KeyEvent.VK_NUMPAD1,KeyEvent.VK_NUMPAD2,KeyEvent.VK_NUMPAD3,KeyEvent.VK_DECIMAL}};
+ private int entradaMandoLocal(int puesto){
+  var mando=mandosLocales[puesto-1];
+  if(puesto==3)return ataquesDelMando(mando.estado());
+  int mascara=0;
+  if(mando.x()<-.3)mascara|=MotorOcho.IZQ;
+  if(mando.x()>.3)mascara|=MotorOcho.DER;
+  return mascara|accionesDelMando(mando.estado());
+ }
+ private static int accionesDelMando(EstadoMando mando){
+  int mascara=0;
+  if(mando.pulsado(EstadoMando.Boton.A))mascara|=MotorOcho.SALTO;
+  if(mando.pulsado(EstadoMando.Boton.X))mascara|=MotorOcho.UNO;
+  if(mando.pulsado(EstadoMando.Boton.Y))mascara|=MotorOcho.DOS;
+  if(mando.pulsado(EstadoMando.Boton.LB))mascara|=MotorOcho.TRES;
+  if(mando.pulsado(EstadoMando.Boton.RB))mascara|=MotorOcho.ESQUIVA;
+  return mascara;
+ }
+ private static final EstadoMando.Boton[] BOTONES_JEFE={EstadoMando.Boton.A,EstadoMando.Boton.X,EstadoMando.Boton.Y,
+   EstadoMando.Boton.LB,EstadoMando.Boton.RB,EstadoMando.Boton.RT};
+ private static int ataquesDelMando(EstadoMando mando){
+  int mascara=0;
+  for(int i=0;i<BOTONES_JEFE.length;i++)if(mando.pulsado(BOTONES_JEFE[i]))mascara|=1<<i;
+  return mascara;
+ }
+ private int entradaLan(){
+  if(red.puesto!=3)return mascara(0)|mascaraMando;
+  return mascara(3)|(esperarMando?0:ataquesDelMando(anteriorMando));
+ }
+ private static final int[] ATAQUES_JEFE={KeyEvent.VK_1,KeyEvent.VK_2,KeyEvent.VK_3,KeyEvent.VK_4,KeyEvent.VK_5,KeyEvent.VK_6};
+ private int mascara(int jugador){return mascaraTeclado(jugador,teclas);}
+ static int mascaraTeclado(int jugador,Set<Integer> teclas){if(jugador>=3){int mask=0;for(int i=0;i<ATAQUES_JEFE.length;i++)if(teclas.contains(ATAQUES_JEFE[i]))mask|=1<<i;return mask;}int mask=0;int[]b={1,2,4,8,16,32,64};for(int i=0;i<7;i++)if(teclas.contains(CONTROLES[jugador][i]))mask|=b[i];return mask;}
+ public void pulsar(char c,int k){if(pantallaLan.pulsar(c,k)||bloqueadas.contains(k)||!teclas.add(k))return;
   if(k==27&&config){salir=true;return;}if(k==9){foco=(foco+1)%Math.max(1,botones.size());return;}if(consulta){if(k==37)pagina=Math.floorMod(pagina-1,6);if(k==39)pagina=(pagina+1)%6;return;}
   if((config||motor!=null&&motor.escena!=MotorOcho.Escena.COMBATE)&&(k==37||k==38||k==39||k==40)){foco=Math.floorMod(foco+(k==37||k==38?-1:1),Math.max(1,botones.size()));return;}
   if((config||motor!=null&&motor.escena!=MotorOcho.Escena.COMBATE)&&(k==10||k==32||k==69)){if(!botones.isEmpty())activarBotonAudio();}
  }
  private void activarBotonAudio(){alcaldedigital.cliente.audio.InterfazSonora.activar("click");botones.get(Math.min(foco,botones.size()-1)).accion.run();}
- public void soltar(int k){teclas.remove(k);bloqueadas.remove(k);}
- public void raton(int x,int y){for(Boton b:List.copyOf(botones))if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h){alcaldedigital.cliente.audio.InterfazSonora.activar("click");b.accion.run();foco=0;break;}}
- public void mando(EstadoMando e){mascaraMando=0;if(esperarMando){if(e.botones().isEmpty()&&Math.abs(e.izquierdaX())<.3&&Math.abs(e.izquierdaY())<.3)esperarMando=false;else{anteriorMando=e;return;}}if(e.izquierdaX()<-.3)mascaraMando|=MotorOcho.IZQ;if(e.izquierdaX()>.3)mascaraMando|=MotorOcho.DER;
-  if(e.pulsado(EstadoMando.Boton.A))mascaraMando|=MotorOcho.SALTO;if(e.pulsado(EstadoMando.Boton.X))mascaraMando|=MotorOcho.UNO;if(e.pulsado(EstadoMando.Boton.Y))mascaraMando|=MotorOcho.DOS;if(e.pulsado(EstadoMando.Boton.LB))mascaraMando|=MotorOcho.TRES;if(e.pulsado(EstadoMando.Boton.RB))mascaraMando|=MotorOcho.ESQUIVA;
+ public void soltar(int k){pantallaLan.soltar(k);teclas.remove(k);bloqueadas.remove(k);}
+ public void raton(int x,int y){if(pantallaLan.raton(x,y))return;for(Boton b:List.copyOf(botones))if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h){alcaldedigital.cliente.audio.InterfazSonora.activar("click");b.accion.run();foco=0;break;}}
+ public void mando(EstadoMando e){mascaraMando=0;if(pantallaLan.mando(e)){anteriorMando=e;return;}if(esperarMando){if(e.botones().isEmpty()&&Math.abs(e.izquierdaX())<.3&&Math.abs(e.izquierdaY())<.3)esperarMando=false;else{anteriorMando=e;return;}}if(e.izquierdaX()<-.3)mascaraMando|=MotorOcho.IZQ;if(e.izquierdaX()>.3)mascaraMando|=MotorOcho.DER;
+  mascaraMando|=accionesDelMando(e);
   if(e.pulsado(EstadoMando.Boton.DERECHA)&&!anteriorMando.pulsado(EstadoMando.Boton.DERECHA))foco=(foco+1)%Math.max(1,botones.size());if(e.pulsado(EstadoMando.Boton.IZQUIERDA)&&!anteriorMando.pulsado(EstadoMando.Boton.IZQUIERDA))foco=Math.floorMod(foco-1,Math.max(1,botones.size()));
   if((config||motor!=null&&motor.escena!=MotorOcho.Escena.COMBATE)&&e.pulsado(EstadoMando.Boton.A)&&!anteriorMando.pulsado(EstadoMando.Boton.A)&&!botones.isEmpty())activarBotonAudio();anteriorMando=e;
  }
@@ -61,28 +209,44 @@ public final class MisionOchoVista implements AutoCloseable {
  private void parrafo(String s,float x,float y,float w,float h,float tam){p.fill(PAPEL);p.textSize(tam);p.textLeading(tam+5);p.text(s,x,y,w,h);}
  private void boton(String s,int x,int y,int w,Runnable a){int h=43;boolean focoActual=botones.size()==foco;boolean dentro=p.mouseX>=x&&p.mouseX<x+w&&p.mouseY>=y&&p.mouseY<y+h;MarcosProcessing.marco(p.g,x,y,w,h,dentro||focoActual?0xff604077:PANEL,dentro||focoActual?ORO:LILA);texto(s,x+14,y+29,17,PAPEL);botones.add(new Boton(x,y,w,h,s,a));}
  private final alcaldedigital.cliente.audio.InterfazSonora audioUI=new alcaldedigital.cliente.audio.InterfazSonora();
- public void dibujar(){audioUI.foco("m8:"+foco);audioUI.hover(botones.stream().filter(b->p.mouseX>=b.x&&p.mouseX<b.x+b.w&&p.mouseY>=b.y&&p.mouseY<b.y+b.h).map(b->b.x+":"+b.y).findFirst().orElse(""));p.pushStyle();p.textAlign(PApplet.LEFT,PApplet.BASELINE);p.noStroke();botones.clear();if(config){configuracion();p.popStyle();return;}if(motor==null){p.background(FONDO);texto("Conectando con el anfitrión…",400,340,24,ORO);p.popStyle();return;}
+ public void dibujar(){audioUI.foco("m8:"+foco);audioUI.hover(botones.stream().filter(b->p.mouseX>=b.x&&p.mouseX<b.x+b.w&&p.mouseY>=b.y&&p.mouseY<b.y+b.h).map(b->b.x+":"+b.y).findFirst().orElse(""));p.pushStyle();p.textAlign(PApplet.LEFT,PApplet.BASELINE);p.noStroke();botones.clear();if(pantallaLan.activa()){
+  pantallaLan.dibujar(p,error,conectando,modo==1,motor==null?jugadores:motor.jugadores,red==null?0:red.mascaraOcupados());p.popStyle();return;
+ }if(config){configuracion();p.popStyle();return;}if(motor==null){p.background(FONDO);texto("Conectando con el anfitrión…",400,340,24,ORO);p.popStyle();return;}
   synchronized(motor){sonido();if(motor.escena==MotorOcho.Escena.COMBATE)combate();else escena();if(consulta)consulta();if(motor.prueba())texto("PRUEBA · "+FinalesPruebaOcho.nombre(motor.finalElegido()),370,26,15,ORO);if(red!=null){texto("LAN · J"+(red.puesto+1)+" · "+(red.lista()?"conectados":"esperando participantes"),35,30,15,CIAN);}
    if(!error.isEmpty()){marco(70,650,1140,55);texto(error,90,684,16,ROSA);}}
   p.popStyle();
  }
  private void configuracion(){p.image(arte.fondos[0],0,0,1280,720);p.fill(18,10,30,205);p.rect(0,0,1280,720);marco(85,55,1110,615);texto("MISIÓN 8 · EL FUTURO DE CIVITAS",125,110,31,ORO);parrafo("La carrera ha terminado. Ahora la ciudad debe distinguir votos, noticias y promesas. Tres héroes pueden cooperar; el cuarto participante controla al jefe.",125,132,1000,65,18);
-  texto("PARTICIPANTES",125,225,18,LILA);for(int i=1;i<=4;i++){final int n=i;boton((jugadores==i?"> ":"")+i+(i==4?" · 3 contra 1":""),125+(i-1)*245,240,230,()->jugadores=n);}
+  texto("PARTICIPANTES",125,225,18,LILA);for(int i=modo==1?2:1;i<=4;i++){final int n=i;boton((jugadores==i?"> ":"")+i+(i==4?" · 3 contra 1":""),125+(i-1)*245,240,230,()->jugadores=n);}
   texto("DIFICULTAD",125,315,18,LILA);for(int i=0;i<3;i++){final int d=i;boton((dificultad==i?"> ":"")+new String[]{"Fácil","Normal","Difícil"}[i],125+i*240,330,220,()->dificultad=d);}
   boton("Rol solo: "+MotorOcho.ROLES[rolSolo],855,330,285,()->rolSolo=(rolSolo+1)%3);
-  boton("Modo: "+new String[]{"Local","Crear LAN","Unirse LAN"}[modo],125,400,320,()->modo=(modo+1)%3);
-  boton((editarHost?"IP: ":"Servidor: ")+host,465,400,390,()->editarHost=true);boton("Puesto LAN: J"+(puesto+1),875,400,265,()->puesto=puesto%3+1);
+  boton((modo==0?"> ":"")+"Jugar local",125,400,320,()->{if(modo!=0&&juego.continuarGuardado){juego.continuarGuardado=false;motor=null;}modo=0;});
+  boton((modo==1?"> ":"")+"Crear partida LAN",465,400,320,()->{
+   if(modo!=1&&juego.continuarGuardado){juego.continuarGuardado=false;motor=null;}modo=1;jugadores=Math.max(2,jugadores);
+  });boton("Unirse a partida LAN",805,400,335,this::buscarLan);
   boton("Final: "+FinalesPruebaOcho.nombre(finalElegido),125,465,640,()->elegirFinal((finalElegido+2)%5-1));
   boton("Ciudad: "+(finalElegido<0?"según campaña":FinalesPruebaOcho.ciudad(ciudadPrueba)),785,465,355,()->{elegirFinal(finalElegido<0?0:finalElegido);ciudadPrueba=(ciudadPrueba+1)%3;});
   texto(finalElegido>=0?"FINAL DE PRUEBA · no cambia tus decisiones ni acredita victorias.":antecedentes!=null?antecedentes.estadoCiudad()+" · según tus siete victorias.":"Acceso libre: elige un final de prueba para comenzar.",125,540,17,CIAN);
-  parrafo(error,125,553,990,38,15);boton(conectando?"Conectando…":"Comenzar",125,600,280,this::iniciar);boton("Ver controles",425,600,280,()->{previaControles=true;consulta=true;pagina=4;config=false;motor=new MotorOcho(antecedentes!=null?antecedentes:referencia(),1,1,0,false,1);motor.pausar(true);});boton("Volver a misiones",725,600,390,()->salir=true);
+  parrafo(error,125,553,990,38,15);boton(modo==1?"Crear sala":modo==2?"Buscar partidas":"Comenzar",125,600,280,this::iniciar);boton("Ver controles",425,600,280,()->{previaControles=true;consulta=true;pagina=4;config=false;motor=new MotorOcho(antecedentes!=null?antecedentes:referencia(),1,1,0,false,1);motor.pausar(true);});boton("Volver a misiones",725,600,390,()->salir=true);
  }
  private static AntecedentesOcho referencia(){var c=alcaldedigital.compartido.modelo.EstadoCiudad.inicial();return new AntecedentesOcho(c,EstadoElectoral.inicial(c),Map.of(),List.of());}
  private HistoriaOcho.Accion accionEscena(){var linea=HistoriaOcho.actual(motor);return linea==null?HistoriaOcho.Accion.HABLAR:linea.accion();}
+ private void focosTarima(boolean construida) {
+  if (!construida) return;
+  float t = juego.movimientoReducido ? 0 : motor.ticksDialogo / 60f;
+  for (int i = 0; i < 4; i++) {
+   float x = 230 + i * 270;
+   var luz = i % 2 == 0 ? LuzEscena.AMBAR : LuzEscena.VIOLETA;
+   luz.dibujar(p.g,x,129,295,270,108);
+   luz.dibujar(p.g,x,434,252,124,134 + 14 * PApplet.sin(t * 1.3f + i));
+  }
+ }
+
  private void escena(){
   var e=motor.escena;var accion=accionEscena();boolean obra=e==MotorOcho.Escena.OBRA;
   boolean construida=!obra||motor.lineaDialogo>=3||accion==HistoriaOcho.Accion.CONSTRUIR&&motor.ticksDialogo>=125;
   p.image(construida?arte.fondos[0]:arte.parque,0,0,1280,720);
+  focosTarima(construida);
   if(motor.antecedentes.estadoCiudad().equals("CIUDAD EN CRISIS")){p.fill(70,12,60,50);p.rect(0,0,1280,530);}
   if(e==MotorOcho.Escena.MUTACION&&accion==HistoriaOcho.Accion.MUTAR){p.fill(15,5,30,Math.min(170,motor.ticksDialogo*1.7f));p.rect(0,0,1280,530);}
   boolean epilogo=e==MotorOcho.Escena.EPILOGO||e==MotorOcho.Escena.FINAL;
@@ -174,18 +338,45 @@ public final class MisionOchoVista implements AutoCloseable {
   dibujarAvisos();
   for(var b:motor.proyectiles)dibujarProyectil(b);
 
-  for(int i=0;i<motor.heroes.length;i++){var h=motor.heroes[i];if(!juego.movimientoReducido&&h.invulnerable>0&&motor.ticks%8<3)continue;arte.sprite(p,arte.heroe(motor,i),(float)h.x,(float)(h.y-camaraVisual()+3),100,h.direccion<0);texto("J"+(i+1),(float)h.x-15,(float)(h.y-camaraVisual()-100),14,ORO);}
+  for(int i=0;i<motor.heroes.length;i++) dibujarHeroe(i);
   marco(20,35,1240,90);texto("MR. CORRUPTO · "+EstadoElectoral.NOMBRES[motor.ganador]+" · FORMA "+motor.forma+" / 3",40,65,21,ORO);p.fill(FONDO);p.rect(40,80,1190,22);p.fill(ROSA);p.rect(40,80,1190f*motor.vidaJefe/motor.maxVida,22);texto("FASE "+motor.fase+" / 5",1040,65,17,CIAN);
   for(int i=0;i<motor.heroes.length;i++){var h=motor.heroes[i];marco(20+i*305,650,295,55);texto("J"+(i+1)+" "+MotorOcho.ROLES[motor.rol(i)]+" · "+h.vida+" / 5",35+i*305,684,17,h.vida>0?PAPEL:ROSA);}
   if(motor.jefeHumano)texto("J"+motor.jugadores+" · JEFE: Z X C B N M",925,680,16,ORO);
   if(motor.transicion>0){marco(320,270,640,120);texto("FASE "+motor.fase+" · FORMA "+motor.forma,355,315,30,ORO);parrafo(motor.fase>=4?"Las plataformas abren una nueva ruta. Salto doble para ascender.":"Observa los avisos del suelo y conserva una ruta de escape.",355,333,570,55,18);}
  }
+ private void dibujarHeroe(int i){
+  var h=motor.heroes[i];
+  float x=(float)h.x,y=(float)(h.y-camaraVisual()+3);
+  int rol=motor.rol(i),pose=AnimacionOcho.cuadroHeroe(motor,i)%16;
+  if (h.invulnerable>0&&h.vida>0) {
+   // Halo breve para mostrar protección o daño sin ocultar al jugador.
+   float intensidad=juego.movimientoReducido?60:50+22*PApplet.sin(motor.ticks*.22f);
+   (pose==14?LuzEscena.MAGENTA:LuzEscena.CIAN).dibujar(p.g,x,y-46,120,110,intensidad);
+  }
+  if (pose==1||pose==2) {
+   var hoja=switch(rol){case 0->PosesRemaster.SOFI;case 1->PosesRemaster.PERIODISTA;default->PosesRemaster.INFLUENCER;};
+   int cuadro=juego.movimientoReducido?0:PosesRemaster.paso(motor.ticks,rol==2?.14:.28,rol==2?4:8);
+   hoja.dibujar(p.g,cuadro,x,y,86,h.direccion<0);
+  } else if (rol==2&&(pose==7||pose==8||pose==14)) {
+   int cuadro=pose==7?6:pose==14?5:4;
+   PosesRemaster.INFLUENCER.dibujar(p.g,cuadro,x,y,86,h.direccion<0);
+  } else {
+   arte.sprite(p,arte.heroe(motor,i),x,y,100,h.direccion<0);
+  }
+  texto("J"+(i+1),x-15,y-103,14,ORO);
+ }
+
  private void dibujarJefe(){
   float x=(float)motor.jefeX,y=(float)(motor.jefeY-camaraVisual()+90);
   float flota=juego.movimientoReducido?0:3*PApplet.sin(motor.ticks*.07f);int edad=AnimacionOcho.desdeEmision(motor);
   float retroceso=juego.movimientoReducido||edad>=14?0:5*(1-edad/14f);
   int cuadro=AnimacionOcho.cuadroJefe(motor);float carga=cuadro>=1&&cuadro<=3?(cuadro/3f):0;
-  p.fill(115,221,203,22+45*carga);p.ellipse(x,y-92,105+30*carga,105+30*carga);
+  var luz = switch (motor.forma) {
+   case 1 -> LuzEscena.CIAN;
+   case 2 -> LuzEscena.MAGENTA;
+   default -> LuzEscena.AMBAR;
+  };
+  luz.dibujar(p.g,x,y-92,253+85*carga,210+70*carga,150+88*carga);
   if(motor.transicion>0&&(motor.fase==3||motor.fase==5)){
    float f=1-motor.transicion/100f;int anterior=motor.ganador*16+(motor.forma==2?4:8);
    p.tint(255,255*(1-f));arte.sprite(p,arte.candidatos[anterior],x,y+flota,190+(motor.forma-1)*22,false);p.tint(255,255*f);
@@ -232,11 +423,39 @@ public final class MisionOchoVista implements AutoCloseable {
   else if(pagina==1){dibujarAVL(motor.avl.vista(),640,210,270);texto("Pendientes: "+motor.avl.cantidad()+" · altura: "+motor.avl.altura(),90,155,19,CIAN);parrafo("Contrastar elimina el caso del AVL. Las decisiones permanecen en el árbol y las aclaraciones alcanzan el grafo.",90,505,1080,70,19);}
   else if(pagina==2){var lista=motor.decisiones.recorrer("preorden");int i=0;for(String id:lista){var n=motor.decisiones.buscar(id);texto((n.ejecutado()?"> ":"  ")+n.texto(),95+(i/9)*550,170+(i%9)*43,17,n.ejecutado()?CIAN:PAPEL);i++;}}
   else if(pagina==3){int[][]xy={{200,280},{450,190},{450,410},{700,190},{700,410},{980,190},{980,410}};int[][]ar={{0,1},{0,2},{1,3},{2,4},{3,5},{4,6}};p.stroke(LILA);for(int[]a:ar){p.line(xy[a[0]][0],xy[a[0]][1],xy[a[1]][0],xy[a[1]][1]);texto(">",(xy[a[0]][0]+xy[a[1]][0])/2f,(xy[a[0]][1]+xy[a[1]][1])/2f,24,ORO);}p.noStroke();for(int i=0;i<7;i++){p.fill(motor.difusion.contains(i)?CIAN:LILA);p.ellipse(xy[i][0],xy[i][1],56,56);texto(""+i,xy[i][0]-7,xy[i][1]+7,20,FONDO);}texto("BFS: "+motor.difusion+" · grupos alcanzados por la aclaración",100,520,20,PAPEL);}
-  else if(pagina==4){parrafo("J1: A/D mover · Espacio salto doble · F ataque · Q alcance · E protección · R esquiva\nJ2: flechas mover · Mayús salto · L ataque · K alcance · Enter protección · J esquiva\nJ3: numérico 4/6 mover · 0 salto · 1/2/3 ataques · decimal esquiva\nJ4 jefe: Z lluvia · X bots · C abanico · B rayos · N muro · M orbes\nMando J1: stick · A salto · X/Y ataques · LB protección · RB esquiva\nEsc/P pausa · G guardar · H ayuda · T consultas\nLee el aviso dorado, esquiva el ataque activo y aprovecha la recuperación. Los pinchos alternan. En plataformas usa salto doble.",95,160,1080,420,20);}
+  else if(pagina==4){parrafo("J1: A/D mover · Espacio salto doble · F ataque · Q alcance · C protección · R esquiva\nJ2: flechas mover · Mayús salto · L ataque · K alcance · O protección · J esquiva\nJ3: numérico 4/6 mover · 0 salto · 1/2/3 ataques · decimal esquiva\nJ4 jefe: fila superior 1 lluvia · 2 bots · 3 abanico · 4 rayos · 5 muro · 6 orbes\nMando J1: stick · A salto · X/Y ataques · LB protección · RB esquiva\nE/Enter/A confirma fuera del combate · Esc/P pausa · G guarda · H ayuda · T consultas\nLee el aviso dorado, esquiva el ataque activo y aprovecha la recuperación. Los pinchos alternan. En plataformas usa salto doble.",95,160,1080,420,20);}
   else parrafo(String.join("\n",motor.historial.stream().skip(Math.max(0,motor.historial.size()-12)).toList()),95,160,1080,390,18);
   boton("Anterior",90,590,235,()->pagina=Math.floorMod(pagina-1,6));boton("Volver",520,590,235,()->{consulta=false;if(previaControles){previaControles=false;config=true;motor=null;}});boton("Siguiente",950,590,235,()->pagina=(pagina+1)%6);
  }
  private void dibujarAVL(alcaldedigital.compartido.estructuras.avl.ArbolAVLPublicaciones.Vista n,int x,int y,int ancho){if(n==null)return;p.stroke(LILA);if(n.izquierdo()!=null)p.line(x,y,x-ancho,y+110);if(n.derecho()!=null)p.line(x,y,x+ancho,y+110);p.noStroke();marco(x-105,y-27,210,65);texto("#"+n.valor().id()+" · riesgo "+n.valor().riesgo(),x-90,y,17,PAPEL);texto("altura "+n.altura()+" · FE "+n.fe(),x-90,y+22,14,CIAN);dibujarAVL(n.izquierdo(),x-ancho,y+110,ancho/2);dibujarAVL(n.derecho(),x+ancho,y+110,ancho/2);}
- private void sonido(){if(motor.pausa){audio.pausar();return;}audio.reanudar();boolean combate=motor.escena==MotorOcho.Escena.COMBATE;int dano=Arrays.stream(motor.heroes).mapToInt(h->h.danio).sum();if(dano>danioAudio)audio.efecto("dano","mision3/audio/hit",.3f,.2);danioAudio=dano;if(combate&&motor.ataqueTicks>=0&&motor.ataqueTicks<3&&ataqueAudio!=motor.ticks){audio.efecto("aviso","mision3/audio/alert",.3f,2);ataqueAudio=motor.ticks;}}
- public void close(){audio.close();if(red==null&&motor!=null&&!previaControles)try{GuardadoOcho.guardar(motor);}catch(IOException e){error=e.getMessage();}if(red!=null){red.close();red=null;}}
+ private void sonido(){
+  if(motor.pausa){audio.pausar();return;}
+  audio.reanudar();
+  int dano=0;
+  for(var h:motor.heroes)dano+=h.danio;
+  int edad=AnimacionOcho.desdeEmision(motor);
+  int inicio=motor.ticks-motor.ataqueTicks, emision=motor.ticks-edad;
+  if(!partidaAudio.equals(motor.id)){
+   partidaAudio=motor.id;danioAudio=dano;ataqueAudio=inicio;emisionAudio=emision;
+   return;
+  }
+  if(dano>danioAudio)audio.efecto("dano",SonidosRemaster.ruta("final-impacto"),.51f,.14);
+  danioAudio=dano;
+  if(motor.escena!=MotorOcho.Escena.COMBATE||motor.ataqueTicks<0)return;
+  if(motor.ataqueTicks<5&&ataqueAudio!=inicio){
+   audio.efecto("aviso",SonidosRemaster.ruta("final-carga"),.41f,.25);
+   ataqueAudio=inicio;
+  }
+  if(edad>=0&&edad<5&&emisionAudio!=emision){
+   String efecto=motor.ataque==MotorOcho.Ataque.ORBES?"final-orbe":"final-descarga";
+   audio.efecto("emision",SonidosRemaster.ruta(efecto),.43f,.18);
+   emisionAudio=emision;
+  }
+ }
+ public synchronized void close(){
+  cerrada=true;pantallaLan.close();audio.close();
+  if(enlacePendiente!=null){enlacePendiente.close();enlacePendiente=null;}
+  if(red!=null){red.close();red=null;}
+  else if(!config&&modo==0&&motor!=null&&!previaControles)try{GuardadoOcho.guardar(motor);}catch(IOException e){error=e.getMessage();}
+ }
 }

@@ -21,6 +21,7 @@ public final class RevisionAudio {
   if(f==45){click(520,230);exigir(juego.audio.actual().musica()==65,"No aplicó volumen mediante clic reescalado");app.get().save(evid.resolve("audio-960x600.png").toString());}
   if(f==55)click(760,338);
   if(f==70){tecla(KeyEvent.VK_ESCAPE);exigir(juego.pantalla==JuegoCliente.Pantalla.AYUDA,"Esc no volvió a ayuda");juego.accion("volver");juego.progreso.desbloquearTodas();juego.accion("jugar");juego.accion("mision1");juego.accion("m1dificultad:FACIL");}
+  if(f==80)tecla(KeyEvent.VK_ESCAPE);
   if(f==90)juego.misionUno.solicitar("audio-1","continuar");
   if(f==110)juego.accion("pausa");
   if(f==120)alcaldedigital.cliente.audio.MotorAudio.global().interfaz("hover");

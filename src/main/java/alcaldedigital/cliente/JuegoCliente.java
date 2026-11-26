@@ -1,5 +1,13 @@
 package alcaldedigital.cliente;
+import alcaldedigital.cliente.audio.MotorAudio;
+import alcaldedigital.cliente.misiones.UsuariosPuntajes;
+import alcaldedigital.compartido.guardado.ArchivosPartida;
+import java.io.IOException;
+import java.nio.file.Path;
+import alcaldedigital.cliente.audio.OpcionesAudio;
+import alcaldedigital.cliente.audio.SonidosRemaster;
 import alcaldedigital.compartido.modelo.*;
+import alcaldedigital.compartido.modelo.InvestigacionCiudadana.Escena;
 import alcaldedigital.compartido.protocolo.SesionJuego;
 import alcaldedigital.compartido.protocolo.SesionMisionUno;
 import alcaldedigital.compartido.estructuras.avl.ArbolAVLPublicaciones;
@@ -8,14 +16,16 @@ import alcaldedigital.cliente.visualizadores.ConsultaEstructuras;
 import alcaldedigital.cliente.mision3.MisionTresSketch;
 import alcaldedigital.cliente.mision2.MisionDosSketch;
 import alcaldedigital.cliente.mision2.RegistroIntentosMisionDos;
+import alcaldedigital.cliente.tutorial.RegistroTutorial;
+import alcaldedigital.cliente.tutorial.Tutorial;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.DoubleSupplier;
 
 /** Control de entrada y navegación; los efectos siempre pasan por la sesión. */
 public final class JuegoCliente {
-    public enum Pantalla { MENU, MISIONES, GUARDADO, DIFICULTAD, DIFICULTAD_DOS, MISION_DOS, MISION_TRES, MISION_CUATRO, MISION_CINCO, MISION_SEIS, MISION_SIETE, MISION_OCHO, ROLES, PARQUE, CIVITAS, EVIDENCIAS, ARBOLES, AYUDA, GRAFICOS, AUDIO, CONTROLES, CONFIRMAR_REINICIO, RESULTADO }
-    public final alcaldedigital.cliente.audio.OpcionesAudio audio=new alcaldedigital.cliente.audio.OpcionesAudio();
+    public enum Pantalla { MENU, TUTORIAL, MISIONES, GUARDADO, DIFICULTAD, DIFICULTAD_DOS, MISION_DOS, MISION_TRES, MISION_CUATRO, MISION_CINCO, MISION_SEIS, MISION_SIETE, MISION_OCHO, ROLES, PARQUE, CIVITAS, EVIDENCIAS, ARBOLES, AYUDA, GRAFICOS, AUDIO, CONTROLES, CONFIRMAR_REINICIO, RESULTADO }
+    public final OpcionesAudio audio=new OpcionesAudio();
     public final alcaldedigital.cliente.graficos.OpcionesGraficas graficos=new alcaldedigital.cliente.graficos.OpcionesGraficas();
     public Pantalla pantalla=Pantalla.MENU, anterior=Pantalla.MENU;
     public Pantalla origenArboles=Pantalla.PARQUE;
@@ -28,9 +38,13 @@ public final class JuegoCliente {
     public double segundosAviso;
     public SesionJuego sesion;
     public SesionMisionUno misionUno;
+    private boolean prologoPendiente;
+    public final InvestigacionSofi investigacionSofi=new InvestigacionSofi();
     private final SesionJuego.Fabrica fabrica;
     private final SesionMisionUno.Fabrica fabricaMisionUno;
-    private final RegistroIntentosMisionDos intentosMisionDos;
+    private RegistroIntentosMisionDos intentosMisionDos;
+    private UsuariosPuntajes usuarios;
+    private Path baseUsuarios;
     private final DoubleSupplier azarCritico;
     public JuegoCliente(SesionJuego.Fabrica fabrica) { this(fabrica,null); }
     public JuegoCliente(SesionJuego.Fabrica fabrica,SesionMisionUno.Fabrica fabricaMisionUno) {
@@ -43,6 +57,57 @@ public final class JuegoCliente {
         this.intentosMisionDos=Objects.requireNonNull(intentosMisionDos);
         this.azarCritico=Objects.requireNonNull(azarCritico);
     }
+    public UsuariosPuntajes usuarios(){return usuarios;}
+
+    public void iniciarUsuarios(){
+        baseUsuarios=ArchivosPartida.directorio();
+        usuarios=new UsuariosPuntajes(baseUsuarios,this::activarCampana,()->foco=0);
+    }
+
+    private void activarCampana(Path directorio){
+        if(directorio==null){
+            System.setProperty("ad.guardados",baseUsuarios.toString());
+            limpiarCampanaEnMemoria();
+            abrir(Pantalla.MENU);
+            return;
+        }
+        System.setProperty("ad.guardados",directorio.toString());
+        progreso=new alcaldedigital.compartido.guardado.ProgresoMisiones(directorio);
+        registroTutorial=new RegistroTutorial(directorio);
+        intentosMisionDos=new RegistroIntentosMisionDos();
+        limpiarCampanaEnMemoria();
+        abrir(Pantalla.MENU);
+        cargarEstadoCampana();
+    }
+
+    public void cargarEstadoCampana(){
+        try{
+            estadoCampana=new alcaldedigital.servidor.batalla.RepositorioResultados(ArchivosPartida.directorio().resolve("campana.properties")).ciudad(estadoCampana);
+        }catch(IOException e){aviso="No se pudo cargar la campaña: "+e.getMessage();segundosAviso=9;}
+    }
+
+    private void limpiarCampanaEnMemoria(){
+        estadoCampana=EstadoCiudad.inicial();misionUno=null;sesion=null;
+        investigacionSofi.reiniciar();
+        ultimaFila=null;ultimoResultadoMisionDos=null;ultimoResultadoMisionTres=null;
+        ultimoResultadoMisionCuatro=null;ultimoResultadoMisionSeis=null;
+        misionesCuatroAcreditadas.clear();resultadoMisionUnoRegistrado=false;
+        ultimaMisionAbierta=0;partidaMenu=null;consultaPartidas=0;
+        continuarGuardado=false;eligiendoPartida=false;modoContinuacion=rolContinuacion=-1;
+        misionSolicitada=0;falloCriticoMisionDos=false;pausa=false;pausaUnificada=false;
+        tutorialVisto=false;
+        prologoPendiente=false;
+        if(usuarios!=null)usuarios.nuevaMision();
+    }
+
+    public boolean asignarPuestos(int cantidad,Runnable cuandoListos){
+        return usuarios!=null&&usuarios.asignarPuestos(cantidad,cuandoListos);
+    }
+
+    public boolean asignarPuestos(int mision,String partida,int cantidad,Runnable cuandoListos){
+        return usuarios!=null&&usuarios.asignarPuestos(mision,partida,cantidad,cuandoListos);
+    }
+
     public boolean misionUnoDisponible() {return fabricaMisionUno!=null;}
     public boolean contraste, movimientoReducido, tiempoAmpliado=true, salir;
     public boolean mandoActivo, pausa, controlesPausa;
@@ -56,7 +121,11 @@ public final class JuegoCliente {
     public double animacion, efecto;
     private long solicitud;
     private long solicitudIdMisionUno;
-    public final alcaldedigital.compartido.guardado.ProgresoMisiones progreso=new alcaldedigital.compartido.guardado.ProgresoMisiones(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
+    public alcaldedigital.compartido.guardado.ProgresoMisiones progreso=new alcaldedigital.compartido.guardado.ProgresoMisiones(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
+    private RegistroTutorial registroTutorial=new RegistroTutorial(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
+    private Tutorial tutorial;
+    private boolean tutorialVisto;
+    public Tutorial tutorial(){return pantalla==Pantalla.TUTORIAL?tutorial:null;}
     public boolean pausaUnificada;
     public boolean continuarGuardado;
     public int controlesMision=1;
@@ -68,6 +137,7 @@ public final class JuegoCliente {
     private long consultaPartidas;
     private alcaldedigital.cliente.misiones.PartidasMenu.Partida partidaMenu;
     public alcaldedigital.cliente.misiones.PartidasMenu.Partida continuacionMenu(){
+        if(usuarios!=null&&usuarios.activo()==null)return null;
         if(ultimaMisionAbierta==1&&misionUno!=null){
             var v=misionUno.vista();
             var estado=v.fase()!=SesionMisionUno.Fase.RESULTADO?
@@ -84,7 +154,7 @@ public final class JuegoCliente {
         }
         return partidaMenu;
     }
-    public int numeroMision(){return switch(pantalla){case MISION_DOS->2;case MISION_TRES->3;case MISION_CUATRO->4;case MISION_CINCO->5;case MISION_SEIS->6;case MISION_SIETE->7;case MISION_OCHO->8;default->misionUno!=null&&pantalla!=Pantalla.MENU&&pantalla!=Pantalla.MISIONES&&pantalla!=Pantalla.GUARDADO&&pantalla!=Pantalla.DIFICULTAD&&pantalla!=Pantalla.DIFICULTAD_DOS&&pantalla!=Pantalla.GRAFICOS&&pantalla!=Pantalla.AUDIO?1:0;};}
+    public int numeroMision(){return switch(pantalla){case TUTORIAL->0;case MISION_DOS->2;case MISION_TRES->3;case MISION_CUATRO->4;case MISION_CINCO->5;case MISION_SEIS->6;case MISION_SIETE->7;case MISION_OCHO->8;default->misionUno!=null&&pantalla!=Pantalla.MENU&&pantalla!=Pantalla.MISIONES&&pantalla!=Pantalla.GUARDADO&&pantalla!=Pantalla.DIFICULTAD&&pantalla!=Pantalla.DIFICULTAD_DOS&&pantalla!=Pantalla.GRAFICOS&&pantalla!=Pantalla.AUDIO?1:0;};}
     public void victoria(int n){try{progreso.victoria(n);}catch(java.io.IOException e){aviso="No se pudo guardar el avance: "+e.getMessage();segundosAviso=9;}}
     public EstadoCiudad estadoCampana=EstadoCiudad.inicial();
     public alcaldedigital.compartido.guardado.TablaPuntajes.Fila ultimaFila;
@@ -151,6 +221,8 @@ public final class JuegoCliente {
     public final Set<Integer> teclas=new HashSet<>();
     public void iniciar(Rol rol) {
         misionUno=null;
+        prologoPendiente=false;
+        investigacionSofi.reiniciar();
         sesion=fabrica.crear(rol,semilla,tiempoAmpliado?60:10);
         pantalla=Pantalla.PARQUE; direccion=0; cuadro=0; pasoAVL=-1; pasoDecision=-1; foco=0;
         busqueda="";encontrado="";automatico=false;visita=0;efecto=0;teclas.clear();
@@ -158,9 +230,12 @@ public final class JuegoCliente {
         editandoBusqueda=false;cursorBusqueda=0;consulta.iniciar(sesion);aviso="";segundosAviso=0;
     }
     public void abrir(Pantalla destino) {
+        if(destino!=Pantalla.PARQUE)prologoPendiente=false;
         boolean conservarPausa=pausa&&pausaUnificada&&Set.of(Pantalla.PARQUE,Pantalla.CIVITAS,Pantalla.ARBOLES,Pantalla.AYUDA,Pantalla.RESULTADO).contains(destino);
         if(destino==Pantalla.AYUDA&&pantalla!=destino&&pantalla!=Pantalla.CONTROLES&&pantalla!=Pantalla.GRAFICOS&&pantalla!=Pantalla.AUDIO) anterior=pantalla;
         if(destino==Pantalla.ARBOLES&&pantalla!=destino&&!(pantalla==Pantalla.AYUDA&&anterior==Pantalla.ARBOLES)) origenArboles=pantalla;
+        if(destino==Pantalla.TUTORIAL){if(tutorial==null)tutorial=new Tutorial();}
+        else tutorial=null;
         pantalla=destino; foco=destino==Pantalla.MISIONES?1:
             destino==Pantalla.GRAFICOS?1:destino==Pantalla.DIFICULTAD||destino==Pantalla.DIFICULTAD_DOS?2:0;
         if(destino==Pantalla.MENU)consultaPartidas=0;
@@ -175,12 +250,40 @@ public final class JuegoCliente {
         pausa=conservarPausa;controlesPausa=false;movimientoMandoX=movimientoMandoY=0;
     }
     public void cerrarArboles() { abrir(origenArboles); }
+    boolean prologoPendiente(){return prologoPendiente;}
+    boolean tomarPrologo(){
+        boolean iniciar=prologoPendiente;
+        prologoPendiente=false;
+        return iniciar;
+    }
+    private void jugar(){
+        if(usuarios!=null&&usuarios.pedirUsuarioParaJugar(this::jugar))return;
+        if(!misionUnoDisponible()){abrir(Pantalla.ROLES);return;}
+        if(!tutorialVisto){
+            try{tutorialVisto=registroTutorial.visto();}
+            catch(java.io.IOException e){aviso="No se pudo leer el registro del tutorial.";segundosAviso=8;}
+            tutorialVisto|=progreso.todasDesbloqueadas()||
+                java.util.stream.IntStream.rangeClosed(1,8).anyMatch(progreso::ganada)||continuacionMenu()!=null;
+        }
+        abrir(tutorialVisto?Pantalla.MISIONES:Pantalla.TUTORIAL);
+    }
+    private void cerrarTutorial(Tutorial.Resultado resultado){
+        tutorialVisto=true;
+        try{registroTutorial.guardar(resultado);}
+        catch(java.io.IOException e){aviso="No se pudo guardar el tutorial: "+e.getMessage();segundosAviso=8;}
+        abrir(Pantalla.MISIONES);
+    }
     public int indiceAVL() { return pasoAVL<0?sesion.pasosAVL().size()-1:Math.min(pasoAVL,sesion.pasosAVL().size()-1); }
     public int indiceDecision() { return pasoDecision<0?sesion.pasosDecisiones().size()-1:Math.min(pasoDecision,sesion.pasosDecisiones().size()-1); }
     public ArbolAVLPublicaciones.Vista vistaAVL() { return pasoAVL<0?sesion.vista().avl():sesion.pasosAVL().get(indiceAVL()).raiz(); }
     public ArbolDecisiones.Vista vistaDecision() { return pasoDecision<0?sesion.vista().decisiones():sesion.pasosDecisiones().get(indiceDecision()).raiz(); }
     private void seleccionCambiada() { visita=0;automatico=false;encontrado="";editandoBusqueda=false;foco=0; }
     public void accion(String accion) {
+        if(usuarios!=null&&usuarios.panel()!=null){usuarios.accion(accion);return;}
+        if(usuarios!=null&&pantalla==Pantalla.MISIONES&&accion.matches("mision[1-8]")&&!eligiendoPartida)usuarios.nuevaMision();
+        if(accion.equals("repetirMisionUno")&&pantalla==Pantalla.RESULTADO&&misionUno!=null){
+            continuarGuardado=false;misionSolicitada=1;abrir(Pantalla.DIFICULTAD);return;
+        }
         if(accion.equals("audio")&&pantalla==Pantalla.AYUDA){abrir(Pantalla.AUDIO);return;}
         if(accion.startsWith("audio:")&&pantalla==Pantalla.AUDIO){String a=accion.substring(6);if(a.equals("restaurar"))audio.restaurar();else if(a.equals("prueba"))alcaldedigital.cliente.audio.MotorAudio.global().interfaz("confirmar");else if(a.equals("mudo")||a.equals("suave")||a.equals("voces"))audio.alternar(a);else{String[] partes=a.split(":");audio.cambiar(alcaldedigital.cliente.audio.OpcionesAudio.Bus.valueOf(partes[0]),Integer.parseInt(partes[1]));}return;}
 
@@ -197,7 +300,7 @@ public final class JuegoCliente {
         }
         if(accion.startsWith("partida:")&&pantalla==Pantalla.GUARDADO){
             continuarGuardado=accion.equals("partida:continuar");eligiendoPartida=true;
-            if(continuarGuardado&&(misionSolicitada==5||misionSolicitada==7)){
+            if(continuarGuardado&&(misionSolicitada==5||misionSolicitada==6||misionSolicitada==7)){
                 var partida=alcaldedigital.cliente.misiones.PartidasMenu.reciente(progreso,misionSolicitada);
                 if(partida!=null){modoContinuacion=partida.modo();rolContinuacion=partida.rol();}
             }
@@ -241,7 +344,11 @@ public final class JuegoCliente {
         }
         if(accion.equals("mision1")&&continuarGuardado){
             try{var p=alcaldedigital.compartido.guardado.GuardadoCampana.cargar(1);misionUno=alcaldedigital.servidor.sesion.SesionMisionUnoLocal.restaurar(p);sesion=null;resultadoMisionUnoRegistrado=Boolean.parseBoolean(p.getProperty("resultadoRegistrado"));
-                abrir(Pantalla.valueOf(p.getProperty("pantalla", "PARQUE")));return;
+                investigacionSofi.reiniciar();
+                prepararAudioSofi();
+                var investigacion=misionUno.investigacion();
+                abrir(investigacion!=null&&investigacion.premium()&&misionUno.vista().fase()==SesionMisionUno.Fase.CRISIS?
+                    Pantalla.PARQUE:Pantalla.valueOf(p.getProperty("pantalla","PARQUE")));return;
             }catch(Exception e){aviso="No se pudo recuperar: "+e.getMessage();segundosAviso=9;return;}
         }
         if(accion.equals("mision2")&&continuarGuardado){abrir(Pantalla.MISION_DOS);return;}
@@ -269,9 +376,13 @@ public final class JuegoCliente {
             try {dificultad=SesionMisionUno.Dificultad.valueOf(accion.substring(13));}
             catch(IllegalArgumentException e) {return;}
             sesion=null;misionUno=fabricaMisionUno.crear(semilla++,dificultad);
+            misionUno.activarInvestigacion();
+            investigacionSofi.reiniciar();
+            prepararAudioSofi();
             resultadoMisionUnoRegistrado=false;
-            direccion=0;cuadro=0;abrir(Pantalla.PARQUE);return;
+            direccion=0;cuadro=0;abrir(Pantalla.PARQUE);prologoPendiente=true;return;
         }
+        if(misionUno!=null&&misionUno.investigacion()!=null&&accionInvestigacionSofi(accion)) return;
         if(misionUno!=null&&(Set.of("continuar","interactuar").contains(accion)||accion.startsWith("m1:"))) {
             String solicitud=accion.startsWith("m1:")?accion.substring(3):accion;
             misionUno.solicitar("mision1-"+java.util.UUID.randomUUID(),solicitud);
@@ -293,7 +404,9 @@ public final class JuegoCliente {
         }
         if(accion.startsWith("rol:")) { iniciar(Rol.valueOf(accion.substring(4))); return; }
         switch(accion) {
-            case "jugar" -> abrir(misionUnoDisponible()?Pantalla.MISIONES:Pantalla.ROLES);
+            case "jugar" -> jugar();
+            case "usuarios" -> {if(usuarios!=null&&pantalla==Pantalla.MENU)usuarios.abrirUsuarios();}
+            case "puntajes" -> {if(usuarios!=null&&pantalla==Pantalla.MISIONES)usuarios.abrirPuntajes();}
             case "desbloquearTodas" -> {
                 if(pantalla!=Pantalla.MISIONES)break;
                 try{progreso.desbloquearTodas();aviso="Misiones 1 a 8 disponibles. Puedes elegir un final de prueba en la misión 8.";segundosAviso=8;}
@@ -306,15 +419,9 @@ public final class JuegoCliente {
                 try{
                     var respaldo=alcaldedigital.compartido.guardado.RestablecerJuego.restablecer();
                     progreso.reiniciar();intentosMisionDos.reiniciar();
-                    estadoCampana=EstadoCiudad.inicial();misionUno=null;sesion=null;
-                    ultimaFila=null;ultimoResultadoMisionDos=null;ultimoResultadoMisionTres=null;
-                    ultimoResultadoMisionCuatro=null;ultimoResultadoMisionSeis=null;
-                    misionesCuatroAcreditadas.clear();resultadoMisionUnoRegistrado=false;
-                    ultimaMisionAbierta=0;partidaMenu=null;consultaPartidas=0;
-                    continuarGuardado=false;eligiendoPartida=false;modoContinuacion=rolContinuacion=-1;
-                    misionSolicitada=0;falloCriticoMisionDos=false;pausa=false;pausaUnificada=false;
-                    abrir(Pantalla.MISIONES);
-                    aviso=respaldo==null?"Juego restablecido. Comienza por la misión 1.":
+                    limpiarCampanaEnMemoria();
+                    abrir(Pantalla.MENU);
+                    aviso=respaldo==null?"Juego restablecido. Pulsa Jugar para empezar.":
                         "Juego restablecido. Perfil anterior guardado en "+respaldo.getFileName()+".";
                     segundosAviso=12;
                 }catch(java.io.IOException e){aviso="No se pudo restablecer: "+e.getMessage();segundosAviso=10;}
@@ -322,10 +429,14 @@ public final class JuegoCliente {
             case "continuarMision" -> {
                 if(pantalla!=Pantalla.MENU)break;
                 var partida=continuacionMenu();if(partida==null||!progreso.disponible(partida.mision()))break;
+                if(usuarios!=null)usuarios.nuevaMision();
                 if(partida.estado()==alcaldedigital.cliente.misiones.PartidasMenu.Estado.VICTORIA){abrir(Pantalla.MISIONES);break;}
                 if(partida.memoria()&&partida.estado()==alcaldedigital.cliente.misiones.PartidasMenu.Estado.EN_CURSO){
-                    abrir(misionUno.vista().fase()==SesionMisionUno.Fase.CIVITAS?Pantalla.CIVITAS:
-                        misionUno.vista().fase()==SesionMisionUno.Fase.RESULTADO?Pantalla.RESULTADO:Pantalla.PARQUE);
+                    var inv=misionUno.investigacion();
+                    var fase=misionUno.vista().fase();
+                    abrir(fase==SesionMisionUno.Fase.RESULTADO?Pantalla.RESULTADO:
+                        (inv==null?fase==SesionMisionUno.Fase.CIVITAS:inv.abierto()!=0||!inv.premium()&&inv.vecino()>=0||investigacionSofi.libreta)?
+                            Pantalla.CIVITAS:Pantalla.PARQUE);
                     break;
                 }
                 misionSolicitada=partida.mision();continuarGuardado=partida.estado()==alcaldedigital.cliente.misiones.PartidasMenu.Estado.EN_CURSO;
@@ -412,26 +523,154 @@ public final class JuegoCliente {
             var evento=consulta.ultimo();aviso=evento.causa()+" · "+evento.resumen();segundosAviso=9;
         }
     }
+    private boolean accionInvestigacionSofi(String accion) {
+        if(!(accion.startsWith("invest:")||Set.of("interactuar","civitas","volver").contains(accion))) return false;
+        var s=misionUno.vista();
+        var antes=misionUno.investigacion();
+        if(accion.equals("interactuar")&&antes.calmaClasica()&&antes.escena()==Escena.NINGUNA&&
+            s.fase()==SesionMisionUno.Fase.CRISIS) return false;
+        if(accion.equals("volver")&&pantalla!=Pantalla.CIVITAS) return false;
+        if(s.fase()==SesionMisionUno.Fase.INTRO||s.fase()==SesionMisionUno.Fase.RESULTADO) return false;
+        if(pantalla!=Pantalla.PARQUE&&pantalla!=Pantalla.CIVITAS) return true;
+        if(accion.equals("civitas")) accion="invest:libreta";
+        if(accion.equals("interactuar")) {
+            if(pantalla!=Pantalla.PARQUE) return true;
+            if(antes.escena()!=Escena.NINGUNA) accion="invest:saltarEscena";
+            else if(s.fase()==SesionMisionUno.Fase.CIVITAS) {
+                if(antes.premium()&&investigacionSofi.convocatoriaLista(s)&&investigacionSofi.cercaDelTablon(s))
+                    accion="invest:irVecinos";
+                else {
+                    var caso=investigacionSofi.papelCercano(s);
+                    if(caso==null) return true;
+                    accion="invest:papel:"+caso.id();
+                }
+            } else {
+                var vecino=investigacionSofi.vecinoCercano(s,antes);
+                if(vecino==null) return true;
+                accion=(antes.premium()?"invest:calmar:":"invest:vecino:")+vecino.id();
+            }
+        }
+        if(accion.equals("invest:libreta")) {
+            if(antes.escena()!=Escena.NINGUNA||antes.premium()&&s.fase()==SesionMisionUno.Fase.CRISIS) return true;
+            boolean eraLibreta=investigacionSofi.libreta||pantalla==Pantalla.CIVITAS&&antes.abierto()==0&&antes.vecino()<0;
+            investigacionSofi.libreta=!eraLibreta;
+            if(!eraLibreta||antes.abierto()!=0||antes.vecino()>=0) abrir(Pantalla.CIVITAS);
+            else abrir(Pantalla.PARQUE);
+            sonidoSofi("civitas");
+            return true;
+        }
+        if(accion.equals("volver")&&investigacionSofi.libreta&&(antes.abierto()!=0||antes.vecino()>=0)) {
+            investigacionSofi.libreta=false;foco=0;return true;
+        }
+        if(accion.equals("volver")) accion="invest:cerrarExpediente";
+        String solicitud=accion.substring("invest:".length());
+        if(antes.premium()&&solicitud.equals("ayuda")) {
+            investigacionSofi.ayuda=!investigacionSofi.ayuda;
+            foco=0;return true;
+        }
+        if(antes.premium()&&!movimientoReducido&&antes.abierto()!=0&&
+            animacion<Math.max(investigacionSofi.finRecogida,investigacionSofi.finPagina)&&
+            !solicitud.equals("cerrarExpediente")) return true;
+        if(solicitud.equals("cerrarExpediente")&&antes.calmaClasica()&&antes.escena()==Escena.NINGUNA) {
+            investigacionSofi.libreta=false;abrir(Pantalla.PARQUE);return true;
+        }
+        misionUno.solicitar("m1-"+java.util.UUID.randomUUID(),solicitud);
+        var despues=misionUno.investigacion();
+        if(solicitud.startsWith("calmar:")&&antes.vecino()!=despues.vecino()&&despues.ciudadanos()==antes.ciudadanos())
+            sonidoSofi("dialogo");
+        if(solicitud.startsWith("papel:")&&despues.abierto()!=0&&despues.abierto()!=antes.abierto()) {
+            investigacionSofi.reiniciar();
+            investigacionSofi.finRecogida=animacion+(despues.premium()?1.12:.42);
+            investigacionSofi.ultimaPista=animacion;
+            abrir(Pantalla.CIVITAS);foco=1;sonidoSofi("papel");
+        } else if(solicitud.startsWith("vecino:")&&despues.vecino()>=0) {
+            investigacionSofi.reiniciar();abrir(Pantalla.CIVITAS);foco=1;sonidoSofi("dialogo");
+        } else if(Set.of("cerrarExpediente","irVecinos","saltarEscena").contains(solicitud)&&despues.abierto()==0&&despues.vecino()<0) {
+            investigacionSofi.reiniciar();abrir(Pantalla.PARQUE);
+            if(despues.escena()==Escena.VECINOS&&antes.escena()!=Escena.VECINOS) sonidoSofi(despues.premium()?"pacto":"rumor");
+            if(despues.escena()==Escena.CIERRE) sonidoSofi("victoria");
+        }
+        if(despues.premium()&&solicitud.equals("publicacion")&&!antes.publicacion()&&despues.publicacion()) {
+            investigacionSofi.finPagina=animacion+.43;foco=0;sonidoSofi("pagina");
+        }
+        if(despues.premium()&&solicitud.equals("comunicar")&&antes.abierto()!=0&&
+            !s.resueltas().get(antes.abierto()-1)&&misionUno.vista().resueltas().get(antes.abierto()-1)) {
+            investigacionSofi.finSello=animacion+.58;foco=0;sonidoSofi("confirmar");
+        }
+        if(solicitud.equals("contraste")&&!antes.contraste()&&despues.contraste()) sonidoSofi("civitas");
+        if(solicitud.equals("lupa")&&antes.lupa()!=despues.lupa()) {
+            sonidoSofi("hover");
+        }
+        if(despues.evidencias()>antes.evidencias()) {
+            investigacionSofi.finAviso=animacion+1.65;investigacionSofi.ultimaPista=animacion;
+            if(despues.premium()) foco=0;
+            sonidoSofi("lupa-hallazgo");
+        }
+        if(!despues.premium()&&despues.clasificados()>antes.clasificados()) {
+            investigacionSofi.finAviso=animacion+.36;sonidoSofi("confirmar");
+        }
+        if(despues.ciudadanos()>antes.ciudadanos()) {
+            investigacionSofi.finSello=animacion+.62;foco=0;sonidoSofi("confirmar");
+            if(despues.premium()) {
+                investigacionSofi.vecinoAviso=antes.vecino();
+                investigacionSofi.finRespuestaVecino=animacion+2.0;
+                if(despues.escena()==Escena.CIERRE) sonidoSofi("victoria");
+            }
+        }
+        registrarResultadoMisionUno();
+        if(misionUno.vista().fase()==SesionMisionUno.Fase.RESULTADO) abrir(Pantalla.RESULTADO);
+        return true;
+    }
+    private static void prepararAudioSofi() {
+        var audio=MotorAudio.global();
+        SonidosRemaster.precargar("papel","pagina");
+        for(String efecto:List.of("civitas","lupa-hallazgo","confirmar","pacto","dialogo","viento","victoria"))
+            audio.precargar("audio/fx/"+efecto);
+    }
+    private static void sonidoSofi(String efecto) {
+        var audio=MotorAudio.global();
+        if(efecto.equals("papel")||efecto.equals("pagina"))
+            audio.efecto("investigacion",efecto,SonidosRemaster.ruta(efecto),.67f,.08,OpcionesAudio.Bus.INTERFAZ);
+        else audio.interfaz(efecto);
+    }
     public void actualizar(double dt) {
         if(pausa) return;
         dt=Math.min(.1,Math.max(0,dt)); animacion+=dt;efecto=Math.max(0,efecto-dt);
+        if(pantalla==Pantalla.MENU||pantalla==Pantalla.MISIONES||pantalla==Pantalla.TUTORIAL)segundosAviso=Math.max(0,segundosAviso-dt);
+        if(tutorial()!=null){
+            tutorial.actualizar(dt);
+            if(tutorial.resultado()!=null)cerrarTutorial(tutorial.resultado());
+            return;
+        }
         if(misionUno!=null) {
+            var fase=misionUno.vista().fase();
             if(pantalla==Pantalla.PARQUE||pantalla==Pantalla.CIVITAS) {
+                var faseAnterior=fase;
                 misionUno.actualizar(dt);
                 registrarResultadoMisionUno();
-                if(pantalla==Pantalla.PARQUE&&misionUno.vista().fase()==SesionMisionUno.Fase.CIVITAS) {
-                    abrir(Pantalla.CIVITAS);return;
+                fase=misionUno.vista().fase();
+                if(fase==SesionMisionUno.Fase.CIVITAS&&faseAnterior==SesionMisionUno.Fase.INTRO) {
+                    var inv=misionUno.investigacion();
+                    if(inv==null) abrir(Pantalla.CIVITAS);
+                    else if(inv.premium())
+                        alcaldedigital.cliente.audio.MotorAudio.global().efecto("mision1","papeles","audio/fx/viento",.3f,.25,
+                            alcaldedigital.cliente.audio.OpcionesAudio.Bus.EFECTOS);
                 }
-                if(misionUno.vista().fase()==SesionMisionUno.Fase.RESULTADO) {abrir(Pantalla.RESULTADO);return;}
+                if(fase==SesionMisionUno.Fase.RESULTADO) {abrir(Pantalla.RESULTADO);return;}
             }
-            if(pantalla==Pantalla.PARQUE&&misionUno.vista().fase()==SesionMisionUno.Fase.CRISIS) {
+            if(pantalla==Pantalla.PARQUE&&(fase==SesionMisionUno.Fase.CRISIS||fase==SesionMisionUno.Fase.CIVITAS)) {
                 float dx=(teclas.contains(68)||teclas.contains(39)?1:0)-(teclas.contains(65)||teclas.contains(37)?1:0);
                 float dy=(teclas.contains(83)||teclas.contains(40)?1:0)-(teclas.contains(87)||teclas.contains(38)?1:0);
                 if(dx==0&&dy==0) {dx=movimientoMandoX;dy=movimientoMandoY;}
                 if(dx!=0||dy!=0) {
                     float n=(float)Math.hypot(dx,dy);if(n>1) {dx/=n;dy/=n;}
                     int pasos=Math.max(1,(int)Math.ceil(dt*180/5));
+                    var antes=misionUno.vista();
                     for(int i=0;i<pasos;i++) misionUno.mover(dx*(float)dt*180/pasos,dy*(float)dt*180/pasos);
+                    var despues=misionUno.vista();
+                    if(misionUno.investigacion()!=null&&(antes.x()!=despues.x()||antes.y()!=despues.y()))
+                        alcaldedigital.cliente.audio.MotorAudio.global().efecto("mision1","paso",
+                            "presentacion/audio/paso_adoquin",.26f,.31,alcaldedigital.cliente.audio.OpcionesAudio.Bus.EFECTOS);
                     cuadro=movimientoReducido?0:(int)(animacion*9)%4;
                 } else {misionUno.mover(0,0);cuadro=0;}
             }
@@ -473,7 +712,7 @@ public final class JuegoCliente {
                 pantalla==Pantalla.PARQUE?Pantalla.MENU:Pantalla.PARQUE);return;}
             if(codigo==72) {accion("ayuda");return;}
             if(codigo==84) {accion("arboles");return;}
-            if(codigo==67&&misionUno.vista().fase()!=SesionMisionUno.Fase.INTRO) {abrir(Pantalla.CIVITAS);return;}
+            if(codigo==67&&misionUno.vista().fase()!=SesionMisionUno.Fase.INTRO) {accion("civitas");return;}
             if((codigo==69||codigo==32)&&pantalla==Pantalla.PARQUE) {
                 accion(misionUno.vista().fase()==SesionMisionUno.Fase.INTRO?"continuar":"interactuar");return;
             }

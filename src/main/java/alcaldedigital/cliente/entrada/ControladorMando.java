@@ -19,6 +19,11 @@ public final class ControladorMando {
     private int direccionAnterior;
     private long proximaRepeticion;
 
+    public void sincronizar(EstadoMando estado) {
+        anterior=estado;
+        direccionAnterior=0;
+    }
+
     public void actualizar(EstadoMando estado,JuegoCliente juego,RenderJuego render,
                            MisionTresSketch misionTres,Runnable salirMisionTres) {
         actualizar(estado,juego,render,null,misionTres,salirMisionTres);
@@ -27,6 +32,13 @@ public final class ControladorMando {
     public void actualizar(EstadoMando estado,JuegoCliente juego,RenderJuego render,
                            MisionDosSketch misionDos,MisionTresSketch misionTres,Runnable salirMisionActual) {
         juego.mandoActivo=estado.conectado();juego.nombreMando=estado.nombre();
+        if(juego.usuarios()!=null&&juego.usuarios().panel()!=null){
+            if(nuevo(estado,Boton.B))juego.accion("volver");
+            else if(nuevo(estado,Boton.A))render.activarFoco(juego);
+            else navegar(estado,juego,render);
+            anterior=estado;return;
+        }
+        if(juego.tutorial()!=null){juego.tutorial().mando(estado);anterior=estado;direccionAnterior=0;return;}
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_CUATRO||juego.pantalla==JuegoCliente.Pantalla.MISION_SEIS){
             if(misionCampana!=null)misionCampana.mando(estado);anterior=estado;return;
         }
@@ -94,7 +106,7 @@ public final class ControladorMando {
         }
 
         boolean parque=juego.pantalla==JuegoCliente.Pantalla.PARQUE;
-        if(parque&&juego.misionUno!=null&&juego.misionUno.vista().fase()==SesionMisionUno.Fase.CRISIS) {
+        if(parque&&juego.misionUno!=null&&juego.misionUno.vista().fase()!=SesionMisionUno.Fase.INTRO) {
             float x=estado.izquierdaX(),y=estado.izquierdaY();
             if(estado.pulsado(Boton.IZQUIERDA)) x=-1;
             if(estado.pulsado(Boton.DERECHA)) x=1;
@@ -108,12 +120,18 @@ public final class ControladorMando {
             else juego.accion("volver");
         } else if(nuevo(estado,Boton.VISTA)) {
             juego.accion(juego.pantalla==JuegoCliente.Pantalla.AYUDA?"volver":"ayuda");
-        } else if(nuevo(estado,Boton.X)&&juego.misionUno!=null&&parque) {
+        } else if(nuevo(estado,Boton.X)&&juego.misionUno!=null&&
+            (parque||juego.pantalla==JuegoCliente.Pantalla.CIVITAS&&juego.misionUno.investigacion()!=null)) {
             if(juego.misionUno.vista().fase()!=SesionMisionUno.Fase.INTRO) juego.accion("civitas");
         } else if(nuevo(estado,Boton.Y)&&juego.misionUno!=null) juego.accion("arboles");
         else if(nuevo(estado,Boton.A)) {
             if(parque&&juego.misionUno!=null) juego.accion(juego.misionUno.vista().fase()==SesionMisionUno.Fase.INTRO?"continuar":"interactuar");
             else render.activarFoco(juego);
+        } else if(nuevo(estado,Boton.LB)&&juego.pantalla==JuegoCliente.Pantalla.CIVITAS&&juego.misionUno!=null&&
+            juego.misionUno.investigacion()!=null&&juego.misionUno.investigacion().abierto()!=0&&
+            !juego.misionUno.investigacion().publicacion()&&!juego.misionUno.investigacion().contraste()&&
+            !juego.investigacionSofi.libreta) {
+            juego.accion("invest:lupa");
         } else if(nuevo(estado,Boton.LB)) render.moverFocoDireccion(juego,0,-1);
         else if(nuevo(estado,Boton.RB)) render.moverFocoDireccion(juego,0,1);
         else if(!parque||juego.misionUno==null) navegar(estado,juego,render);

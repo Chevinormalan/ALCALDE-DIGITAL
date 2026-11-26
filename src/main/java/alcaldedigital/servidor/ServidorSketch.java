@@ -1,5 +1,6 @@
 package alcaldedigital.servidor;
 
+import alcaldedigital.compartido.NombreJuego;
 import alcaldedigital.compartido.modelo.EstadoCiudad;
 import processing.core.PApplet;
 
@@ -14,7 +15,7 @@ public final class ServidorSketch extends PApplet {
 
     @Override
     public void setup() {
-        surface.setTitle("Alcalde Digital — Servidor");
+        surface.setTitle(NombreJuego.TITULO + " — Servidor");
         noSmooth();
         textFont(createFont("SansSerif", 18));
     }

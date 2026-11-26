@@ -33,3 +33,11 @@ Los corazones son iconos de píxel dibujados por el renderizador del juego, con 
 ## Actualización vigente de casa y sala
 Los fondos casa.png y sala.png ahora se basan en CASA_MODERNA.webp y SALA_MODERNA.webp. Las referencias, los prompts exactos y las rutas se encuentran en ESCENARIOS_MODERNOS.md; las descripciones previas de esos dos fondos corresponden a la versión anterior.
 
+## Plano de la entrada
+
+El plano se creó con la herramienta integrada de generación de imágenes, usando `casa.png` y `sala.png` como referencias. El recurso `src/main/resources/cliente/mision6/entrada.png` se muestra entre el aterrizaje y la exploración interior. Processing dibuja a Juan y al influencer subiendo hacia la puerta.
+
+Prompt:
+
+> Use case: illustration-story. Generate a new 16:9 pixel-art cutscene background for Alcalde Digital. Image 1 is the reference for the same house exterior, central warm wooden front door, amber sconces, concrete, violet dusk and garden. Image 2 is the reference for the room immediately inside and its crisp richly shaded pixel art. Create a medium, cinematic front-facing view from the bottom of the front steps at the same door, now open inward, with amber hall light revealing just a glimpse of the interior, balanced by cool violet dusk outside. Keep the same modern concrete facade, dark wood and lighting, flowers at the margins. Clear stone approach and unobstructed threshold in the lower center. No characters, aircraft, captions, labels, UI, logos or text. This is a short transition shot between the rooftop landing and entering the living room.
+

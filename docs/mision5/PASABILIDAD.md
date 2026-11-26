@@ -1,31 +1,15 @@
-# Comprobación de que los patrones se pueden superar
+# Comprobación de refugios y rutas de esquiva
 
-Se reproducen controles sobre `MotorBatalla`, con su movimiento, gravedad, plataformas, generación y colisiones reales. El verificador vive exclusivamente en las pruebas: no introduce un jugador automático en el juego.
+Las pruebas de `PatronesPasablesTest` reproducen entradas de teclado en el motor de batalla. Para esquivar, leen los obstáculos y avisos disponibles en cada paso. El verificador pertenece a la suite de pruebas.
 
-- Quince patrones, tres dificultades y modos individual/cooperativo.
-- Semillas 0 a 31 y 2026, con distintos ticks iniciales para variar el azar.
-- Un corazón comienza en (500,550); el segundo, cuando participa, en (770,550), como en la entrada de cada patrón.
-- Cinco vidas, inmunidad inicial cero y sin rescates ni acciones de curación. Un solo impacto invalida la ruta: se detecta también la invulnerabilidad de un golpe al terminar una ronda, aunque la recuperación automática de Fácil/Normal restituya ese corazón.
-- Las órdenes de desplazamiento son de teclado (-1, 0 o 1); los saltos se pulsan y se sueltan en la simulación normal.
-- 198 casos por patrón; **2.970 casos** en total. A esto se añaden **24 recorridos de las cinco rondas**, usando la acción de verificación entre rondas y conservando las cinco vidas.
+- **Refugios anteriores:** 495 ensayos con las cinco rutas pasivas encontradas en Paquetes cruzados, Tráfico cian, Cruce de servidores, Ráfaga alterna y Anillo de señal. Ambos corazones salen de sus posiciones habituales, caminan hasta los refugios y esperan. La prueba exige que ambos reciban un impacto al intentar repetir la táctica.
+- **Patrones individuales:** 2.970 recorridos sin perder vida. Cubren quince patrones, tres dificultades, modos individual y cooperativo y 33 semillas. Empiezan con cinco corazones y sin inmunidad inicial.
+- **Campaña de la misión:** 24 recorridos completos de las cinco rondas. Incluyen el cierre de cada turno y la reducción de velocidad de las paredes al verificar publicaciones.
+- **Decisión de perdonar:** 198 recorridos del último ataque, con siete segundos de combate en los dos modos y las tres dificultades.
+- **Variedad y restauración:** se comprueba que cada patrón tenga distintas secuencias y que el mismo estado restaurado reproduzca las siguientes oleadas. La semilla y el tiempo de inicio del patrón son suficientes para recuperar la variante.
+- **Rastreador de Antenas gemelas:** 198 ensayos verifican que alcance al jugador que se queda quieto y que su oleada esté separada de las dos anteriores. Se comprueba también el giro en persecución y la conservación de la ruta fijada al guardar y entre dos clientes TCP locales.
+- **Cuadritos de Tormenta del cortafuegos:** 198 ensayos comprueban las dos tandas con entradas variadas y diagonales, los dos rastreadores exclusivos de Difícil y la separación del pulso cian. El ataque posterior a «Perdonar» conserva sus propios obstáculos.
 
-## Rutas de referencia
+Un impacto invalida la ruta, incluso si la recuperación automática del final de ronda repone ese corazón. Las pruebas verifican las rutas y semillas indicadas. En cooperativo los dos corazones pueden compartir el mismo hueco.
 
-| Patrones | Movimiento que abre una salida |
-| --- | --- |
-| Paquetes cruzados, quietud cian y ráfaga alterna | Bajar al margen inferior y detenerse; los paquetes quedan por encima. |
-| Ventana cambiante y pasillo intermitente | Ajustar la altura al hueco de la columna que se aproxima. Incluso en Difícil quedan 72 px de abertura frente a los 14 px de colisión del corazón. |
-| Suelo corrupto y columnas | Saltar al aproximarse el obstáculo bajo y soltar tras superarlo. El ensayo cubre el tiempo necesario para que pase todo su ancho. |
-| Plataformas y escalera | Alcanzar una plataforma, seguir su desplazamiento y saltar durante los pulsos del suelo. La plataforma admite ambos corazones. |
-| Pulso dirigido | Alejarse de la altura fijada durante el aviso; conservar la posición entre haces para no atraerlos a un punto intermedio. |
-| Cruce de servidores | Colocarse en un hueco entre las columnas verticales de paquetes. |
-| Gravedad lateral | Esperar la aproximación y saltar alejándose de la pared derecha, con tiempo para que pase la columna completa. |
-| Antenas gemelas | Salir de la línea fijada y esquivar lateralmente la lluvia de paquetes. Ir siempre a una esquina no es una ruta válida para todas las semillas. |
-| Anillo de señal | Alcanzar la esquina inferior correspondiente antes de que cierre el anillo; hay espacio común sin colisión entre jugadores. |
-| Tormenta del cortafuegos | Buscar el margen derecho y alternar alturas por debajo de las franjas cian, saliendo de los haces anunciados. |
-
-Las pruebas demuestran rutas sin daño en los casos descritos. No demuestran que cualquier movimiento, posición previa o reacción tardía tenga salida; la dificultad exige anticipación. El azar se mantiene dentro de geometrías con huecos y tiempos de movimiento revisados. No se usa la prueba anterior de recorrido con inmunidad como evidencia de pasabilidad: esa prueba solo comprueba el controlador de fases.
-
-Código: `src/test/java/alcaldedigital/batalla/PatronesPasablesTest.java`. La suite también verifica Normal respecto a la cadencia original, persistencia de dificultad, guardados anteriores, selección por teclado/ratón y transmisión del nivel por TCP.
-
-Resultado comprobado el 12 de noviembre de 2026: 2.970 casos aislados y 24 recorridos completos aprobados; 115 pruebas JUnit totales, cero fallos y errores. Paquete generado con BUILD SUCCESS. [Selector de dificultad revisado](vista-dificultades.png).
+Código: [PatronesPasablesTest.java](../../src/test/java/alcaldedigital/batalla/PatronesPasablesTest.java).

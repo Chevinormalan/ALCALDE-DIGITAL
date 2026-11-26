@@ -28,7 +28,7 @@ El menú inicial muestra **Continuar misión N** para la partida más reciente a
 
 Esc, P o Menú del mando abren la misma pausa:
 
-Desde **Ayuda y controles → Ver controles** se abre un mapa gráfico con teclado y mando, específico de la misión y modalidad. En los modos de dos personas de 5, 6 y 7 muestra a J1 en dorado y J2 en cian con sus personajes. El mando usa nombres Xbox o PlayStation según el dispositivo detectado. Volver, Esc y B regresan a Ayuda sin reanudar; el mapa consume las demás entradas mientras está abierto. Las acciones globales son WASD/E/Espacio/F/Q para J1 y flechas/Enter/Mayús/L/K para J2 cuando esas acciones existen en la misión. G solo guarda.
+Desde **Ayuda y controles → Ver controles** se abre un mapa gráfico con teclado y mando, específico de la misión y modalidad. En los modos de dos personas de 5, 6, 7 y 8 muestra a J1 en dorado y J2 en cian con sus personajes; la misión 8 detalla además J3 y J4 en sus propias consultas. El mando usa nombres Xbox o PlayStation según el dispositivo detectado. Volver, Esc y B regresan a Ayuda sin reanudar; el mapa consume las demás entradas mientras está abierto. Las acciones comunes son WASD para mover, E/Enter/A para interactuar o confirmar fuera del combate, F/X para acción principal, Q/Y o LT para acción secundaria y Espacio/RB para movilidad cuando la misión las ofrece. J2 usa flechas, Enter, Mayús, L/K y sus acciones propias. En misión 8, J1 usa C y J2 usa O para su tercera acción; el jefe usa los números superiores 1–6. G solo guarda. [Mapa de controles por misión](CONTROLES_GLOBALES.md).
 
 [Captura de controles de la misión 5 con dos personas](evidencias/controles-mision5-dos.png).
 
@@ -38,7 +38,7 @@ Desde **Ayuda y controles → Ver controles** se abre un mapa gráfico con tecla
 4. Consultas de la misión.
 5. Guardar y salir a misiones.
 
-Arriba/abajo/Tab y Enter/E/A seleccionan; también funciona el ratón. G guarda sin salir. H/Vista abre ayuda. Las flechas cambian página dentro de la ayuda, incluidos los quince patrones de misión 5. Las consultas existentes de misión 1 y las redes/estructuras de 5 y 7 se conservan bajo pausa. Los niveles sin consultas adicionales remiten a su ayuda.
+Arriba/abajo/Tab y Enter/E/A seleccionan; también funciona el ratón. G guarda sin salir. H/Vista abre ayuda. Las flechas cambian página dentro de la ayuda, incluidos los quince patrones de misión 5. Las consultas existentes de 1, 5, 7 y 8 se conservan bajo pausa; en la misión 7, V abre la campaña electoral. Los niveles sin consultas adicionales remiten a su ayuda.
 
 El modal consume clics y bloquea las teclas retenidas al reanudar; el stick debe volver al centro. La repetición automática no alterna la pausa. Perder foco o desconectar un mando pausa. En LAN la solicitud se envía al servidor y todos los clientes muestran la pausa común; la reanudación remota cierra también las consultas. El servidor mantiene sus condiciones de conexión de ambos roles.
 

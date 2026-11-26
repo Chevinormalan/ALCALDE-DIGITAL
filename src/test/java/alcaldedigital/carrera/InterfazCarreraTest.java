@@ -31,8 +31,20 @@ class InterfazCarreraTest {
             v.pulsar('w',87);avanzar(v,1);assertTrue(v.vistaResultado().corredores()[0].y()<y);tecla(v,71);assertTrue(Files.exists(tmp.resolve("mision7-solo-0.bin")));}
     }
     @Test void mandoSePuedeUsarParaCorrerPausarYVolverDeAyuda()throws Exception{
-        try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){v.iniciarEn(null);conectar(v);empezar(v);v.mando(new EstadoMando("Prueba",0,0,0,0,Set.of(EstadoMando.Boton.X)));avanzar(v,120);assertTrue(v.vistaResultado().corredores()[0].pulsos()>2);
+        try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){v.iniciarEn(null);conectar(v);empezar(v);v.mando(new EstadoMando("Prueba",0,0,0,0,Set.of(EstadoMando.Boton.RB)));avanzar(v,120);assertTrue(v.vistaResultado().corredores()[0].pulsos()>2);
             v.mando(new EstadoMando("Prueba",0,0,0,0,Set.of(EstadoMando.Boton.MENU)));assertTrue(v.vistaResultado().pausa());v.mando(new EstadoMando("Prueba",0,0,0,0,Set.of(EstadoMando.Boton.VISTA)));v.mando(new EstadoMando("Prueba",0,0,0,0,Set.of(EstadoMando.Boton.B)));assertTrue(v.vistaResultado().pausa());v.mando(new EstadoMando("Prueba",0,0,0,0,Set.of(EstadoMando.Boton.A)));assertFalse(v.vistaResultado().pausa());}
+    }
+    @Test void crucetaSeleccionaLaConfirmacionDelPactoAdvertido()throws Exception{
+        String preview=System.getProperty("ad.mision7.vista");System.setProperty("ad.mision7.vista","pacto");
+        try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){
+            v.iniciarEn(null);
+            assertTrue(v.vistaResultado().corredores()[0].evento().advertencia());
+            assertFalse(v.vistaResultado().electoral().juanCorrupto());
+            v.mando(new EstadoMando("Xbox",0,0,0,0,Set.of(EstadoMando.Boton.DERECHA)));
+            v.mando(new EstadoMando("Xbox",0,0,0,0,Set.of()));
+            v.mando(new EstadoMando("Xbox",0,0,0,0,Set.of(EstadoMando.Boton.A)));
+            assertTrue(v.vistaResultado().electoral().juanCorrupto());
+        }finally{if(preview==null)System.clearProperty("ad.mision7.vista");else System.setProperty("ad.mision7.vista",preview);}
     }
     @Test void hojasNuevasTienenTransparenciaYTodosLosCuadrosSonDistintos()throws Exception{
         for(var dato:List.of(new String[]{"ciudadanos-estados", "4","6"},new String[]{"reacciones","4","2"},new String[]{"objetos","4","4"})){
@@ -54,6 +66,29 @@ class InterfazCarreraTest {
             v.pulsar('w',87);v.pulsar(' ',40);float y0=v.vistaResultado().corredores()[0].y(),y1=v.vistaResultado().corredores()[1].y();avanzar(v,2);assertTrue(v.vistaResultado().corredores()[0].y()<y0);assertTrue(v.vistaResultado().corredores()[1].y()>y1);
         }
     }
+    @Test void lasTarjetasCompartidasSoloActivanLaNoticiaDelCorredorElegido(){
+        String anterior=System.getProperty("ad.mision7.vista");
+        System.setProperty("ad.mision7.vista","dos");
+        try(var vista=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){
+            vista.iniciarEn(null);
+            Evento periodista=vista.vistaResultado().corredores()[0].evento();
+            Evento influencer=vista.vistaResultado().corredores()[1].evento();
+            assertNotNull(periodista);
+            assertNotNull(influencer);
+            vista.raton(640,642);
+            vista.raton(860,642);
+            assertEquals(periodista,vista.vistaResultado().corredores()[0].evento());
+            assertEquals(influencer,vista.vistaResultado().corredores()[1].evento());
+            vista.raton(680,642);
+            assertEquals(periodista,vista.vistaResultado().corredores()[0].evento());
+            assertNull(vista.vistaResultado().corredores()[1].evento());
+            vista.raton(50,642);
+            assertNull(vista.vistaResultado().corredores()[0].evento());
+        }finally{
+            if(anterior==null)System.clearProperty("ad.mision7.vista");
+            else System.setProperty("ad.mision7.vista",anterior);
+        }
+    }
     @Test void repetirUnaCarreraConservaLaCiudadDeLaAnterior()throws Exception{
         String preview=System.getProperty("ad.mision7.vista");System.setProperty("ad.mision7.vista","resultado");
         try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){v.iniciarEn(null);assertEquals(Fase.RESULTADO,v.vistaResultado().fase());v.actualizar(0);int[] ciudad=v.vistaResultado().ciudad();tecla(v,82);conectar(v);assertArrayEquals(ciudad,v.vistaResultado().base());}
@@ -61,7 +96,17 @@ class InterfazCarreraTest {
     }
     @Test void usarAyudaNuncaConfirmaUnPactoPorAccidente()throws Exception{
         String preview=System.getProperty("ad.mision7.vista");System.setProperty("ad.mision7.vista","pacto");
-        try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){v.iniciarEn(null);assertTrue(v.vistaResultado().corredores()[0].evento().advertencia());tecla(v,69);assertFalse(v.vistaResultado().electoral().juanCorrupto());assertNotNull(v.vistaResultado().corredores()[0].evento());tecla(v,50);assertTrue(v.vistaResultado().electoral().juanCorrupto());}
+        try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){v.iniciarEn(null);assertTrue(v.vistaResultado().corredores()[0].evento().advertencia());tecla(v,81);assertFalse(v.vistaResultado().electoral().juanCorrupto());assertNotNull(v.vistaResultado().corredores()[0].evento());tecla(v,50);assertTrue(v.vistaResultado().electoral().juanCorrupto());}
         finally{if(preview==null)System.clearProperty("ad.mision7.vista");else System.setProperty("ad.mision7.vista",preview);}
+    }
+    @Test void teclaEConfirmaLaNoticiaYQConservaSuUsoDeAyuda()throws Exception{
+        String preview=System.getProperty("ad.mision7.vista");System.setProperty("ad.mision7.vista","pacto");
+        try(var v=new MisionSieteVista(2026,EstadoCiudad.inicial(),false,false)){
+            v.iniciarEn(null);tecla(v,81);
+            assertNotNull(v.vistaResultado().corredores()[0].evento());
+            tecla(v,69);
+            assertNull(v.vistaResultado().corredores()[0].evento());
+            assertFalse(v.vistaResultado().electoral().juanCorrupto());
+        }finally{if(preview==null)System.clearProperty("ad.mision7.vista");else System.setProperty("ad.mision7.vista",preview);}
     }
 }

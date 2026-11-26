@@ -6,10 +6,17 @@ import processing.core.PFont;
 import alcaldedigital.cliente.graficos.*;
 import alcaldedigital.cliente.interfaz.RenderJuego;
 import alcaldedigital.cliente.interfaz.TransicionPixel;
+import alcaldedigital.cliente.mision1.PrologoSofi;
 import alcaldedigital.cliente.mision3.MisionTresSketch;
 import alcaldedigital.cliente.mision2.MisionDosSketch;
 import alcaldedigital.cliente.entrada.ControladorMando;
+import alcaldedigital.cliente.misiones.PuntajesMision;
+import alcaldedigital.compartido.guardado.TablaPuntajes.Fila;
+import java.util.function.IntFunction;
 import alcaldedigital.cliente.entrada.LectorJInput;
+import alcaldedigital.cliente.entrada.MandosJugadores;
+import alcaldedigital.cliente.interfaz.MarcosProcessing;
+import alcaldedigital.compartido.NombreJuego;
 import alcaldedigital.compartido.modelo.Rol;
 import java.awt.image.BufferedImage;
 import java.awt.Font;
@@ -20,14 +27,15 @@ import java.io.IOException;
  * Ventana Processing. Entrada y presentación del capítulo jugable de la entrega 1.
  */
 public final class ClienteSketch extends PApplet {
-    public static final int ANCHO = 1280;
-    public static final int ALTO = 720;
+    public static final int ANCHO = EscaladoPantalla.ANCHO;
+    public static final int ALTO = EscaladoPantalla.ALTO;
     private final JuegoCliente juego;
     private final alcaldedigital.cliente.audio.MotorAudio audio=alcaldedigital.cliente.audio.MotorAudio.global();
     private final alcaldedigital.cliente.audio.DirectorAudio directorAudio=new alcaldedigital.cliente.audio.DirectorAudio(audio);
     public ClienteSketch(JuegoCliente juego) { this.juego=juego; }
     private final alcaldedigital.cliente.misiones.PausaUnificada pausaSistema=new alcaldedigital.cliente.misiones.PausaUnificada();
     private final RenderJuego render = new RenderJuego();
+    private PrologoSofi prologo;
     private alcaldedigital.cliente.misiones.VistaCampana misionCampana;
     private MisionTresSketch misionTres;
     private MisionDosSketch misionDos;
@@ -37,11 +45,13 @@ public final class ClienteSketch extends PApplet {
     private boolean misionDosPausada;
     private String tablaM5="",tablaM6="",tablaM7="";
     private final LectorJInput lectorMando=new LectorJInput();
+    private final MandosJugadores mandos=new MandosJugadores();
     private final ControladorMando controladorMando=new ControladorMando();
     private PImage imagen;
     private LienzoJuego lienzo;
     private PApplet escena;
     private VentanaJuego ventana;
+    private boolean ratonPresente;
     private boolean f11Mantenido;
     private PFont fuenteMisionTres;
     private final TransicionPixel transicion=new TransicionPixel();
@@ -52,14 +62,14 @@ public final class ClienteSketch extends PApplet {
 
     @Override
     public void settings() {
-        size(ANCHO, ALTO, JAVA2D);
+        size(ANCHO, ALTO, RenderizadorJuego.class.getName());
         pixelDensity(1);
         noSmooth();
     }
 
     @Override
     public void setup() {
-        surface.setTitle("Alcalde Digital — Promesas, Palomas y Wi-Fi");
+        surface.setTitle(NombreJuego.TITULO);
         frameRate(60);
         lienzo=new LienzoJuego(this);escena=lienzo.escena();ventana=new VentanaJuego(this,juego.graficos);
         imagen = createImage(ANCHO, ALTO, ARGB);
@@ -72,12 +82,61 @@ public final class ClienteSketch extends PApplet {
     }
 
     @Override
-    public void draw() {
-        ventana.actualizar();
-        juego.graficos.salida=width+" × "+height;
-        lienzo.dibujar(juego.graficos.actual(),()->{try{dibujarContenido();}finally{observarAudio();}});
+    public void handleDraw() {
+        // Processing prepara el búfer al comenzar el fotograma.
+        if(ventana!=null)ventana.actualizar();
+        super.handleDraw();
     }
+
+    @Override
+    public void draw() {
+        var marcoAnterior=lienzo.marco();
+        lienzo.dibujar(juego.graficos.actual(),()->{
+            var marco=lienzo.marco();
+            juego.graficos.salida=width+" × "+height;
+            juego.graficos.imagen=marco.ancho()+" × "+marco.alto();
+            if(!ratonPresente){escena.mouseX=-1;escena.mouseY=-1;}
+            if(!marco.equals(marcoAnterior))moverRatonLogico(escena.mouseX,escena.mouseY);
+            try{
+                dibujarContenido();
+                if(panelUsuarios())dibujarPanelUsuarios();
+            }finally{dibujarAvisosMandos();observarAudio();}
+        });
+    }
+    private MandosJugadores.Contexto contextoMandos(){
+        return switch(juego.pantalla) {
+            case MISION_CINCO -> misionCinco!=null?misionCinco.contextoMandos():MandosJugadores.Contexto.INDIVIDUAL;
+            case MISION_SEIS -> misionCampana!=null?misionCampana.contextoMandos():MandosJugadores.Contexto.INDIVIDUAL;
+            case MISION_SIETE -> misionSiete!=null?misionSiete.contextoMandos():MandosJugadores.Contexto.INDIVIDUAL;
+            case MISION_OCHO -> misionOcho!=null?misionOcho.contextoMandos():MandosJugadores.Contexto.INDIVIDUAL;
+            default -> MandosJugadores.Contexto.INDIVIDUAL;
+        };
+    }
+
+    private void dibujarAvisosMandos(){
+        if(juego.tutorial()!=null||viendoPrologo())return;
+        var avisos=mandos.avisos(System.nanoTime());
+        if(avisos.isEmpty())return;
+        escena.pushStyle();
+        escena.textFont(fuenteMisionTres);
+        escena.textAlign(LEFT,BASELINE);
+        int y=20;
+        for(var aviso:avisos){
+            int x=815, ancho=445;
+            MarcosProcessing.marco(escena.g,x,y,ancho,66,0xff281a39,0xfff4cb6a);
+            escena.fill(0xfff4cb6a);escena.textSize(20);
+            escena.text(aviso.texto(),x+17,y+27);
+            escena.fill(0xfff5e8fb);escena.textSize(15);
+            String nombre=aviso.nombre();
+            while(escena.textWidth(nombre)>ancho-34&&nombre.length()>1)nombre=nombre.substring(0,nombre.length()-1);
+            escena.text(nombre.equals(aviso.nombre())?nombre:nombre+"…",x+17,y+49);
+            y+=73;
+        }
+        escena.popStyle();
+    }
+
     private void observarAudio(){
+        if(viendoPrologo())return;
         var c=new alcaldedigital.cliente.audio.Partitura.Contexto(0,"MENU",0,0,false,false,"");
         String id="menu";long tick=frameCount;boolean pausada=juego.pausa;int linea=-1;
         java.util.Map<String,Integer> marcas=new java.util.HashMap<>();
@@ -104,7 +163,7 @@ public final class ClienteSketch extends PApplet {
         long ahora = System.nanoTime();
         double dt=(ahora-anterior)/1_000_000_000.0; anterior=ahora;
         if(Boolean.getBoolean("ad.sistema.revision")&&System.getProperty("ad.guardados")!=null&&frameCount==30){
-            juego.accion("jugar");int n=Integer.getInteger("ad.sistema.mision",0);
+            juego.abrir(JuegoCliente.Pantalla.MISIONES);int n=Integer.getInteger("ad.sistema.mision",0);
             if(n>0){juego.accion("mision"+n);if(juego.pantalla==JuegoCliente.Pantalla.GUARDADO)juego.accion(Boolean.getBoolean("ad.sistema.continuar")?"partida:continuar":"partida:nueva");
                 if(n==1&&!juego.continuarGuardado)juego.accion("m1dificultad:FACIL");if(n==2&&!juego.continuarGuardado)juego.accion("m2dificultad:NORMAL");}
         }
@@ -120,6 +179,7 @@ public final class ClienteSketch extends PApplet {
             if(misionCinco!=null&&misionCinco.vistaResultado()==null){misionCinco.pulsar(' ',10);misionCinco.soltar(10);}
             if(misionSiete!=null&&misionSiete.vistaResultado()==null){misionSiete.pulsar(' ',10);misionSiete.soltar(10);}
         }
+        if(Boolean.getBoolean("ad.sistema.revision")&&frameCount==90&&prologo!=null)prologo.omitir();
         if(Boolean.getBoolean("ad.sistema.revision")&&frameCount==140&&Integer.getInteger("ad.sistema.mision",0)>0){
             if(Boolean.parseBoolean(System.getProperty("ad.sistema.pausa","true"))){pausaSistema.abrir();if(Boolean.getBoolean("ad.sistema.ayuda")){pausaSistema.pulsar(72);pausaSistema.soltar(72);if(Boolean.getBoolean("ad.sistema.controles")){pausaSistema.pulsar(10);pausaSistema.soltar(10);}}}
             if(!pausaSistema.activa()&&Boolean.parseBoolean(System.getProperty("ad.sistema.pausa","true")))throw new IllegalStateException("La pausa común no se abrió");
@@ -128,24 +188,71 @@ public final class ClienteSketch extends PApplet {
             String captura=System.getProperty("ad.sistema.captura");if(captura!=null&&!get().save(captura))throw new IllegalStateException("No se pudo capturar el sistema");
             System.out.println("SISTEMA_CAMPANA_OK: misión "+Integer.getInteger("ad.sistema.mision",0)+" · pausa "+pausaSistema.activa());exit();return;
         }
-        var estadoMando=lectorMando.leer();
+        mandos.actualizar(lectorMando.leerTodos(),contextoMandos(),ahora);
+        var estadoMando=mandos.estado(0);
         juego.mandoActivo=estadoMando.conectado();juego.nombreMando=estadoMando.nombre();
         if(Boolean.getBoolean("ad.sistema.revision")&&System.getProperty("ad.sistema.mando")!=null)
             juego.nombreMando=System.getProperty("ad.sistema.mando");
-        if(!pausaSistema.mando(estadoMando)){
-            if(juego.pantalla==JuegoCliente.Pantalla.MISION_OCHO){if(misionOcho!=null)misionOcho.mando(estadoMando);}
-            else controladorMando.actualizar(estadoMando,juego,render,misionDos,misionTres,
-                juego.pantalla==JuegoCliente.Pantalla.MISION_DOS?this::salirMisionDosAlMenu:this::salirMisionTresAlMenu);
+        if(panelUsuarios()){
+            if(!botonesUsuariosListos)dibujarPanelUsuarios();
+            controladorMando.actualizar(estadoMando,juego,render,null,()->{});
+            if(juego.salir)exit();
+            return;
+        }
+        botonesUsuariosListos=false;
+        if(prologo!=null&&juego.pantalla!=JuegoCliente.Pantalla.PARQUE)cerrarPrologo();
+        if(!viendoPrologo()){
+            if(juego.tutorial()!=null&&!focused)juego.tutorial().perderFoco();
+            else if(!pausaSistema.mando(estadoMando)){
+                if(juego.pantalla==JuegoCliente.Pantalla.MISION_OCHO){if(misionOcho!=null)misionOcho.mando(estadoMando);}
+                else controladorMando.actualizar(estadoMando,juego,render,misionDos,misionTres,
+                    juego.pantalla==JuegoCliente.Pantalla.MISION_DOS?this::salirMisionDosAlMenu:this::salirMisionTresAlMenu);
+            }
+        }
+        if(panelUsuarios())return;
+        if(juego.tomarPrologo())prologo=new PrologoSofi(audio,estadoMando);
+        boolean finPrologo=false;
+        if(prologo!=null){
+            pausaSistema.desconectar();
+            pausaSistema.mando(estadoMando);
+            controladorMando.sincronizar(estadoMando);
+            if(prologo.actualizar(dt,focused,estadoMando)){
+                prologo.dibujar(escena,fuenteMisionTres,estadoMando.conectado());
+                return;
+            }
+            cerrarPrologo();
+            finPrologo=true;
+        }
+        switch(juego.pantalla) {
+            case MISION_CINCO -> { if(misionCinco!=null)misionCinco.segundoMando(mandos.estado(1)); }
+            case MISION_SEIS -> { if(misionCampana!=null)misionCampana.segundoMando(mandos.estado(1)); }
+            case MISION_SIETE -> { if(misionSiete!=null)misionSiete.segundoMando(mandos.estado(1)); }
+            case MISION_OCHO -> {
+                if(misionOcho!=null)for(int i=1;i<MandosJugadores.MAXIMO;i++)misionOcho.mandoLocal(i,mandos.estado(i));
+            }
+            default -> { }
         }
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_OCHO){
             escena.textFont(fuenteMisionTres);
             if(misionOcho==null){misionOcho=new alcaldedigital.cliente.mision8.MisionOchoVista(juego);misionOcho.iniciarEn(escena);misionOcho.bloquearTeclas(pulsadas);}
             misionOcho.actualizar((float)dt);if(!misionOcho.listaComun())pausaSistema.desconectar();misionOcho.dibujar();pausaSistema.dibujar(escena);
+            if(juego.usuarios()!=null){
+                boolean lan=misionOcho.lanPuntajes();
+                juego.usuarios().vincular(8,misionOcho.partidaPuntajes(),!lan);
+                var fila=misionOcho.filaPuntajes();
+                if(fila!=null){
+                    int heroes=misionOcho.heroesPuntajes();
+                    Fila nota=fila.conModalidad(lan?"LAN":heroes>1?"Equipo":"Individual");
+                    mostrarCierre(nota,misionOcho.pruebaPuntajes(),lan,misionOcho.puestoPuntajes(),
+                        puesto->puesto<heroes?nota:null);
+                    if(panelUsuarios())return;
+                }
+            }
             if(misionOcho.salir())cerrarMisionOcho();
             return;
         }
         int revision=Integer.getInteger("ad.mision46.numero",0);
-        if(Boolean.getBoolean("ad.mision46.revision")&&revision!=0&&frameCount==30){juego.accion("jugar");juego.accion("mision"+revision);}
+        if(Boolean.getBoolean("ad.mision46.revision")&&revision!=0&&frameCount==30){juego.abrir(JuegoCliente.Pantalla.MISIONES);juego.accion("mision"+revision);}
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_CUATRO||juego.pantalla==JuegoCliente.Pantalla.MISION_SEIS){
             escena.textFont(fuenteMisionTres);
             if(misionCampana==null){
@@ -157,8 +264,17 @@ public final class ClienteSketch extends PApplet {
             }
             misionCampana.actualizar((float)dt);misionCampana.dibujar();observarVictoria();
             var filaCampana=misionCampana.filaFinal();
+            if(juego.usuarios()!=null){
+                boolean lan=misionCampana.lanPuntajes();
+                juego.usuarios().vincular(6,misionCampana.partidaPuntajes(),!lan);
+                if(filaCampana!=null&&(!filaCampana.victoria()||misionCampana.victoriaComun())){
+                    Fila nota=filaCampana.conModalidad(lan?"LAN":misionCampana.dosTeclados()?"Equipo":"Individual");
+                    mostrarCierre(nota,false,lan,misionCampana.invitadoLan()?1:0,puesto->nota);
+                    if(panelUsuarios())return;
+                }
+            }
             if(filaCampana!=null){
-                dibujarTabla(filaCampana);
+                if(juego.usuarios()==null)dibujarTabla(filaCampana);
                 if(!filaCampana.victoria()&&!filaCampana.partida().equals(tablaM6)){
                     juego.registrarFila(filaCampana);tablaM6=filaCampana.partida();
                 }
@@ -177,16 +293,23 @@ public final class ClienteSketch extends PApplet {
             }
             return;
         }
-        if(Boolean.getBoolean("ad.mision5.integracion")&&frameCount==30){juego.accion("jugar");juego.accion("mision5");}
-        if(Boolean.getBoolean("ad.mision7.integracion")&&frameCount==30){juego.accion("jugar");juego.accion("mision7");}
+        if(Boolean.getBoolean("ad.mision5.integracion")&&frameCount==30){juego.abrir(JuegoCliente.Pantalla.MISIONES);juego.accion("mision5");}
+        if(Boolean.getBoolean("ad.mision7.integracion")&&frameCount==30){juego.abrir(JuegoCliente.Pantalla.MISIONES);juego.accion("mision7");}
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_SIETE){
             escena.textFont(fuenteMisionTres);
-            if(misionSiete==null){misionSiete=new alcaldedigital.cliente.mision7.MisionSieteVista(juego.semilla++,juego.estadoCampana,juego.movimientoReducido,juego.contraste);misionSiete.iniciarEn(escena);misionSiete.gestionExterna(true);misionSiete.continuarDesdeSistema(juego.continuarGuardado);misionSiete.preseleccionarGuardado(juego.modoContinuacion,juego.rolContinuacion);}
+            if(misionSiete==null){misionSiete=new alcaldedigital.cliente.mision7.MisionSieteVista(juego.semilla++,juego.estadoCampana,juego.movimientoReducido,juego.contraste);misionSiete.iniciarEn(escena);misionSiete.pedirPuestos((id,n,iniciar)->juego.asignarPuestos(7,id,n,iniciar));misionSiete.gestionExterna(true);misionSiete.continuarDesdeSistema(juego.continuarGuardado);misionSiete.preseleccionarGuardado(juego.modoContinuacion,juego.rolContinuacion);}
             misionSiete.actualizar((float)dt);misionSiete.dibujar();observarVictoria();
             var vista7=misionSiete.vistaResultado();
+            if(vista7!=null&&juego.usuarios()!=null)juego.usuarios().vincular(7,vista7.id(),!misionSiete.lanPuntajes());
             if(vista7!=null&&vista7.fase()==alcaldedigital.compartido.carrera.EstadoCarrera.Fase.RESULTADO){
-                var fila=alcaldedigital.cliente.misiones.PuntajesMision.siete(vista7);dibujarTabla(fila);
+                var fila=PuntajesMision.siete(vista7);
                 if(!vista7.id().equals(tablaM7)){juego.registrarFila(fila);tablaM7=vista7.id();}
+                boolean lan=misionSiete.lanPuntajes();
+                boolean localDuo=misionSiete.dosTeclados();
+                String modo=lan?"LAN":localDuo?"Competitivo":"Individual";
+                mostrarCierre(fila.conModalidad(modo),false,lan,misionSiete.puestoPuntajes(),
+                    puesto->PuntajesMision.corredor(vista7,localDuo||lan?puesto:misionSiete.puestoPuntajes()).conModalidad(modo));
+                if(panelUsuarios())return;
             }
             pausaSistema.actualizar(0);pausaSistema.dibujar(escena);
             if(misionSiete.salir()){cerrarMisionSiete();return;}
@@ -196,12 +319,17 @@ public final class ClienteSketch extends PApplet {
         }
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_CINCO){
             escena.textFont(fuenteMisionTres);
-            if(misionCinco==null){misionCinco=new alcaldedigital.cliente.mision5.MisionCincoVista(juego.semilla++,juego.estadoCampana,juego.movimientoReducido,juego.contraste);misionCinco.iniciarEn(escena);misionCinco.gestionExterna(true);misionCinco.continuarDesdeSistema(juego.continuarGuardado);misionCinco.preseleccionarGuardado(juego.modoContinuacion);}
+            if(misionCinco==null){misionCinco=new alcaldedigital.cliente.mision5.MisionCincoVista(juego.semilla++,juego.estadoCampana,juego.movimientoReducido,juego.contraste);misionCinco.iniciarEn(escena);misionCinco.pedirPuestos((id,n,iniciar)->juego.asignarPuestos(5,id,n,iniciar));misionCinco.gestionExterna(true);misionCinco.continuarDesdeSistema(juego.continuarGuardado);misionCinco.preseleccionarGuardado(juego.modoContinuacion);}
             misionCinco.actualizar((float)dt);misionCinco.dibujar();observarVictoria();
             var vista5=misionCinco.vistaResultado();
+            if(vista5!=null&&juego.usuarios()!=null)juego.usuarios().vincular(5,vista5.id(),!misionCinco.lanPuntajes());
             if(vista5!=null&&vista5.fase()==alcaldedigital.compartido.batalla.EstadoBatalla.Fase.FINAL){
-                var fila=alcaldedigital.cliente.misiones.PuntajesMision.cinco(vista5);dibujarTabla(fila);
+                var fila=PuntajesMision.cinco(vista5);
                 if(!vista5.id().equals(tablaM5)){juego.registrarFila(fila);tablaM5=vista5.id();}
+                boolean lan=misionCinco.lanPuntajes();
+                Fila nota=fila.conModalidad(lan?"LAN":vista5.solo()?"Individual":"Equipo");
+                mostrarCierre(nota,false,lan,misionCinco.puestoPuntajes(),puesto->nota);
+                if(panelUsuarios())return;
             }
             pausaSistema.actualizar(0);pausaSistema.dibujar(escena);
             if(misionCinco.salir()){cerrarMisionCinco(false);return;}
@@ -210,7 +338,7 @@ public final class ClienteSketch extends PApplet {
             return;
         }
         if(Boolean.getBoolean("ad.mision2.integracion")&&frameCount==30) {
-            juego.accion("jugar");juego.accion("mision2");juego.accion("m2dificultad:NORMAL");
+            juego.abrir(JuegoCliente.Pantalla.MISIONES);juego.accion("mision2");juego.accion("m2dificultad:NORMAL");
         }
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_DOS) {
             escena.textFont(fuenteMisionTres);
@@ -219,6 +347,7 @@ public final class ClienteSketch extends PApplet {
                 if(juego.continuarGuardado)try{recuperada=alcaldedigital.compartido.guardado.GuardadoCampana.cargar(2);}catch(IOException e){juego.aviso=e.getMessage();}
                 try{misionDos=recuperada!=null?MisionDosSketch.restaurar(recuperada):new MisionDosSketch(juego.dificultadMisionDos,juego.semilla++,juego.falloCriticoMisionDos);}
                 catch(RuntimeException e){juego.aviso="Guardado inválido: "+e.getMessage();juego.abrir(JuegoCliente.Pantalla.MISIONES);return;}
+                misionDos.movimientoReducido(juego.movimientoReducido);
                 misionDos.iniciarEn(escena);if(recuperada!=null)misionDos.aplicarGuardado(recuperada);
                 if(Boolean.getBoolean("ad.mision2.autoprueba")) {
                     misionDos.autoprobar();cerrarMisionDos();
@@ -238,8 +367,11 @@ public final class ClienteSketch extends PApplet {
                 if(misionDosPausada) {misionDos.reanudar();misionDosPausada=false;}
                 misionDos.dibujarEnJuego();
             }
-            if(misionDos.pantallaResultado())dibujarTabla(alcaldedigital.cliente.misiones.PuntajesMision.dos(
-                misionDos.resultado(),misionDos.partida(),misionDos.dificultad().name()));
+            if(misionDos.pantallaResultado()){
+                observarVictoria();
+                mostrarCierre(PuntajesMision.dos(misionDos.resultado(),misionDos.partida(),misionDos.dificultad().name()));
+                if(panelUsuarios())return;
+            }
             if(misionDos.resultadoConfirmado()) {cerrarMisionDos();return;}
             observarVictoria();pausaSistema.dibujar(escena);
             String captura=System.getProperty("ad.mision2.captura");
@@ -250,7 +382,7 @@ public final class ClienteSketch extends PApplet {
             return;
         }
         if(Boolean.getBoolean("ad.mision3.integracion") && frameCount==30) {
-            juego.accion("jugar");
+            juego.abrir(JuegoCliente.Pantalla.MISIONES);
             juego.accion("mision3");
         }
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_TRES) {
@@ -258,6 +390,7 @@ public final class ClienteSketch extends PApplet {
             if(Boolean.getBoolean("ad.mision3.capturaPausa")&&frameCount==60) juego.accion("pausa");
             if(misionTres==null) {
                 misionTres=new MisionTresSketch();
+                misionTres.movimientoReducido(juego.movimientoReducido);
                 misionTres.iniciarEn(escena);
                 if(juego.continuarGuardado)try{var p=alcaldedigital.compartido.guardado.GuardadoCampana.cargar(3);if(p!=null)misionTres.aplicarGuardado(p);}
                 catch(Exception e){juego.aviso="Guardado inválido: "+e.getMessage();misionTres.cerrar();misionTres=null;juego.abrir(JuegoCliente.Pantalla.MISIONES);return;}
@@ -277,7 +410,11 @@ public final class ClienteSketch extends PApplet {
             }
             if(juego.pausa) escena.image(misionTres.fotograma(),0,0);
             else misionTres.dibujarEnJuego();
-            if(misionTres.resultado().completada())dibujarTabla(alcaldedigital.cliente.misiones.PuntajesMision.tres(misionTres.resultado(),misionTres.partida()));
+            if(misionTres.resultado().completada()){
+                observarVictoria();
+                mostrarCierre(PuntajesMision.tres(misionTres.resultado(),misionTres.partida()));
+                if(panelUsuarios())return;
+            }
             observarVictoria();pausaSistema.dibujar(escena);
             String captura=System.getProperty("ad.mision3.captura");
             if(captura!=null&&frameCount>=Integer.getInteger("ad.mision3.captura.frame",120)) {
@@ -293,11 +430,13 @@ public final class ClienteSketch extends PApplet {
         else if(!pausaSistema.activa())juego.animacion+=Math.max(0,Math.min(.1,dt));
         BufferedImage cuadro=render.dibujar(juego);
         boolean panel=juego.pantalla!=JuegoCliente.Pantalla.MENU&&juego.pantalla!=JuegoCliente.Pantalla.ROLES&&juego.pantalla!=JuegoCliente.Pantalla.PARQUE;
-        cuadro=transicion.presentar(cuadro,claveVisual(),dt,juego.movimientoReducido,panel);
+        cuadro=transicion.presentar(cuadro,claveVisual(),dt,juego.movimientoReducido||finPrologo,panel);
         imagen.loadPixels();cuadro.getRGB(0,0,ANCHO,ALTO,imagen.pixels,0,ANCHO);imagen.updatePixels();
         escena.image(imagen,0,0);
-        if(juego.pantalla==JuegoCliente.Pantalla.RESULTADO&&juego.ultimaFila!=null&&juego.ultimaFila.mision()==1)
-            dibujarTabla(juego.ultimaFila);
+        if(juego.pantalla==JuegoCliente.Pantalla.RESULTADO&&juego.misionUno instanceof alcaldedigital.servidor.sesion.SesionMisionUnoLocal local){
+            mostrarCierre(PuntajesMision.uno(local));
+            if(panelUsuarios())return;
+        }
         pausaSistema.dibujar(escena);
         if(juego.salir) exit();
         if(Boolean.getBoolean("ad.smoke")) {
@@ -322,12 +461,18 @@ public final class ClienteSketch extends PApplet {
             }
         }
     }
+    private boolean viendoPrologo(){return prologo!=null||juego.prologoPendiente();}
+
+    private void cerrarPrologo(){
+        if(prologo!=null){prologo.close();prologo=null;}
+    }
+
     private void configurarSistema(){
         int n=juego.numeroMision();juego.pausaUnificada=n!=0;
         if(n==0){pausaSistema.desconectar();return;}
         pausaSistema.conectar(new alcaldedigital.cliente.misiones.PausaUnificada.Sesion(){
             public int numero(){return n;}
-            public boolean lista(){return switch(n){case 1->juego.misionUno!=null;case 2->misionDos!=null;case 3->misionTres!=null;case 4,6->misionCampana!=null;case 5->misionCinco!=null&&misionCinco.listaComun();case 7->misionSiete!=null&&misionSiete.listaComun();case 8->misionOcho!=null&&misionOcho.listaComun();default->false;};}
+            public boolean lista(){return switch(n){case 1->juego.misionUno!=null;case 2->misionDos!=null;case 3->misionTres!=null;case 4,6->misionCampana!=null&&misionCampana.listaComun();case 5->misionCinco!=null&&misionCinco.listaComun();case 7->misionSiete!=null&&misionSiete.listaComun();case 8->misionOcho!=null&&misionOcho.listaComun();default->false;};}
             public boolean pausada(){return switch(n){case 4,6->misionCampana!=null&&misionCampana.pausa();case 5->misionCinco!=null&&misionCinco.pausaComun();case 7->misionSiete!=null&&misionSiete.pausaComun();case 8->misionOcho!=null&&misionOcho.pausaComun();default->juego.pausa;};}
             public void pausar(){switch(n){case 4,6->misionCampana.pausarComun();case 5->misionCinco.pausarComun();case 7->misionSiete.pausarComun();case 8->misionOcho.pausarComun();default->{juego.pausa=true;juego.teclas.clear();juego.movimientoMandoX=juego.movimientoMandoY=0;if(misionDos!=null)misionDos.perderFoco();if(misionTres!=null)misionTres.perderFoco();}}}
             public void reanudar(){switch(n){case 4,6->misionCampana.reanudarComun();case 5->misionCinco.reanudarComun();case 7->misionSiete.reanudarComun();case 8->misionOcho.reanudarComun();default->{juego.pausa=false;juego.teclas.clear();if(misionDos!=null)misionDos.reanudar();if(misionTres!=null)misionTres.reanudar();}}}
@@ -335,9 +480,9 @@ public final class ClienteSketch extends PApplet {
             public void salir(){salirActual();}
             public alcaldedigital.cliente.entrada.MapaControles.Contexto controles(){
                 boolean dos=n==4||n==6?misionCampana!=null&&misionCampana.dosTeclados():
-                    n==5?misionCinco!=null&&misionCinco.dosTeclados():n==7&&misionSiete!=null&&misionSiete.dosTeclados();
+                    n==5?misionCinco!=null&&misionCinco.dosTeclados():n==7?misionSiete!=null&&misionSiete.dosTeclados():n==8&&misionOcho!=null&&misionOcho.dosTeclados();
                 String j1=switch(n){case 1->"Sofi · ciudadana";case 2->"Periodista";case 3->"Influencer";
-                    case 8->"Sofi / rol elegido";case 4->"Juan · candidato";case 5->"Ciudadano";case 6->"Juan · candidato";
+                    case 8->"Sofi / rol elegido";case 4->"Juan · candidato";case 5->"Ciudadano";case 6->misionCampana!=null&&misionCampana.invitadoLan()?"Influencer":"Juan · candidato";
                     default->dos||misionSiete==null?"Periodista":misionSiete.personajeLocal();};
                 String j2=switch(n){case 5->"Periodista";case 6->"Influencer";case 7->"Influencer";default->"Jugador 2";};
                 return new alcaldedigital.cliente.entrada.MapaControles.Contexto(n,dos,j1,j2,juego.nombreMando);
@@ -345,6 +490,7 @@ public final class ClienteSketch extends PApplet {
             public boolean consultaAbierta(){return n==8?misionOcho.consultaAbiertaComun():n==5?misionCinco.consultaAbiertaComun():n==7?misionSiete.consultaAbiertaComun():juego.pantalla==JuegoCliente.Pantalla.ARBOLES;}
             public boolean tieneConsultas(){return n==1||n==5||n==7||n==8;}
             public void abrirConsulta(){if(n==8)misionOcho.abrirConsultaComun();else if(n==5)misionCinco.abrirConsultaComun();else if(n==7)misionSiete.abrirConsultaComun();else if(n==1){juego.accion("arboles");juego.pausa=true;}}
+            public boolean abrirCampana(){if(n!=7)return false;misionSiete.abrirCampanaComun();return true;}
             public void cerrarConsulta(){if(n==8)misionOcho.cerrarConsultaComun();else if(n==5)misionCinco.cerrarConsultaComun();else if(n==7)misionSiete.cerrarConsultaComun();else if(n==1){juego.cerrarArboles();juego.pausa=true;}}
         });
     }
@@ -406,6 +552,66 @@ public final class ClienteSketch extends PApplet {
         cerrarMisionTres();
         juego.abrir(JuegoCliente.Pantalla.MENU);
     }
+    private boolean botonesUsuariosListos;
+
+    private boolean panelUsuarios(){return juego.usuarios()!=null&&juego.usuarios().panel()!=null;}
+
+    private void dibujarPanelUsuarios(){
+        var cuadro=render.dibujar(juego);
+        imagen.loadPixels();cuadro.getRGB(0,0,ANCHO,ALTO,imagen.pixels,0,ANCHO);imagen.updatePixels();
+        escena.image(imagen,0,0);
+        botonesUsuariosListos=true;
+    }
+
+    private void mostrarCierre(Fila fila){
+        Fila nota=fila.conModalidad("Individual");
+        mostrarCierre(nota,false,false,0,puesto->nota);
+    }
+
+    private void mostrarCierre(Fila fila,boolean prueba,boolean lan,int puesto,IntFunction<Fila> nota){
+        if(juego.usuarios()==null){dibujarTabla(fila);return;}
+        boolean yaVisible=panelUsuarios();
+        juego.usuarios().presentar(fila,motivoCierre(fila,prueba),prueba,lan,puesto,nota,
+            accion->resolverCierre(fila,accion));
+        if(!yaVisible&&panelUsuarios()){
+            botonesUsuariosListos=false;
+            // La tabla de campaña sigue siendo la fuente de antecedentes de la misión 8.
+            if((fila.mision()>=2&&fila.mision()<=4)||fila.mision()==6)juego.registrarFila(fila);
+        }
+    }
+
+    private String motivoCierre(Fila fila,boolean prueba){
+        if(prueba)return "Final de prueba. El resultado se muestra como práctica.";
+        return switch(fila.mision()){
+            case 1 -> fila.victoria()?"Sofi aclaró los rumores y calmó a los vecinos.":"Desenlace "+juego.misionUno.vista().desenlace().toLowerCase(java.util.Locale.ROOT)+". Revisa los casos y los vecinos que quedaron por calmar.";
+            case 2 -> !fila.puntuable()?"Fallo crítico inevitable. Este intento queda fuera del récord.":
+                "Terminaste con "+fila.senales().get("equipos_seguros")+" de 6 equipos seguros. Haz que los seis sigan seguros al acabar el reloj.";
+            case 3 -> "NovaMall completó su recuperación. El puntaje registra el estado final de la red.";
+            case 4 -> "Juan terminó los combates y la investigación de Civita.";
+            case 5 -> fila.victoria()?"El equipo sobrevivió al desafío del servidor.":"El servidor agotó las vidas del equipo antes del cierre.";
+            case 6 -> fila.victoria()?"El equipo venció al dron y completó la entrevista.":"El vuelo terminó antes de superar al dron.";
+            case 7 -> "La posición de cada corredor se decide en la meta.";
+            case 8 -> fila.victoria()?"El equipo completó la auditoría y el combate final.":"El equipo cayó en el combate final. Puedes reintentar con los antecedentes de esta partida.";
+            default -> "";
+        };
+    }
+
+    private void resolverCierre(Fila fila,String accion){
+        botonesUsuariosListos=false;
+        if(accion.equals("resultadoDesenlace"))return;
+        int mision=fila.mision();
+        if(accion.equals("resultadoReintentar")&&!fila.victoria()&&(
+            (mision==8&&misionOcho!=null&&misionOcho.reintentarPuntajes())||
+            (mision==6&&misionCampana!=null&&misionCampana.reintentarPuntajes())))return;
+        salirActual();
+        if(accion.equals("resultadoReintentar")){
+            juego.accion("mision"+mision);
+            if(juego.pantalla==JuegoCliente.Pantalla.GUARDADO)juego.accion("partida:nueva");
+        }else if(accion.equals("resultadoSiguienteMision")&&fila.victoria()&&mision<8){
+            juego.accion("mision"+(mision+1));
+        }
+    }
+
     private void dibujarTabla(alcaldedigital.compartido.guardado.TablaPuntajes.Fila fila){
         escena.pushStyle();
         escena.textFont(fuenteMisionTres);escena.textAlign(LEFT,BASELINE);
@@ -462,7 +668,7 @@ public final class ClienteSketch extends PApplet {
         if(fila.mision()==5)opciones=opciones.stream().filter(s->s.startsWith("Ronda ")).toList();
         int inicio=Math.max(0,opciones.size()-4);
         return opciones.subList(inicio,opciones.size()).stream()
-            .map(s->fila.mision()==7?s.replaceFirst("^r[01]e[0-3]a[0-3] · ",""):s).toList();
+            .map(s->fila.mision()==7?PuntajesMision.mostrarDecisionCarrera(s):s).toList();
     }
     private void dibujarPausaMisionTres() {
         escena.noStroke();escena.fill(13,8,24,225);escena.rect(0,0,ANCHO,ALTO);
@@ -515,11 +721,18 @@ public final class ClienteSketch extends PApplet {
         }
     }
     @Override public void mousePressed() {
-        var punto=EscaladoPantalla.ajustar(Math.max(1,width),Math.max(1,height),juego.graficos.actual().entero()).aLogico(mouseX,mouseY);
+        ratonPresente=true;
+        var punto=ratonLogico();
         if(!punto.dentro())return;
         pulsarRatonLogico(punto.x(),punto.y());
     }
     private void pulsarRatonLogico(int mouseX,int mouseY) {
+        if(panelUsuarios()){if(botonesUsuariosListos&&mouseButton==LEFT)render.pulsar(juego,mouseX,mouseY);return;}
+        if(viendoPrologo()){
+            if(prologo!=null&&mouseButton==LEFT&&PrologoSofi.boton(mouseX,mouseY))prologo.omitir();
+            return;
+        }
+        if(juego.tutorial()!=null){if(mouseButton==LEFT)juego.tutorial().pulsarRaton(mouseX,mouseY);return;}
         if(pausaSistema.raton(mouseX,mouseY))return;
         if(misionCampana!=null){misionCampana.raton(mouseX,mouseY);return;}
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_OCHO){if(misionOcho!=null)misionOcho.raton(mouseX,mouseY);return;}
@@ -544,25 +757,57 @@ public final class ClienteSketch extends PApplet {
         render.pulsar(juego,mouseX,mouseY);
     }
     @Override public void mouseReleased() {
+        if(juego.tutorial()!=null){if(mouseButton==LEFT)juego.tutorial().soltarRaton();return;}
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_TRES&&misionTres!=null)
             misionTres.soltarRaton(mouseButton);
     }
     @Override public void mouseMoved() {
-        var punto=EscaladoPantalla.ajustar(Math.max(1,width),Math.max(1,height),juego.graficos.actual().entero()).aLogico(mouseX,mouseY);
+        ratonPresente=true;
+        var punto=ratonLogico();
         moverRatonLogico(punto.x(),punto.y());
     }
+    private EscaladoPantalla.Punto ratonLogico() {
+        if(lienzo!=null)return lienzo.aLogico(mouseX,mouseY);
+        return EscaladoPantalla.ajustar(Math.max(1,width),Math.max(1,height),juego.graficos.actual().entero()).aLogico(mouseX,mouseY);
+    }
     private void moverRatonLogico(int mouseX,int mouseY) {
-        if(juego.pantalla==JuegoCliente.Pantalla.MISION_TRES&&misionTres!=null){
+        if(panelUsuarios()){render.apuntar(mouseX,mouseY);return;}
+        if(viendoPrologo())return;
+        if(juego.tutorial()!=null)juego.tutorial().apuntar(mouseX,mouseY);
+        else if(juego.pantalla==JuegoCliente.Pantalla.MISION_TRES&&misionTres!=null){
             if(mouseX>=0)misionTres.apuntarRaton(mouseX*1152/ANCHO,mouseY*648/ALTO);
         }
         else render.apuntar(mouseX,mouseY);
     }
     @Override public void mouseDragged() {mouseMoved();}
-    @Override public void mouseExited() {render.apuntar(-1,-1);}
+    @Override public void mouseEntered(processing.event.MouseEvent evento) {
+        mouseX=evento.getX();mouseY=evento.getY();mouseMoved();
+    }
+    @Override public void mouseExited() {ratonPresente=false;moverRatonLogico(-1,-1);}
     @Override public void keyPressed() {
         int codigo=keyCode;char caracter=key;
         if(codigo==java.awt.event.KeyEvent.VK_F11){if(!f11Mantenido){f11Mantenido=true;juego.graficos.alternarCompleta();}return;}
         if(key==ESC) key=0;
+        if(panelUsuarios()){
+            if(juego.usuarios().escribir(codigo,caracter))return;
+            if(!pulsadas.add(codigo)||!botonesUsuariosListos)return;
+            if(codigo==ESC)juego.accion("volver");
+            else if(codigo==ENTER||codigo==RETURN)render.activarFoco(juego);
+            else if(codigo==TAB)render.avanzarFoco(juego,keyEvent!=null&&keyEvent.isShiftDown()?-1:1);
+            else if(codigo==LEFT||codigo==RIGHT||codigo==UP||codigo==DOWN)
+                render.moverFocoDireccion(juego,codigo==LEFT?-1:codigo==RIGHT?1:0,codigo==UP?-1:codigo==DOWN?1:0);
+            return;
+        }
+        if(viendoPrologo()){
+            if(codigo==ESC&&pulsadas.add(codigo)&&prologo!=null)prologo.omitir();
+            return;
+        }
+        if(juego.tutorial()!=null){if(pulsadas.add(codigo))juego.tutorial().pulsar(codigo);return;}
+        if(codigo==ESC&&pulsadas.contains(codigo))return;
+        if(codigo==ESC&&!juego.pausa&&juego.pantalla==JuegoCliente.Pantalla.CIVITAS&&
+            juego.misionUno!=null&&juego.misionUno.investigacion()!=null){
+            pulsadas.add(codigo);juego.accion("volver");return;
+        }
         if(pausaSistema.pulsar(codigo))return;
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_OCHO){if(misionOcho!=null)misionOcho.pulsar(caracter,codigo);return;}
         if(misionCampana!=null){misionCampana.pulsar(caracter,codigo);return;}
@@ -599,14 +844,27 @@ public final class ClienteSketch extends PApplet {
         if(!entradaLista()) {if(codigo==ESC) juego.tecla(codigo,caracter);return;}
         boolean nueva=pulsadas.add(codigo);
         if(!nueva&&!juego.editandoBusqueda) return;
-        if(codigo==TAB) {render.avanzarFoco(juego,keyEvent.isShiftDown()?-1:1);return;}
+        boolean invest=juego.misionUno!=null&&juego.misionUno.investigacion()!=null&&
+            (juego.pantalla==JuegoCliente.Pantalla.CIVITAS||juego.pantalla==JuegoCliente.Pantalla.PARQUE);
+        boolean mayus=keyEvent!=null&&keyEvent.isShiftDown();
+        if(codigo==TAB&&invest&&!mayus){juego.accion("invest:libreta");return;}
+        if(codigo==81&&invest&&juego.pantalla==JuegoCliente.Pantalla.CIVITAS&&!juego.investigacionSofi.libreta){
+            juego.accion("invest:lupa");return;
+        }
+        if(codigo==TAB) {render.avanzarFoco(juego,mayus?-1:1);return;}
         if(codigo==ENTER||codigo==RETURN) {
             render.activarFoco(juego);return;
+        }
+        if(invest&&juego.pantalla==JuegoCliente.Pantalla.CIVITAS&&(codigo==UP||codigo==DOWN||codigo==LEFT||codigo==RIGHT)){
+            render.moverFocoDireccion(juego,codigo==LEFT?-1:codigo==RIGHT?1:0,codigo==UP?-1:codigo==DOWN?1:0);
+            return;
         }
         juego.teclas.add(codigo);juego.tecla(codigo,caracter);
     }
     @Override public void keyReleased() {
+        pulsadas.remove(keyCode);
         if(keyCode==java.awt.event.KeyEvent.VK_F11){f11Mantenido=false;return;}
+        if(juego.tutorial()!=null){pulsadas.remove(keyCode);juego.tutorial().soltar(keyCode);return;}
         pausaSistema.soltar(keyCode);
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_OCHO){if(misionOcho!=null)misionOcho.soltar(keyCode);return;}
         if(misionCampana!=null){misionCampana.soltar(keyCode);return;}
@@ -622,7 +880,14 @@ public final class ClienteSketch extends PApplet {
         juego.teclas.remove(keyCode);pulsadas.remove(keyCode);
     }
     @Override public void focusLost() {
-        juego.teclas.clear();pulsadas.clear();pausaSistema.perderFoco();
+        juego.teclas.clear();pulsadas.clear();
+        if(panelUsuarios())return;
+        if(viendoPrologo()){
+            if(prologo!=null)prologo.pausar();
+            return;
+        }
+        pausaSistema.perderFoco();
+        if(juego.tutorial()!=null)juego.tutorial().perderFoco();
         if(misionCampana!=null)misionCampana.perderFoco();
         if(misionCinco!=null)misionCinco.perderFoco();
         if(misionSiete!=null)misionSiete.perderFoco();
@@ -631,6 +896,8 @@ public final class ClienteSketch extends PApplet {
         if(misionDos!=null) misionDos.perderFoco();
     }
     @Override public void dispose() {
+        cerrarPrologo();
+        lectorMando.close();
         audio.close();
         if(juego.numeroMision()!=0)try{guardarActual();}catch(Exception e){System.err.println("No se pudo guardar al cerrar: "+e.getMessage());}
         if(misionCampana!=null){misionCampana.close();misionCampana=null;}

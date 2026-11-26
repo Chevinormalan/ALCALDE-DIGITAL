@@ -16,9 +16,30 @@ import alcaldedigital.compartido.modelo.EstadoCiudad;
 public final class TablaPuntajes {
     private TablaPuntajes() { }
 
+    public record Componente(String etiqueta, double puntos, int maximo) { }
+
+    public record MejorMarca(Fila mejor, Fila ultimo) { }
+
+    public record Resumen(List<MejorMarca> misiones) {
+        public int total() { return misiones.stream().map(MejorMarca::mejor).filter(java.util.Objects::nonNull).mapToInt(Fila::puntaje).sum(); }
+        public long jugadas() { return misiones.stream().filter(m -> m.ultimo() != null).count(); }
+    }
+
     public record Fila(int mision, String partida, boolean victoria, int puntaje,
                        String dificultad, List<String> datos, List<String> decisiones,List<Integer> cambioCiudad,
-                       Map<String,Integer> senales) {
+                       Map<String,Integer> senales, List<Componente> desglose, String modalidad) {
+        public Fila(int mision,String partida,boolean victoria,int puntaje,String dificultad,
+                    List<String> datos,List<String> decisiones,List<Integer> cambioCiudad,Map<String,Integer> senales){
+            this(mision,partida,victoria,puntaje,dificultad,datos,decisiones,cambioCiudad,senales,List.of(),"");
+        }
+        public Fila conDesglose(Componente... componentes) {
+            return new Fila(mision,partida,victoria,puntaje,dificultad,datos,decisiones,cambioCiudad,senales,List.of(componentes),modalidad);
+        }
+        public Fila conModalidad(String nombre) {
+            return new Fila(mision,partida,victoria,puntaje,dificultad,datos,decisiones,cambioCiudad,senales,desglose,nombre);
+        }
+        public boolean puntuable() { return senales.getOrDefault("fallo_critico",0)==0; }
+
         public Fila(int mision,String partida,boolean victoria,int puntaje,String dificultad,
                     List<String> datos,List<String> decisiones){
             this(mision,partida,victoria,puntaje,dificultad,datos,decisiones,List.of(0,0,0,0,0,0,0),Map.of());
@@ -36,18 +57,27 @@ public final class TablaPuntajes {
             decisiones = List.copyOf(decisiones);
             cambioCiudad=List.copyOf(cambioCiudad);
             senales=Map.copyOf(senales);
+            desglose=List.copyOf(desglose);
+            modalidad=modalidad==null?"":modalidad;
             if(cambioCiudad.size()!=7)throw new IllegalArgumentException("Se requieren siete indicadores");
             if(senales.keySet().stream().anyMatch(k->!k.matches("[a-z_]{1,40}")))
                 throw new IllegalArgumentException("Clave de antecedente inválida");
         }
     }
 
-    public static Path archivo() { return ArchivosPartida.directorio().resolve("tabla-puntajes.properties"); }
+    public static Path archivo() { return archivo(ArchivosPartida.directorio()); }
+    static Path archivo(Path directorio) { return directorio.resolve("tabla-puntajes.properties"); }
+    static Path archivoPersonal(Path directorio) { return directorio.resolve("puntajes-personales.properties"); }
 
-    public static synchronized void registrar(Fila fila) throws IOException {
-        Path ruta = archivo();
+    public static synchronized void registrar(Fila fila) throws IOException { registrar(archivo(),fila,true); }
+
+    public static synchronized void registrarPersonal(Path directorio,Fila fila) throws IOException {
+        registrar(archivoPersonal(directorio),fila,false);
+    }
+
+    private static void registrar(Path ruta,Fila fila,boolean acreditaCampana) throws IOException {
         Files.createDirectories(ruta.toAbsolutePath().getParent());
-        try(var canal=FileChannel.open(ruta.resolveSibling("tabla-puntajes.lock"),
+        try(var canal=FileChannel.open(ruta.resolveSibling(acreditaCampana?"tabla-puntajes.lock":"puntajes-personales.lock"),
                 StandardOpenOption.CREATE,StandardOpenOption.WRITE);var bloqueo=canal.lock()) {
             Properties p = ArchivosPartida.leer(ruta);
             if (p == null) p = new Properties();
@@ -61,7 +91,7 @@ public final class TablaPuntajes {
             escribir(p, prefijo + "ultimo.", fila);
             int mejor = Integer.parseInt(p.getProperty(prefijo + "mejor", "0"));
             p.setProperty(prefijo + "mejor", Integer.toString(Math.max(mejor, fila.puntaje())));
-            if (fila.victoria()) escribir(p, prefijo + "campana.", fila);
+            if (acreditaCampana && fila.victoria()) escribir(p, prefijo + "campana.", fila);
             ArchivosPartida.guardar(ruta, p);
         } catch(RuntimeException e) { throw new IOException("No se pudo registrar el puntaje",e); }
     }
@@ -71,6 +101,15 @@ public final class TablaPuntajes {
         p.setProperty(prefijo + "victoria", Boolean.toString(fila.victoria()));
         p.setProperty(prefijo + "puntaje", Integer.toString(fila.puntaje()));
         p.setProperty(prefijo + "dificultad", fila.dificultad());
+        p.setProperty(prefijo + "modalidad", fila.modalidad());
+        p.setProperty(prefijo + "desglose.cantidad", Integer.toString(fila.desglose().size()));
+        for (int i=0;i<fila.desglose().size();i++) {
+            var componente=fila.desglose().get(i);
+            String clave=prefijo+"desglose."+i+".";
+            p.setProperty(clave+"etiqueta",componente.etiqueta());
+            p.setProperty(clave+"puntos",Double.toString(componente.puntos()));
+            p.setProperty(clave+"maximo",Integer.toString(componente.maximo()));
+        }
         p.setProperty(prefijo + "datos.cantidad", Integer.toString(fila.datos().size()));
         for (int i = 0; i < fila.datos().size(); i++) p.setProperty(prefijo + "dato." + i, fila.datos().get(i));
         p.setProperty(prefijo + "decisiones.cantidad", Integer.toString(fila.decisiones().size()));
@@ -85,6 +124,21 @@ public final class TablaPuntajes {
         }
     }
 
+    public static Resumen resumenPersonal(Path directorio) throws IOException {
+        Properties p=ArchivosPartida.leer(archivoPersonal(directorio));
+        if(p==null)p=new Properties();
+        List<MejorMarca> marcas=new ArrayList<>(8);
+        for(int m=1;m<=8;m++) {
+            Fila mejor=null,ultimo=null;
+            for(Fila fila:historial(p,m)) {
+                ultimo=fila;
+                if(fila.puntuable()&&(mejor==null||fila.puntaje()>mejor.puntaje()))mejor=fila;
+            }
+            marcas.add(new MejorMarca(mejor,ultimo));
+        }
+        return new Resumen(List.copyOf(marcas));
+    }
+
     public static synchronized Fila ultimo(int mision) throws IOException {
         return leer(mision, "ultimo.");
     }
@@ -92,13 +146,20 @@ public final class TablaPuntajes {
     public static synchronized List<Fila> historial(int mision) throws IOException {
         if(mision<1||mision>8)throw new IllegalArgumentException("Misión inválida");
         Properties p=ArchivosPartida.leer(archivo());
-        if(p==null)return List.of();
+        return p==null?List.of():historial(p,mision);
+    }
+
+    private static List<Fila> historial(Properties p,int mision) throws IOException {
         int n;
         try{n=Integer.parseInt(p.getProperty("mision."+mision+".intentos","0"));}
         catch(NumberFormatException e){throw new IOException("Historial de puntajes inválido",e);}
         if(n<0||n>100000)throw new IOException("Historial de puntajes inválido");
         List<Fila> filas=new ArrayList<>();
-        for(int i=0;i<n;i++)filas.add(leerFila(p,mision,"intento."+i+"."));
+        for(int i=0;i<n;i++){
+            Fila fila=leerFila(p,mision,"intento."+i+".");
+            if(fila==null)throw new IOException("Falta un intento en la tabla de puntajes");
+            filas.add(fila);
+        }
         return List.copyOf(filas);
     }
 
@@ -137,10 +198,18 @@ public final class TablaPuntajes {
             Map<String,Integer> senales=new LinkedHashMap<>();
             for(int i=0;i<ns;i++)senales.put(p.getProperty(prefijo+"senal."+i+".clave"),
                 Integer.parseInt(p.getProperty(prefijo+"senal."+i+".valor")));
+            int nc=Integer.parseInt(p.getProperty(prefijo+"desglose.cantidad","0"));
+            if(nc<0||nc>12)throw new IllegalArgumentException("Desglose inválido");
+            List<Componente> desglose=new ArrayList<>(nc);
+            for(int i=0;i<nc;i++){
+                String clave=prefijo+"desglose."+i+".";
+                desglose.add(new Componente(p.getProperty(clave+"etiqueta"),Double.parseDouble(p.getProperty(clave+"puntos")),
+                    Integer.parseInt(p.getProperty(clave+"maximo"))));
+            }
             return new Fila(mision, p.getProperty(prefijo + "partida"),
                     Boolean.parseBoolean(p.getProperty(prefijo + "victoria")),
                     Integer.parseInt(p.getProperty(prefijo + "puntaje")),
-                    p.getProperty(prefijo + "dificultad", ""), datos, decisiones,cambios,senales);
+                    p.getProperty(prefijo + "dificultad", ""), datos, decisiones,cambios,senales,desglose,p.getProperty(prefijo+"modalidad",""));
         } catch (RuntimeException e) { throw new IOException("Tabla de puntajes inválida", e); }
     }
 }

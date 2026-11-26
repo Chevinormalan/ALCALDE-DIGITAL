@@ -35,6 +35,11 @@ public final class PantallaControles {
             listaTeclas(p,MapaControles.teclado1(c),88,441,25,ORO,112);
             listaTeclas(p,MapaControles.teclado2(c),343,441,25,CIAN,110);
         }else listaTeclas(p,MapaControles.teclado1(c),88,421,26,ORO,150);
+        if(c.mision()==8){
+            p.fill(PAPEL);p.textSize(14);
+            p.text("J3: num. 4/6 · 0 · 1/2/3 · decimal",88,550);
+            p.text("J4 jefe: números superiores 1–6",88,574);
+        }
         p.fill(LILA);p.textSize(15);
         p.text(c.playStation()?"PlayStation · botones equivalentes":"Xbox / mando genérico",650,443);
         int y=470;for(var b:MapaControles.mando(c)){
@@ -42,7 +47,7 @@ public final class PantallaControles {
             p.fill(PAPEL);p.text(b.accion(),872,y);y+=22;
         }
         p.fill(LILA);p.textSize(14);
-        p.text("Esc / P: pausa · H: ayuda · G: guardar · T: consultas",75,593);
+        p.text("Esc / P: pausa · H: ayuda · G: guardar · T: consultas si están disponibles",75,608);
         MarcosProcessing.marco(p.g,VOLVER_X,VOLVER_Y,VOLVER_ANCHO,VOLVER_ALTO,0xff432b5b,ORO);
         p.fill(PAPEL);p.textSize(19);p.textAlign(PApplet.CENTER,PApplet.BASELINE);
         p.text("Volver · Enter / Esc / B",VOLVER_X+VOLVER_ANCHO/2,VOLVER_Y+29);

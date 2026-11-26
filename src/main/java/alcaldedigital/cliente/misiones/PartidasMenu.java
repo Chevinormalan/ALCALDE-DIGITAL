@@ -35,6 +35,13 @@ public final class PartidasMenu {
                     modificacion(GuardadoCampana.archivo(n)),false));
             }catch(IOException|RuntimeException ignorado){/* El selector mostrará el error si se elige ese archivo. */}
         }
+        if(progreso.disponible(6)){
+            Path ruta=alcaldedigital.cliente.mision6.RedSeis.archivo();
+            try(var guardado=new alcaldedigital.cliente.mision6.AutoguardadoSeis(ruta)){
+                var estado=guardado.cargar();
+                if(estado!=null)partidas.add(new Partida(6,estadoPropiedades(6,estado,progreso),2,0,modificacion(ruta),false));
+            }
+        }
         if(progreso.disponible(5)){
             agregarBatalla(partidas,0,"mision5-solo.bin",progreso);
             agregarBatalla(partidas,1,"mision5-coop.bin",progreso);

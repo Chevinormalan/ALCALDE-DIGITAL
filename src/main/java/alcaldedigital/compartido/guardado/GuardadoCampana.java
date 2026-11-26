@@ -4,7 +4,10 @@ import java.nio.file.*;import java.io.*;import java.util.*;
 public final class GuardadoCampana {
  private GuardadoCampana(){}
  public static Path archivo(int n){if(n<1||n>8)throw new IllegalArgumentException("Misión inválida");String externa=System.getProperty("ad.mision"+n+".guardar");return externa!=null&&!externa.isBlank()?Path.of(externa):ArchivosPartida.directorio().resolve("mision"+n+".properties");}
- public static boolean existe(int n){if(n==5||n==7){Path d=ArchivosPartida.directorio();if(!Files.isDirectory(d))return false;try(var f=Files.list(d)){return f.anyMatch(p->p.getFileName().toString().startsWith("mision"+n+"-")&&p.toString().endsWith(".bin"));}catch(IOException e){return false;}}return Files.isRegularFile(archivo(n))||(n!=4&&Files.isRegularFile(respaldo(n)));}
+ public static boolean existe(int n){if(n==6){
+  Path lan=ArchivosPartida.directorio().resolve("mision6-lan.properties");
+  if(Files.isRegularFile(lan)||Files.isRegularFile(lan.resolveSibling(lan.getFileName()+".bak")))return true;
+ }if(n==5||n==7){Path d=ArchivosPartida.directorio();if(!Files.isDirectory(d))return false;try(var f=Files.list(d)){return f.anyMatch(p->p.getFileName().toString().startsWith("mision"+n+"-")&&p.toString().endsWith(".bin"));}catch(IOException e){return false;}}return Files.isRegularFile(archivo(n))||(n!=4&&Files.isRegularFile(respaldo(n)));}
  private static Path respaldo(int n){Path f=archivo(n);return f.resolveSibling(f.getFileName()+".bak");}
  public static void guardar(int n,Properties p)throws IOException{ArchivosPartida.guardar(archivo(n),p);}
  public static Properties cargar(int n)throws IOException{

@@ -7,40 +7,66 @@ import java.util.EnumSet;
 import java.util.Locale;
 import net.java.games.input.Component;
 import net.java.games.input.Controller;
-import net.java.games.input.ControllerEnvironment;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import static alcaldedigital.cliente.entrada.EstadoMando.Boton;
 
 /** Lectura física; la lógica del juego solo recibe EstadoMando. */
-public final class LectorJInput {
-    private Controller mando;
-    private boolean disponible=true;
-    private boolean nativosPreparados;
+public final class LectorJInput implements AutoCloseable {
+    private volatile Map<String, EstadoMando> ultimo = Map.of();
+    private ScheduledExecutorService hilo;
+    private DispositivosMandos dispositivos;
+    private boolean cerrado;
+    private boolean fallo;
     private long siguienteBusqueda;
 
-    public EstadoMando leer() {
-        if(!disponible) return EstadoMando.desconectado();
-        try {
-            if(!nativosPreparados) {
-                prepararNativos();
-                nativosPreparados=true;
-            }
-            if(mando==null) {
-                if(System.nanoTime()<siguienteBusqueda) return EstadoMando.desconectado();
-                siguienteBusqueda=System.nanoTime()+2_000_000_000L;
-                for(Controller candidato:ControllerEnvironment.getDefaultEnvironment().getControllers()) {
-                    if(candidato.getType()==Controller.Type.GAMEPAD||candidato.getType()==Controller.Type.STICK) {
-                        mando=candidato;break;
-                    }
-                }
-                if(mando==null) return EstadoMando.desconectado();
-            }
-            if(!mando.poll()) {mando=null;return EstadoMando.desconectado();}
-            return convertir(mando);
-        } catch(IOException|LinkageError|RuntimeException error) {
-            disponible=false;
-            System.err.println("Mando no disponible: "+error.getMessage());
-            return EstadoMando.desconectado();
+    public synchronized Map<String, EstadoMando> leerTodos() {
+        if (hilo == null && !cerrado) {
+            hilo = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread lector = new Thread(r, "mandos-fisicos");
+                lector.setDaemon(true);
+                return lector;
+            });
+            hilo.scheduleWithFixedDelay(this::sondear, 0, 16, TimeUnit.MILLISECONDS);
         }
+        return ultimo;
+    }
+
+    private void sondear() {
+        if (fallo) return;
+        try {
+            if (dispositivos == null) {
+                prepararNativos();
+                dispositivos = new DispositivosMandos();
+            }
+            long ahora = System.nanoTime();
+            if (ahora >= siguienteBusqueda) {
+                siguienteBusqueda = ahora + 750_000_000L;
+                dispositivos.actualizar();
+            }
+            ultimo = dispositivos.leer();
+        } catch (IOException e) {
+            // Deja al lector volver a intentar cuando aparezca el dispositivo.
+            if (dispositivos != null) ultimo = dispositivos.leer();
+        } catch (Exception | LinkageError e) {
+            fallo = true;
+            ultimo = Map.of();
+            System.err.println("Mando no disponible: " + e.getMessage());
+        }
+    }
+
+    @Override public synchronized void close() {
+        if(cerrado)return;
+        cerrado = true;
+        if (hilo == null) return;
+        hilo.execute(() -> {
+            if (dispositivos != null) try { dispositivos.close(); }
+            catch (IOException e) { System.err.println("No se pudo cerrar el lector de mandos: " + e.getMessage()); }
+            ultimo = Map.of();
+        });
+        hilo.shutdown();
     }
 
     /** Al ejecutar desde Maven/IDE, los nativos vienen dentro del JAR clasificado. */
@@ -67,8 +93,8 @@ public final class LectorJInput {
 
     static EstadoMando convertir(Controller mando) {
         String nombre=mando.getName();
-        boolean sony=nombre.toLowerCase(Locale.ROOT)
-            .matches(".*(dualshock|dualsense|wireless controller|sony|playstation).*");
+        boolean sony=esPlayStation(nombre);
+        boolean linux=System.getProperty("os.name","").toLowerCase(Locale.ROOT).contains("linux");
         EnumSet<Boton> botones=EnumSet.noneOf(Boton.class);
         float lx=0,ly=0,rx=0,ry=0,z=0,rz=0;
         for(Component componente:mando.getComponents()) {
@@ -85,7 +111,7 @@ public final class LectorJInput {
                 if(valor==Component.POV.LEFT||valor==Component.POV.UP_LEFT||valor==Component.POV.DOWN_LEFT) botones.add(Boton.IZQUIERDA);
                 if(valor==Component.POV.RIGHT||valor==Component.POV.UP_RIGHT||valor==Component.POV.DOWN_RIGHT) botones.add(Boton.DERECHA);
             } else if(id instanceof Component.Identifier.Button boton&&valor>.5f) {
-                Boton accion=traducirBoton(boton,sony);
+                Boton accion=traducirBoton(boton,sony,linux);
                 if(accion!=null) botones.add(accion);
             }
         }
@@ -100,11 +126,23 @@ public final class LectorJInput {
         return modulo<.20f?0:Math.copySign(Math.min(1,(modulo-.20f)/.80f),valor);
     }
 
-    private static Boton traducirBoton(Component.Identifier.Button id,boolean sony) {
+    static boolean esPlayStation(String nombre) {
+        String normalizado=nombre.toLowerCase(Locale.ROOT);
+        if(normalizado.contains("xbox")||normalizado.contains("microsoft"))return false;
+        return normalizado.matches(".*(dualshock|dualsense|wireless controller|sony|playstation).*");
+    }
+
+    private static Boton traducirBoton(Component.Identifier.Button id,boolean sony,boolean linux) {
         if(id==Component.Identifier.Button.A) return Boton.A;
         if(id==Component.Identifier.Button.B) return Boton.B;
-        if(id==Component.Identifier.Button.X) return Boton.X;
-        if(id==Component.Identifier.Button.Y) return Boton.Y;
+        // JInput llama X/Y a BTN_NORTH/BTN_WEST en Linux. Los mandos Sony
+        // usan la posición física: triángulo arriba y cuadrado a la izquierda.
+        if(id==Component.Identifier.Button.X) return sony&&linux?Boton.Y:Boton.X;
+        if(id==Component.Identifier.Button.Y) return sony&&linux?Boton.X:Boton.Y;
+        if(id==Component.Identifier.Button.LEFT_THUMB) return Boton.LB;
+        if(id==Component.Identifier.Button.RIGHT_THUMB) return Boton.RB;
+        if(id==Component.Identifier.Button.LEFT_THUMB2) return Boton.LT;
+        if(id==Component.Identifier.Button.RIGHT_THUMB2) return Boton.RT;
         if(id==Component.Identifier.Button.START) return Boton.MENU;
         if(id==Component.Identifier.Button.SELECT||id==Component.Identifier.Button.BACK) return Boton.VISTA;
         String nombre=id.getName();
