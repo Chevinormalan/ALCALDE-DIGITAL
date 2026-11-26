@@ -1,4 +1,11 @@
 package alcaldedigital.cliente;
+import alcaldedigital.cliente.audio.MotorAudio;
+import alcaldedigital.cliente.misiones.UsuariosPuntajes;
+import alcaldedigital.compartido.guardado.ArchivosPartida;
+import java.io.IOException;
+import java.nio.file.Path;
+import alcaldedigital.cliente.audio.OpcionesAudio;
+import alcaldedigital.cliente.audio.SonidosRemaster;
 import alcaldedigital.compartido.modelo.*;
 import alcaldedigital.compartido.modelo.InvestigacionCiudadana.Escena;
 import alcaldedigital.compartido.protocolo.SesionJuego;
@@ -18,7 +25,7 @@ import java.util.function.DoubleSupplier;
 /** Control de entrada y navegación; los efectos siempre pasan por la sesión. */
 public final class JuegoCliente {
     public enum Pantalla { MENU, TUTORIAL, MISIONES, GUARDADO, DIFICULTAD, DIFICULTAD_DOS, MISION_DOS, MISION_TRES, MISION_CUATRO, MISION_CINCO, MISION_SEIS, MISION_SIETE, MISION_OCHO, ROLES, PARQUE, CIVITAS, EVIDENCIAS, ARBOLES, AYUDA, GRAFICOS, AUDIO, CONTROLES, CONFIRMAR_REINICIO, RESULTADO }
-    public final alcaldedigital.cliente.audio.OpcionesAudio audio=new alcaldedigital.cliente.audio.OpcionesAudio();
+    public final OpcionesAudio audio=new OpcionesAudio();
     public final alcaldedigital.cliente.graficos.OpcionesGraficas graficos=new alcaldedigital.cliente.graficos.OpcionesGraficas();
     public Pantalla pantalla=Pantalla.MENU, anterior=Pantalla.MENU;
     public Pantalla origenArboles=Pantalla.PARQUE;
@@ -35,7 +42,9 @@ public final class JuegoCliente {
     public final InvestigacionSofi investigacionSofi=new InvestigacionSofi();
     private final SesionJuego.Fabrica fabrica;
     private final SesionMisionUno.Fabrica fabricaMisionUno;
-    private final RegistroIntentosMisionDos intentosMisionDos;
+    private RegistroIntentosMisionDos intentosMisionDos;
+    private UsuariosPuntajes usuarios;
+    private Path baseUsuarios;
     private final DoubleSupplier azarCritico;
     public JuegoCliente(SesionJuego.Fabrica fabrica) { this(fabrica,null); }
     public JuegoCliente(SesionJuego.Fabrica fabrica,SesionMisionUno.Fabrica fabricaMisionUno) {
@@ -48,6 +57,57 @@ public final class JuegoCliente {
         this.intentosMisionDos=Objects.requireNonNull(intentosMisionDos);
         this.azarCritico=Objects.requireNonNull(azarCritico);
     }
+    public UsuariosPuntajes usuarios(){return usuarios;}
+
+    public void iniciarUsuarios(){
+        baseUsuarios=ArchivosPartida.directorio();
+        usuarios=new UsuariosPuntajes(baseUsuarios,this::activarCampana,()->foco=0);
+    }
+
+    private void activarCampana(Path directorio){
+        if(directorio==null){
+            System.setProperty("ad.guardados",baseUsuarios.toString());
+            limpiarCampanaEnMemoria();
+            abrir(Pantalla.MENU);
+            return;
+        }
+        System.setProperty("ad.guardados",directorio.toString());
+        progreso=new alcaldedigital.compartido.guardado.ProgresoMisiones(directorio);
+        registroTutorial=new RegistroTutorial(directorio);
+        intentosMisionDos=new RegistroIntentosMisionDos();
+        limpiarCampanaEnMemoria();
+        abrir(Pantalla.MENU);
+        cargarEstadoCampana();
+    }
+
+    public void cargarEstadoCampana(){
+        try{
+            estadoCampana=new alcaldedigital.servidor.batalla.RepositorioResultados(ArchivosPartida.directorio().resolve("campana.properties")).ciudad(estadoCampana);
+        }catch(IOException e){aviso="No se pudo cargar la campaña: "+e.getMessage();segundosAviso=9;}
+    }
+
+    private void limpiarCampanaEnMemoria(){
+        estadoCampana=EstadoCiudad.inicial();misionUno=null;sesion=null;
+        investigacionSofi.reiniciar();
+        ultimaFila=null;ultimoResultadoMisionDos=null;ultimoResultadoMisionTres=null;
+        ultimoResultadoMisionCuatro=null;ultimoResultadoMisionSeis=null;
+        misionesCuatroAcreditadas.clear();resultadoMisionUnoRegistrado=false;
+        ultimaMisionAbierta=0;partidaMenu=null;consultaPartidas=0;
+        continuarGuardado=false;eligiendoPartida=false;modoContinuacion=rolContinuacion=-1;
+        misionSolicitada=0;falloCriticoMisionDos=false;pausa=false;pausaUnificada=false;
+        tutorialVisto=false;
+        prologoPendiente=false;
+        if(usuarios!=null)usuarios.nuevaMision();
+    }
+
+    public boolean asignarPuestos(int cantidad,Runnable cuandoListos){
+        return usuarios!=null&&usuarios.asignarPuestos(cantidad,cuandoListos);
+    }
+
+    public boolean asignarPuestos(int mision,String partida,int cantidad,Runnable cuandoListos){
+        return usuarios!=null&&usuarios.asignarPuestos(mision,partida,cantidad,cuandoListos);
+    }
+
     public boolean misionUnoDisponible() {return fabricaMisionUno!=null;}
     public boolean contraste, movimientoReducido, tiempoAmpliado=true, salir;
     public boolean mandoActivo, pausa, controlesPausa;
@@ -61,8 +121,8 @@ public final class JuegoCliente {
     public double animacion, efecto;
     private long solicitud;
     private long solicitudIdMisionUno;
-    public final alcaldedigital.compartido.guardado.ProgresoMisiones progreso=new alcaldedigital.compartido.guardado.ProgresoMisiones(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
-    private final RegistroTutorial registroTutorial=new RegistroTutorial(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
+    public alcaldedigital.compartido.guardado.ProgresoMisiones progreso=new alcaldedigital.compartido.guardado.ProgresoMisiones(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
+    private RegistroTutorial registroTutorial=new RegistroTutorial(alcaldedigital.compartido.guardado.ArchivosPartida.directorio());
     private Tutorial tutorial;
     private boolean tutorialVisto;
     public Tutorial tutorial(){return pantalla==Pantalla.TUTORIAL?tutorial:null;}
@@ -77,6 +137,7 @@ public final class JuegoCliente {
     private long consultaPartidas;
     private alcaldedigital.cliente.misiones.PartidasMenu.Partida partidaMenu;
     public alcaldedigital.cliente.misiones.PartidasMenu.Partida continuacionMenu(){
+        if(usuarios!=null&&usuarios.activo()==null)return null;
         if(ultimaMisionAbierta==1&&misionUno!=null){
             var v=misionUno.vista();
             var estado=v.fase()!=SesionMisionUno.Fase.RESULTADO?
@@ -196,6 +257,7 @@ public final class JuegoCliente {
         return iniciar;
     }
     private void jugar(){
+        if(usuarios!=null&&usuarios.pedirUsuarioParaJugar(this::jugar))return;
         if(!misionUnoDisponible()){abrir(Pantalla.ROLES);return;}
         if(!tutorialVisto){
             try{tutorialVisto=registroTutorial.visto();}
@@ -217,6 +279,8 @@ public final class JuegoCliente {
     public ArbolDecisiones.Vista vistaDecision() { return pasoDecision<0?sesion.vista().decisiones():sesion.pasosDecisiones().get(indiceDecision()).raiz(); }
     private void seleccionCambiada() { visita=0;automatico=false;encontrado="";editandoBusqueda=false;foco=0; }
     public void accion(String accion) {
+        if(usuarios!=null&&usuarios.panel()!=null){usuarios.accion(accion);return;}
+        if(usuarios!=null&&pantalla==Pantalla.MISIONES&&accion.matches("mision[1-8]")&&!eligiendoPartida)usuarios.nuevaMision();
         if(accion.equals("repetirMisionUno")&&pantalla==Pantalla.RESULTADO&&misionUno!=null){
             continuarGuardado=false;misionSolicitada=1;abrir(Pantalla.DIFICULTAD);return;
         }
@@ -341,6 +405,8 @@ public final class JuegoCliente {
         if(accion.startsWith("rol:")) { iniciar(Rol.valueOf(accion.substring(4))); return; }
         switch(accion) {
             case "jugar" -> jugar();
+            case "usuarios" -> {if(usuarios!=null&&pantalla==Pantalla.MENU)usuarios.abrirUsuarios();}
+            case "puntajes" -> {if(usuarios!=null&&pantalla==Pantalla.MISIONES)usuarios.abrirPuntajes();}
             case "desbloquearTodas" -> {
                 if(pantalla!=Pantalla.MISIONES)break;
                 try{progreso.desbloquearTodas();aviso="Misiones 1 a 8 disponibles. Puedes elegir un final de prueba en la misión 8.";segundosAviso=8;}
@@ -353,15 +419,7 @@ public final class JuegoCliente {
                 try{
                     var respaldo=alcaldedigital.compartido.guardado.RestablecerJuego.restablecer();
                     progreso.reiniciar();intentosMisionDos.reiniciar();
-                    estadoCampana=EstadoCiudad.inicial();misionUno=null;sesion=null;
-                    investigacionSofi.reiniciar();
-                    ultimaFila=null;ultimoResultadoMisionDos=null;ultimoResultadoMisionTres=null;
-                    ultimoResultadoMisionCuatro=null;ultimoResultadoMisionSeis=null;
-                    misionesCuatroAcreditadas.clear();resultadoMisionUnoRegistrado=false;
-                    ultimaMisionAbierta=0;partidaMenu=null;consultaPartidas=0;
-                    continuarGuardado=false;eligiendoPartida=false;modoContinuacion=rolContinuacion=-1;
-                    misionSolicitada=0;falloCriticoMisionDos=false;pausa=false;pausaUnificada=false;
-                    tutorialVisto=false;
+                    limpiarCampanaEnMemoria();
                     abrir(Pantalla.MENU);
                     aviso=respaldo==null?"Juego restablecido. Pulsa Jugar para empezar.":
                         "Juego restablecido. Perfil anterior guardado en "+respaldo.getFileName()+".";
@@ -371,6 +429,7 @@ public final class JuegoCliente {
             case "continuarMision" -> {
                 if(pantalla!=Pantalla.MENU)break;
                 var partida=continuacionMenu();if(partida==null||!progreso.disponible(partida.mision()))break;
+                if(usuarios!=null)usuarios.nuevaMision();
                 if(partida.estado()==alcaldedigital.cliente.misiones.PartidasMenu.Estado.VICTORIA){abrir(Pantalla.MISIONES);break;}
                 if(partida.memoria()&&partida.estado()==alcaldedigital.cliente.misiones.PartidasMenu.Estado.EN_CURSO){
                     var inv=misionUno.investigacion();
@@ -523,7 +582,7 @@ public final class JuegoCliente {
             investigacionSofi.reiniciar();
             investigacionSofi.finRecogida=animacion+(despues.premium()?1.12:.42);
             investigacionSofi.ultimaPista=animacion;
-            abrir(Pantalla.CIVITAS);foco=1;sonidoSofi("recoger");
+            abrir(Pantalla.CIVITAS);foco=1;sonidoSofi("papel");
         } else if(solicitud.startsWith("vecino:")&&despues.vecino()>=0) {
             investigacionSofi.reiniciar();abrir(Pantalla.CIVITAS);foco=1;sonidoSofi("dialogo");
         } else if(Set.of("cerrarExpediente","irVecinos","saltarEscena").contains(solicitud)&&despues.abierto()==0&&despues.vecino()<0) {
@@ -532,7 +591,7 @@ public final class JuegoCliente {
             if(despues.escena()==Escena.CIERRE) sonidoSofi("victoria");
         }
         if(despues.premium()&&solicitud.equals("publicacion")&&!antes.publicacion()&&despues.publicacion()) {
-            investigacionSofi.finPagina=animacion+.43;foco=0;sonidoSofi("civitas");
+            investigacionSofi.finPagina=animacion+.43;foco=0;sonidoSofi("pagina");
         }
         if(despues.premium()&&solicitud.equals("comunicar")&&antes.abierto()!=0&&
             !s.resueltas().get(antes.abierto()-1)&&misionUno.vista().resueltas().get(antes.abierto()-1)) {
@@ -540,13 +599,12 @@ public final class JuegoCliente {
         }
         if(solicitud.equals("contraste")&&!antes.contraste()&&despues.contraste()) sonidoSofi("civitas");
         if(solicitud.equals("lupa")&&antes.lupa()!=despues.lupa()) {
-            if(despues.lupa()) investigacionSofi.inicioLupa=animacion;
             sonidoSofi("hover");
         }
         if(despues.evidencias()>antes.evidencias()) {
             investigacionSofi.finAviso=animacion+1.65;investigacionSofi.ultimaPista=animacion;
             if(despues.premium()) foco=0;
-            sonidoSofi("verificar");
+            sonidoSofi("lupa-hallazgo");
         }
         if(!despues.premium()&&despues.clasificados()>antes.clasificados()) {
             investigacionSofi.finAviso=animacion+.36;sonidoSofi("confirmar");
@@ -563,15 +621,17 @@ public final class JuegoCliente {
         if(misionUno.vista().fase()==SesionMisionUno.Fase.RESULTADO) abrir(Pantalla.RESULTADO);
         return true;
     }
-    private void prepararAudioSofi() {
-        var inv=misionUno.investigacion();
-        if(inv==null||!inv.premium()) return;
-        var audio=alcaldedigital.cliente.audio.MotorAudio.global();
-        for(String efecto:List.of("recoger","civitas","verificar","confirmar","pacto","dialogo","viento","victoria"))
+    private static void prepararAudioSofi() {
+        var audio=MotorAudio.global();
+        SonidosRemaster.precargar("papel","pagina");
+        for(String efecto:List.of("civitas","lupa-hallazgo","confirmar","pacto","dialogo","viento","victoria"))
             audio.precargar("audio/fx/"+efecto);
     }
     private static void sonidoSofi(String efecto) {
-        alcaldedigital.cliente.audio.MotorAudio.global().interfaz(efecto);
+        var audio=MotorAudio.global();
+        if(efecto.equals("papel")||efecto.equals("pagina"))
+            audio.efecto("investigacion",efecto,SonidosRemaster.ruta(efecto),.67f,.08,OpcionesAudio.Bus.INTERFAZ);
+        else audio.interfaz(efecto);
     }
     public void actualizar(double dt) {
         if(pausa) return;

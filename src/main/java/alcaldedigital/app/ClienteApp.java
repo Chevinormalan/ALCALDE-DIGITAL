@@ -13,7 +13,11 @@ public final class ClienteApp {
 
     public static void main(String[] args) {
         JuegoCliente juego=new JuegoCliente(SesionLocal::new,SesionMisionUnoLocal::new);
-        try{juego.estadoCampana=new alcaldedigital.servidor.batalla.RepositorioResultados(alcaldedigital.servidor.batalla.GuardadoBatalla.directorio().resolve("campana.properties")).ciudad(juego.estadoCampana);}catch(java.io.IOException e){System.err.println("No se pudo cargar la campaña: "+e.getMessage());}
+        boolean revision=Boolean.getBoolean("ad.smoke")||System.getProperties().stringPropertyNames().stream()
+            .anyMatch(k -> k.startsWith("ad.") &&
+                (k.endsWith(".revision") || k.endsWith(".integracion") || k.endsWith(".autoprueba")) && Boolean.getBoolean(k));
+        if(revision)juego.cargarEstadoCampana();
+        else juego.iniciarUsuarios();
         PApplet.runSketch(new String[]{ClienteSketch.class.getName()},
             new ClienteSketch(juego));
     }

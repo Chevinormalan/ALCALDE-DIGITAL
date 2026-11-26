@@ -3,7 +3,6 @@ package alcaldedigital.cliente.interfaz;
 import alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
 import alcaldedigital.compartido.protocolo.SesionMisionUno;
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import static alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
@@ -20,12 +19,17 @@ final class PergaminoSofi {
 
     private final RenderJuego ui;
     private BufferedImage rollo;
-    private final BufferedImage muestra=new BufferedImage(70,70,BufferedImage.TYPE_INT_ARGB);
+    private final LupaArchivo lente = new LupaArchivo();
+    private BufferedImage papel;
+    private boolean contrastePapel;
+    private int expedienteAnterior;
     private final EnumMap<Zona,Rectangle> zonas=new EnumMap<>(Zona.class);
 
     PergaminoSofi(RenderJuego ui) {this.ui=ui;}
 
     void dibujar(SesionMisionUno.Vista s,Vista v,Caso caso) {
+        if (expedienteAnterior != caso.id() || v.publicacion()) lente.reiniciar();
+        expedienteAnterior = caso.id();
         var estado=ui.juego.investigacionSofi;
         double recogida=estado.finRecogida-ui.juego.animacion;
         double giro=estado.finPagina-ui.juego.animacion;
@@ -84,12 +88,38 @@ final class PergaminoSofi {
     }
 
     private void fondo() {
-        poligono(X+6,Y+8,1,1,new Color(18,11,25,180));
-        poligono(X,Y,1,1,CAFE);
-        poligono(X+3,Y+2,.989,.986,OCRE);
-        poligono(X+17,Y+5,.94,.958,ui.juego.contraste?new Color(0xFFF7DF):FIBRA);
-        for(int i=0;i<75;i++) ui.rect(X+21+(i*107)%535,Y+51+(i*79)%470,2+i%5,1,
-            new Color(132,84,49,i%3==0?47:25));
+        boolean contraste = ui.juego.contraste;
+        if (papel == null || contrastePapel != contraste) {
+            contrastePapel = contraste;
+            papel = new BufferedImage(W + 44, H + 54, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = papel.createGraphics();
+            g.translate(22, 39);
+            Polygon borde = new Polygon(BORDE_X, BORDE_Y, BORDE_X.length);
+            g.setColor(new Color(18, 10, 27, 140));
+            g.translate(8, 10);
+            g.fill(borde);
+            g.translate(-8, -10);
+            g.setPaint(new GradientPaint(0, 0, new Color(0xF2D09D), W, H, new Color(0xA96D48)));
+            g.fill(borde);
+            g.setStroke(new BasicStroke(2));
+            g.setColor(CAFE);
+            g.draw(borde);
+            g.clip(borde);
+            g.setPaint(new RadialGradientPaint(W / 2f, H * .48f, W * .85f,
+                new float[]{0, .55f, 1}, new Color[]{contraste ? Color.WHITE : new Color(0xFAE8C0),
+                contraste ? new Color(0xFFF9E9) : FIBRA, OCRE}));
+            g.fillRoundRect(21, 5, W - 37, H - 16, 9, 9);
+            g.setColor(new Color(126, 82, 52, 71));
+            g.drawRect(29, 63, W - 56, H - 93);
+            g.drawRect(32, 68, W - 62, H - 103);
+            var azar = new java.util.Random(10231);
+            for (int i = 0; i < 1100; i++) {
+                g.setColor(i % 5 == 0 ? new Color(255, 252, 233, 90) : new Color(124, 79, 49, i % 7 == 0 ? 39 : 14));
+                g.fillRect(32 + azar.nextInt(W - 64), 52 + azar.nextInt(H - 81), 1 + azar.nextInt(5), 1);
+            }
+            g.dispose();
+        }
+        ui.g.drawImage(papel, X - 22, Y - 39, null);
         dibujarRollo(X-17,Y-33,W+34,94);
     }
 
@@ -106,13 +136,7 @@ final class PergaminoSofi {
         ui.g.drawImage(rollo,x,y,ancho,alto,null);
     }
 
-    private void poligono(int x,int y,double ancho,double alto,Color color) {
-        Polygon borde=new Polygon();
-        for(int i=0;i<BORDE_X.length;i++)
-            borde.addPoint(x+(int)(BORDE_X[i]*ancho),y+(int)(BORDE_Y[i]*alto));
-        ui.g.setColor(color);
-        ui.g.fillPolygon(borde);
-    }
+
 
     private void paginaInvestigacion(Caso caso) {
         zonas.clear();
@@ -281,17 +305,27 @@ final class PergaminoSofi {
             if(v.lupa()&&!ficha.clasificada()&&!encontrada)
                 ui.botones.add(new RenderJuego.Boton(r,"invest:hallazgo:"+zona.name(),zona.etiqueta));
         }
-        if(!v.lupa()||ficha.clasificada()) return;
+        if (!v.lupa() || ficha.clasificada()) {
+            lente.dibujar(ui, 0, 0, false, false, false);
+            return;
+        }
         int x=ui.ratonX,y=ui.ratonY;
-        if(x<0) {
+        boolean teclado = x < 0;
+        if(teclado) {
             var b=ui.botones.get(Math.floorMod(ui.juego.foco,ui.botones.size()));
-            if(!b.accion().startsWith("invest:hallazgo:")) return;
+            if(!b.accion().startsWith("invest:hallazgo:")) {
+                lente.dibujar(ui, 0, 0, false, false, false);
+                return;
+            }
             x=(int)b.area().getCenterX();y=(int)b.area().getCenterY();
         }
-        if(!HOJA.contains(x,y)) return;
+        if (!HOJA.contains(x,y)) {
+            lente.dibujar(ui, 0, 0, false, false, false);
+            return;
+        }
         boolean objetivo=false;
         for(var z:zonas.entrySet()) if(!ficha.encontro(z.getKey())&&z.getValue().contains(x,y)) objetivo=true;
-        lente(x,y,objetivo,objetivo||dificultad==SesionMisionUno.Dificultad.FACIL);
+        lente.dibujar(ui,x,y,true,teclado||objetivo,objetivo);
     }
 
     private void destello(int x,int y,double t) {
@@ -300,35 +334,7 @@ final class PergaminoSofi {
         ui.rect(x+13,y-8,3,3,ui.papel);ui.rect(x-14,y+9,3,3,ui.papel);
     }
 
-    private void lente(int x,int y,boolean objetivo,boolean iluminar) {
-        double t=ui.juego.movimientoReducido?1:suave((ui.juego.animacion-ui.juego.investigacionSofi.inicioLupa)/.16);
-        int radio=62+(int)(16*t);
-        Graphics2D copia=muestra.createGraphics();
-        copia.drawImage(ui.lienzo,0,0,70,70,x-35,y-35,x+35,y+35,null);
-        copia.dispose();
-        Ellipse2D.Double circulo=new Ellipse2D.Double(x-radio,y-radio,2*radio,2*radio);
-        Graphics2D g=(Graphics2D)ui.g.create();
-        g.setStroke(new BasicStroke(13,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
-        g.setColor(new Color(0x362236));g.drawLine(x+56,y+56,x+91,y+91);
-        g.setStroke(new BasicStroke(6,BasicStroke.CAP_ROUND,BasicStroke.JOIN_ROUND));
-        g.setColor(CAFE);g.drawLine(x+63,y+63,x+89,y+89);
-        Graphics2D vidrio=(Graphics2D)g.create();
-        vidrio.clip(circulo);
-        vidrio.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        vidrio.drawImage(muestra,x-radio,y-radio,2*radio,2*radio,null);
-        vidrio.setColor(new Color(185,217,222,27));vidrio.fill(circulo);
-        vidrio.setColor(new Color(255,255,242,130));vidrio.setStroke(new BasicStroke(3));
-        vidrio.drawArc(x-radio+9,y-radio+9,2*radio-18,2*radio-18,108,54);
-        vidrio.dispose();
-        g.setStroke(new BasicStroke(6));g.setColor(TINTA);g.draw(circulo);
-        g.setStroke(new BasicStroke(2));g.setColor(iluminar?ui.oro:OCRE);g.draw(circulo);
-        if(objetivo) {
-            g.setColor(SELLO);
-            g.drawRect(x-6,y-6,12,12);
-            g.drawLine(x-9,y,x-5,y);g.drawLine(x+5,y,x+9,y);
-        }
-        g.dispose();
-    }
+
 
     private void paginaAviso(SesionMisionUno.Vista s,Caso caso) {
         ui.texto("CIVITAS  /  AVISO A LA COMUNIDAD",359,198,17,TINTA,true);

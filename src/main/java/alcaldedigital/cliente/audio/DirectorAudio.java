@@ -12,7 +12,12 @@ public final class DirectorAudio {
   if(!ambiente.isEmpty())motor.bucle("ambiente-guion","fondo","audio/fx/"+ambiente,.4f);
   boolean misma=mismaPartida(anterior,actual);
   if(misma&&actual.pausa!=anterior.pausa)motor.interfaz(actual.pausa?"pausa":"reanudar");
-  for(String id:eventos(anterior,actual,motor.voces())){if(id.equals("dialogo"))motor.efecto("guion","dialogo","audio/fx/dialogo",.18f,.18,OpcionesAudio.Bus.EFECTOS);else motor.fx(id);}
+  for(String id:eventos(anterior,actual,motor.voces())){
+   if(id.equals("dialogo"))motor.efecto("guion","dialogo","audio/fx/dialogo",.18f,.18,OpcionesAudio.Bus.EFECTOS);
+   else if(actual.contexto.mision()==5&&(id.equals("rayo_aviso")||id.equals("turno")))
+    motor.efecto("guion",id,SonidosRemaster.ruta(id.equals("turno")?"servidor-turno":"servidor-alarma"),.52f,.12,OpcionesAudio.Bus.EFECTOS);
+   else motor.fx(id);
+  }
   anterior=actual;
  }
  private static boolean mismaPartida(Estado a,Estado b){return a!=null&&b.partida.equals(a.partida)&&b.contexto.mision()==a.contexto.mision();}

@@ -1,5 +1,9 @@
 package alcaldedigital.cliente.mision8;
 
+import alcaldedigital.cliente.audio.SonidosRemaster;
+
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import processing.core.*;
 import alcaldedigital.cliente.JuegoCliente;
 import alcaldedigital.cliente.red.PantallaLan;
@@ -15,7 +19,8 @@ import java.util.*;import java.io.*;
 public final class MisionOchoVista implements AutoCloseable {
  private final JuegoCliente juego;private PApplet p;private ArteOcho arte;private MotorOcho motor;private AntecedentesOcho antecedentes;private volatile RedOcho red;
  private final Set<Integer> teclas=new HashSet<>(),bloqueadas=new HashSet<>();private EstadoMando anteriorMando=EstadoMando.desconectado();private int mascaraMando;
- private final alcaldedigital.cliente.presentacion.AudioEscena audio=new alcaldedigital.cliente.presentacion.AudioEscena("mision8");private MotorOcho.Escena escenaAudio;private int danioAudio,ataqueAudio=-1;private boolean audioInyeccion,audioNeutralizacion;
+ private final alcaldedigital.cliente.presentacion.AudioEscena audio=new alcaldedigital.cliente.presentacion.AudioEscena("mision8");private MotorOcho.Escena escenaAudio;private int danioAudio,ataqueAudio=-1,emisionAudio=-1;
+ private String partidaAudio="";private boolean audioInyeccion,audioNeutralizacion;
  private boolean esperarMando=true;private boolean previaControles;private boolean salir,consulta;private boolean config=true,conectando;private int jugadores=1,dificultad=1,rolSolo,modo,puesto=1,pagina,foco;
  private int finalElegido=-1,ciudadPrueba;
  private final PantallaLan pantallaLan=new PantallaLan(8,RedOcho.PUERTO,"Sofi","Periodista","Influencer","Jefe");
@@ -27,9 +32,24 @@ public final class MisionOchoVista implements AutoCloseable {
  private String host="127.0.0.1",error="",token="";private double acumulado,tiempo;private float autoguardado;
  private record Boton(int x,int y,int w,int h,String texto,Runnable accion){}
  private final List<Boton> botones=new ArrayList<>();
- public MisionOchoVista(JuegoCliente j){juego=j;}
+ public MisionOchoVista(JuegoCliente j){
+  juego=j;
+  SonidosRemaster.precargar("final-carga","final-orbe","final-descarga","final-impacto");
+ }
  public void iniciarEn(PApplet p){this.p=p;arte=new ArteOcho();try{var enlace=alcaldedigital.compartido.guardado.ArchivosPartida.leer(alcaldedigital.compartido.guardado.ArchivosPartida.directorio().resolve("mision8-red.properties"));if(enlace!=null){host=enlace.getProperty("host",host);puesto=Integer.parseInt(enlace.getProperty("puesto","1"));token=enlace.getProperty("token","");puertoRecordado=Integer.parseInt(enlace.getProperty("puerto",""+RedOcho.PUERTO));}try{antecedentes=AntecedentesOcho.cargar();}catch(IOException falta){if(!juego.progreso.todasDesbloqueadas())throw falta;finalElegido=0;}if(juego.continuarGuardado){motor=GuardadoOcho.cargar();if(!motor.prueba()&&(antecedentes==null||antecedentes.electoral().juanCorrupto()!=motor.antecedentes.electoral().juanCorrupto()))throw new IOException("La elegibilidad cambió en la campaña. Inicia una nueva misión 8.");jugadores=motor.jugadores;dificultad=motor.dificultad;rolSolo=motor.rolSolo;modo=motor.lan?1:0;finalElegido=motor.finalElegido();ciudadPrueba=motor.antecedentes.estadoCiudad().equals("CIUDAD EN CRISIS")?2:motor.antecedentes.estadoCiudad().equals("CONFIANZA CÍVICA")?0:1;motor.pausar(false);config=true;}}catch(Exception e){motor=null;juego.continuarGuardado=false;error=e.getMessage();}}
  public MotorOcho motor(){return motor;}
+ public alcaldedigital.compartido.guardado.TablaPuntajes.Fila filaPuntajes(){
+  return listaComun()&&!consulta&&(motor.escena==MotorOcho.Escena.FINAL||motor.escena==MotorOcho.Escena.DERROTA)?GuardadoOcho.fila(motor):null;
+ }
+ public String partidaPuntajes(){return listaComun()?motor.id:null;}
+ public boolean lanPuntajes(){return red!=null;}
+ public boolean pruebaPuntajes(){return listaComun()&&motor.prueba();}
+ public int puestoPuntajes(){return red==null?0:red.puesto;}
+ public int heroesPuntajes(){return motor.heroes.length;}
+ public boolean reintentarPuntajes(){
+  if(!listaComun()||motor.escena!=MotorOcho.Escena.DERROTA||(red!=null&&red.puesto!=0))return false;
+  orden("RETRY");return true;
+ }
  public boolean salir(){return salir;}public boolean listaComun(){return !config&&!previaControles&&!pantallaLan.activa()&&motor!=null;}
  private final EntradaMandoLocal[] mandosLocales={
   new EntradaMandoLocal(),new EntradaMandoLocal(),new EntradaMandoLocal()
@@ -95,6 +115,11 @@ public final class MisionOchoVista implements AutoCloseable {
  private void iniciar(){
   if(modo==2){buscarLan();return;}
   if(antecedentes==null&&finalElegido<0){error="Elige un final de prueba para jugar sin completar la campaña.";return;}
+  String partida=juego.continuarGuardado&&motor!=null?motor.id:null;
+  if(modo==0&&juego.asignarPuestos(8,partida,jugadores,this::iniciarAhora))return;
+  iniciarAhora();
+ }
+ private void iniciarAhora(){
   error="";
   try{
    if(!(juego.continuarGuardado&&motor!=null)){
@@ -206,10 +231,22 @@ public final class MisionOchoVista implements AutoCloseable {
  }
  private static AntecedentesOcho referencia(){var c=alcaldedigital.compartido.modelo.EstadoCiudad.inicial();return new AntecedentesOcho(c,EstadoElectoral.inicial(c),Map.of(),List.of());}
  private HistoriaOcho.Accion accionEscena(){var linea=HistoriaOcho.actual(motor);return linea==null?HistoriaOcho.Accion.HABLAR:linea.accion();}
+ private void focosTarima(boolean construida) {
+  if (!construida) return;
+  float t = juego.movimientoReducido ? 0 : motor.ticksDialogo / 60f;
+  for (int i = 0; i < 4; i++) {
+   float x = 230 + i * 270;
+   var luz = i % 2 == 0 ? LuzEscena.AMBAR : LuzEscena.VIOLETA;
+   luz.dibujar(p.g,x,129,295,270,108);
+   luz.dibujar(p.g,x,434,252,124,134 + 14 * PApplet.sin(t * 1.3f + i));
+  }
+ }
+
  private void escena(){
   var e=motor.escena;var accion=accionEscena();boolean obra=e==MotorOcho.Escena.OBRA;
   boolean construida=!obra||motor.lineaDialogo>=3||accion==HistoriaOcho.Accion.CONSTRUIR&&motor.ticksDialogo>=125;
   p.image(construida?arte.fondos[0]:arte.parque,0,0,1280,720);
+  focosTarima(construida);
   if(motor.antecedentes.estadoCiudad().equals("CIUDAD EN CRISIS")){p.fill(70,12,60,50);p.rect(0,0,1280,530);}
   if(e==MotorOcho.Escena.MUTACION&&accion==HistoriaOcho.Accion.MUTAR){p.fill(15,5,30,Math.min(170,motor.ticksDialogo*1.7f));p.rect(0,0,1280,530);}
   boolean epilogo=e==MotorOcho.Escena.EPILOGO||e==MotorOcho.Escena.FINAL;
@@ -301,18 +338,45 @@ public final class MisionOchoVista implements AutoCloseable {
   dibujarAvisos();
   for(var b:motor.proyectiles)dibujarProyectil(b);
 
-  for(int i=0;i<motor.heroes.length;i++){var h=motor.heroes[i];if(!juego.movimientoReducido&&h.invulnerable>0&&motor.ticks%8<3)continue;arte.sprite(p,arte.heroe(motor,i),(float)h.x,(float)(h.y-camaraVisual()+3),100,h.direccion<0);texto("J"+(i+1),(float)h.x-15,(float)(h.y-camaraVisual()-100),14,ORO);}
+  for(int i=0;i<motor.heroes.length;i++) dibujarHeroe(i);
   marco(20,35,1240,90);texto("MR. CORRUPTO · "+EstadoElectoral.NOMBRES[motor.ganador]+" · FORMA "+motor.forma+" / 3",40,65,21,ORO);p.fill(FONDO);p.rect(40,80,1190,22);p.fill(ROSA);p.rect(40,80,1190f*motor.vidaJefe/motor.maxVida,22);texto("FASE "+motor.fase+" / 5",1040,65,17,CIAN);
   for(int i=0;i<motor.heroes.length;i++){var h=motor.heroes[i];marco(20+i*305,650,295,55);texto("J"+(i+1)+" "+MotorOcho.ROLES[motor.rol(i)]+" · "+h.vida+" / 5",35+i*305,684,17,h.vida>0?PAPEL:ROSA);}
   if(motor.jefeHumano)texto("J"+motor.jugadores+" · JEFE: Z X C B N M",925,680,16,ORO);
   if(motor.transicion>0){marco(320,270,640,120);texto("FASE "+motor.fase+" · FORMA "+motor.forma,355,315,30,ORO);parrafo(motor.fase>=4?"Las plataformas abren una nueva ruta. Salto doble para ascender.":"Observa los avisos del suelo y conserva una ruta de escape.",355,333,570,55,18);}
  }
+ private void dibujarHeroe(int i){
+  var h=motor.heroes[i];
+  float x=(float)h.x,y=(float)(h.y-camaraVisual()+3);
+  int rol=motor.rol(i),pose=AnimacionOcho.cuadroHeroe(motor,i)%16;
+  if (h.invulnerable>0&&h.vida>0) {
+   // Halo breve para mostrar protección o daño sin ocultar al jugador.
+   float intensidad=juego.movimientoReducido?60:50+22*PApplet.sin(motor.ticks*.22f);
+   (pose==14?LuzEscena.MAGENTA:LuzEscena.CIAN).dibujar(p.g,x,y-46,120,110,intensidad);
+  }
+  if (pose==1||pose==2) {
+   var hoja=switch(rol){case 0->PosesRemaster.SOFI;case 1->PosesRemaster.PERIODISTA;default->PosesRemaster.INFLUENCER;};
+   int cuadro=juego.movimientoReducido?0:PosesRemaster.paso(motor.ticks,rol==2?.14:.28,rol==2?4:8);
+   hoja.dibujar(p.g,cuadro,x,y,86,h.direccion<0);
+  } else if (rol==2&&(pose==7||pose==8||pose==14)) {
+   int cuadro=pose==7?6:pose==14?5:4;
+   PosesRemaster.INFLUENCER.dibujar(p.g,cuadro,x,y,86,h.direccion<0);
+  } else {
+   arte.sprite(p,arte.heroe(motor,i),x,y,100,h.direccion<0);
+  }
+  texto("J"+(i+1),x-15,y-103,14,ORO);
+ }
+
  private void dibujarJefe(){
   float x=(float)motor.jefeX,y=(float)(motor.jefeY-camaraVisual()+90);
   float flota=juego.movimientoReducido?0:3*PApplet.sin(motor.ticks*.07f);int edad=AnimacionOcho.desdeEmision(motor);
   float retroceso=juego.movimientoReducido||edad>=14?0:5*(1-edad/14f);
   int cuadro=AnimacionOcho.cuadroJefe(motor);float carga=cuadro>=1&&cuadro<=3?(cuadro/3f):0;
-  p.fill(115,221,203,22+45*carga);p.ellipse(x,y-92,105+30*carga,105+30*carga);
+  var luz = switch (motor.forma) {
+   case 1 -> LuzEscena.CIAN;
+   case 2 -> LuzEscena.MAGENTA;
+   default -> LuzEscena.AMBAR;
+  };
+  luz.dibujar(p.g,x,y-92,253+85*carga,210+70*carga,150+88*carga);
   if(motor.transicion>0&&(motor.fase==3||motor.fase==5)){
    float f=1-motor.transicion/100f;int anterior=motor.ganador*16+(motor.forma==2?4:8);
    p.tint(255,255*(1-f));arte.sprite(p,arte.candidatos[anterior],x,y+flota,190+(motor.forma-1)*22,false);p.tint(255,255*f);
@@ -364,7 +428,30 @@ public final class MisionOchoVista implements AutoCloseable {
   boton("Anterior",90,590,235,()->pagina=Math.floorMod(pagina-1,6));boton("Volver",520,590,235,()->{consulta=false;if(previaControles){previaControles=false;config=true;motor=null;}});boton("Siguiente",950,590,235,()->pagina=(pagina+1)%6);
  }
  private void dibujarAVL(alcaldedigital.compartido.estructuras.avl.ArbolAVLPublicaciones.Vista n,int x,int y,int ancho){if(n==null)return;p.stroke(LILA);if(n.izquierdo()!=null)p.line(x,y,x-ancho,y+110);if(n.derecho()!=null)p.line(x,y,x+ancho,y+110);p.noStroke();marco(x-105,y-27,210,65);texto("#"+n.valor().id()+" · riesgo "+n.valor().riesgo(),x-90,y,17,PAPEL);texto("altura "+n.altura()+" · FE "+n.fe(),x-90,y+22,14,CIAN);dibujarAVL(n.izquierdo(),x-ancho,y+110,ancho/2);dibujarAVL(n.derecho(),x+ancho,y+110,ancho/2);}
- private void sonido(){if(motor.pausa){audio.pausar();return;}audio.reanudar();boolean combate=motor.escena==MotorOcho.Escena.COMBATE;int dano=Arrays.stream(motor.heroes).mapToInt(h->h.danio).sum();if(dano>danioAudio)audio.efecto("dano","mision3/audio/hit",.3f,.2);danioAudio=dano;if(combate&&motor.ataqueTicks>=0&&motor.ataqueTicks<3&&ataqueAudio!=motor.ticks){audio.efecto("aviso","mision3/audio/alert",.3f,2);ataqueAudio=motor.ticks;}}
+ private void sonido(){
+  if(motor.pausa){audio.pausar();return;}
+  audio.reanudar();
+  int dano=0;
+  for(var h:motor.heroes)dano+=h.danio;
+  int edad=AnimacionOcho.desdeEmision(motor);
+  int inicio=motor.ticks-motor.ataqueTicks, emision=motor.ticks-edad;
+  if(!partidaAudio.equals(motor.id)){
+   partidaAudio=motor.id;danioAudio=dano;ataqueAudio=inicio;emisionAudio=emision;
+   return;
+  }
+  if(dano>danioAudio)audio.efecto("dano",SonidosRemaster.ruta("final-impacto"),.51f,.14);
+  danioAudio=dano;
+  if(motor.escena!=MotorOcho.Escena.COMBATE||motor.ataqueTicks<0)return;
+  if(motor.ataqueTicks<5&&ataqueAudio!=inicio){
+   audio.efecto("aviso",SonidosRemaster.ruta("final-carga"),.41f,.25);
+   ataqueAudio=inicio;
+  }
+  if(edad>=0&&edad<5&&emisionAudio!=emision){
+   String efecto=motor.ataque==MotorOcho.Ataque.ORBES?"final-orbe":"final-descarga";
+   audio.efecto("emision",SonidosRemaster.ruta(efecto),.43f,.18);
+   emisionAudio=emision;
+  }
+ }
  public synchronized void close(){
   cerrada=true;pantallaLan.close();audio.close();
   if(enlacePendiente!=null){enlacePendiente.close();enlacePendiente=null;}

@@ -1,15 +1,30 @@
 package alcaldedigital.cliente.mision6;
+
+import alcaldedigital.cliente.audio.SonidosRemaster;
 import alcaldedigital.cliente.presentacion.*;
 import java.util.*;
 import static alcaldedigital.cliente.mision6.MisionSeisMotor.*;
 /** Observador de presentación: nunca modifica la simulación. */
 public final class AudioMisionSeis implements AutoCloseable {
  private final AudioEscenaSalida salida;private boolean listo;private Fase fase;private float tiempo,impacto;
- private int etapaDron,salvas;
+ private int etapaDron,salvas,disparos;
  private final float[] armas=new float[2],misiles=new float[2],x=new float[2],y=new float[2],impulsos=new float[2];private final int[] vidas=new int[2];
  private float global,pasos;private final Set<Proyectil> especiales=Collections.newSetFromMap(new IdentityHashMap<>());
- public AudioMisionSeis(){this(new AudioEscena("M6"));}public AudioMisionSeis(AudioEscenaSalida s){salida=s;}
- private void fx(String id,float vol,double intervalo){salida.efecto(id,"presentacion/audio/"+id,vol,intervalo);}
+ public AudioMisionSeis(){
+  this(new AudioEscena("M6"));
+  SonidosRemaster.precargar("vuelo-canon-a","vuelo-canon-b","vuelo-dron","vuelo-colision","vuelo-misil");
+ }
+ public AudioMisionSeis(AudioEscenaSalida s){salida=s;}
+ private void fx(String id,float vol,double intervalo){
+  String ruta=switch(id){
+   case "disparo_jugador"->SonidosRemaster.ruta(disparos++%2==0?"vuelo-canon-a":"vuelo-canon-b");
+   case "disparo_dron"->SonidosRemaster.ruta("vuelo-dron");
+   case "impacto"->SonidosRemaster.ruta("vuelo-colision");
+   case "cohete"->SonidosRemaster.ruta("vuelo-misil");
+   default->"presentacion/audio/"+id;
+  };
+  salida.efecto(id,ruta,vol,intervalo);
+ }
  public void observar(MisionSeisMotor m){
   boolean vuelo=switch(m.fase){case DESPEGUE,AVISO,ENTRENAMIENTO,COMBATE,RETIRADA,LLEGADA->true;default->false;};
   float aterrizaje=m.fase==Fase.LLEGADA?Math.min(1,m.tiempo/4.45f):0;

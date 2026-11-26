@@ -1,5 +1,7 @@
 package alcaldedigital.cliente.mision4;
 
+import alcaldedigital.cliente.presentacion.LuzEscena;
+
 import alcaldedigital.cliente.entrada.MapaControles;
 
 import java.awt.AlphaComposite;
@@ -20,13 +22,17 @@ import static alcaldedigital.cliente.mision4.MisionCuatroGame.W;
 /** Pixel art del laberinto y máscaras de luz recortadas por los muros reales. */
 final class CivitaArte {
     private static final int ORO=0xfff4cb6a,LILA=0xffbd91d5,PAPEL=0xfff5e8fb,TINTA=0xff342336;
-    private final BufferedImage sombra=new BufferedImage(W,H,BufferedImage.TYPE_INT_ARGB);
+    private final BufferedImage sombra=new BufferedImage(W,H,BufferedImage.TYPE_INT_ARGB_PRE);
+    private final BufferedImage claridad=prepararClaridad();
     private PImage escenaOriginal;
+    private PImage fondoTelefono;
+    private int corteTelefono;
+    boolean reducido;
 
     void laberinto(PGraphics a,MisionCuatroGame g,Civita c,boolean interfaz) {
         a.background(13,9,23);
         a.pushMatrix();
-        float sacudida=g.combat.screenShake*.65f;
+        float sacudida=reducido?0:g.combat.screenShake*.65f;
         a.translate((float)Math.sin(g.elapsed*51)*sacudida,(float)Math.cos(g.elapsed*47)*sacudida*.54f);
         a.pushMatrix();a.translate(-c.camX,-c.camY);
         suelo(a,g);
@@ -87,35 +93,67 @@ final class CivitaArte {
             default -> {a.ellipse(x,y-30,60,64);a.fill(0xff362853);a.ellipse(x,y-30,48,50);a.fill(color);a.rect(x-5,y-56,10,52);}
         }
     }
+    void reiniciarTelefono() {
+        fondoTelefono=null;
+    }
+
+    boolean dibujarFondoTelefono(PGraphics a,int corte) {
+        if (fondoTelefono==null||corteTelefono!=corte) return false;
+        a.image(fondoTelefono,0,0,W,H);
+        return true;
+    }
+
+    void capturarFondoTelefono(PGraphics a,int corte) {
+        fondoTelefono=a.get();
+        corteTelefono=corte;
+    }
+
+    private static BufferedImage prepararClaridad() {
+        var capa=new BufferedImage(210,210,BufferedImage.TYPE_INT_ARGB_PRE);
+        var dibujo=capa.createGraphics();
+        dibujo.setPaint(new RadialGradientPaint(105,105,105,new float[]{0,.5f,1},
+            new Color[]{new Color(255,255,255,150),new Color(255,255,255,52),new Color(255,255,255,0)}));
+        dibujo.fillRect(0,0,210,210);
+        dibujo.dispose();
+        return capa;
+    }
+
     private void luz(PGraphics a,Actor hero,Civita c,float t) {
         if(!(a instanceof PGraphicsJava2D java2d))return;
         float x=hero.x-c.camX,y=hero.y-c.camY;
         Graphics2D g=sombra.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setComposite(AlphaComposite.Src);g.setColor(new Color(12,6,29,186));g.fillRect(0,0,W,H);
-        g.setComposite(AlphaComposite.DstOut);
-        g.setPaint(new RadialGradientPaint(x,y,105,new float[]{0,.5f,1},
-            new Color[]{new Color(255,255,255,150),new Color(255,255,255,52),new Color(255,255,255,0)}));
-        g.fillOval((int)x-105,(int)y-105,210,210);
-        if(c.linterna) {
-            float rumbo=c.rumbo+(float)Math.sin(t*5.7)*.014f;
-            for(int capa=0;capa<9;capa++){
-                float abertura=APERTURA+.14f-capa*.038f;
-                int potencia=26+capa*5;
-                Polygon cono=new Polygon();cono.addPoint((int)x,(int)y);
-                for(int i=0;i<=42;i++) {
-                    float rayo=rumbo-abertura+2*abertura*i/42;
-                    float d=c.alcance(hero.x,hero.y,rayo,RADIO_LUZ);
-                    cono.addPoint((int)(x+Math.cos(rayo)*d),(int)(y+Math.sin(rayo)*d));
-                }
-                g.setPaint(new RadialGradientPaint(x,y,RADIO_LUZ,new float[]{0,.38f,.71f,1},
-                    new Color[]{new Color(255,255,255,potencia),new Color(255,255,255,potencia*9/10),
-                        new Color(255,255,255,potencia*4/10),new Color(255,255,255,0)}));
-                g.fillPolygon(cono);
+        try {
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setComposite(AlphaComposite.Src);
+            g.setColor(new Color(12,6,29,186));
+            g.fillRect(0,0,W,H);
+            g.setComposite(AlphaComposite.DstOut);
+            g.drawImage(claridad,Math.round(x)-105,Math.round(y)-105,null);
+            if(c.linterna) {
+                float rumbo=c.rumbo+(reducido?0:(float)Math.sin(t*5.7)*.009f);
+                cono(g,c,hero,x,y,rumbo,APERTURA+.08f,69,40);
+                cono(g,c,hero,x,y,rumbo,APERTURA-.035f,139,40);
+                cono(g,c,hero,x,y,rumbo,APERTURA-.15f,158,30);
             }
+        } finally {
+            g.dispose();
         }
-        g.dispose();
         java2d.g2.drawImage(sombra,0,0,null);
+    }
+
+    private static void cono(Graphics2D g,Civita c,Actor hero,float x,float y,float rumbo,
+                             float abertura,int intensidad,int radios) {
+        var forma=new Polygon();
+        forma.addPoint((int)x,(int)y);
+        for (int i=0;i<=radios;i++) {
+            float angulo=rumbo-abertura+2*abertura*i/radios;
+            float d=c.alcance(hero.x,hero.y,angulo,RADIO_LUZ);
+            forma.addPoint((int)(x+Math.cos(angulo)*d),(int)(y+Math.sin(angulo)*d));
+        }
+        g.setPaint(new RadialGradientPaint(x,y,RADIO_LUZ,new float[]{0,.42f,.76f,1},
+            new Color[]{new Color(255,255,255,intensidad),new Color(255,255,255,intensidad*8/10),
+                new Color(255,255,255,intensidad*4/10),new Color(255,255,255,0)}));
+        g.fillPolygon(forma);
     }
     private static void energia(PGraphics a,Civita c,Actor hero,float t){
         if(c.guiaTiempo>0&&c.guia>=0){
@@ -244,12 +282,20 @@ final class CivitaArte {
         a.text(String.format(java.util.Locale.ROOT,"EXPEDIENTE #%02d  %s",c.expediente+1,
             arc.nombre().toUpperCase(java.util.Locale.ROOT)),x,109);
         a.fill(0xffa78259);a.rect(x,117,367,2);
-        a.fill(0xff9c7253);a.rect(x-2,133,129,145);
-        ilustrar(a,g,c.expediente,x+2,137,121,137,false);
+        a.fill(109,71,58,95);a.rect(x-2,136,135,149);
+        a.fill(0xfff9e7c4);a.rect(x-4,130,133,150);
+        a.fill(0xff9c7253);a.rect(x,135,125,135);
+        ilustrar(a,g,c.expediente,x+2,137,121,128,false);
+        a.fill(0xff886647);a.rect(x+4,272,65,2);
+        a.fill(0xffd9b682);a.rect(x+95,131,30,5);
         a.image(g.sprites.shared("arte/iconos/08_verificar"),derecha,130,20,20);
         a.fill(TINTA);a.textSize(15);a.text(fuente?"FUENTE RECUPERADA":"PISTA DETECTADA",derecha+24,146);
         a.textSize(14);g.wrapText(a,fuente?arc.prueba():arc.indicio(),derecha,169,222,17);
-        if(fuente)ilustrar(a,g,c.expediente,derecha+22,233,190,46,true);
+        if(fuente) {
+            a.fill(0xffc5a175);a.rect(derecha+15,229,200,54,3);
+            a.fill(0xfff8e4b9);a.rect(derecha+18,230,195,50,2);
+            ilustrar(a,g,c.expediente,derecha+22,233,188,44,true);
+        }
         else if(c.expediente==0||c.expediente==3){
             PImage mapa=g.sprites.image("mapa-civita");
             a.tint(235,199,147);a.image(mapa,derecha+117,224,94,56,437,310,579,451);a.noTint();
@@ -323,7 +369,7 @@ final class CivitaArte {
     void telefono(PGraphics a,MisionCuatroGame g,float t,boolean salida) {
         boolean temblor=!salida&&t<1.02f;
         if(temblor) {
-            float x=376+(float)Math.sin(t*61)*4;
+            float x=376+(reducido?0:(float)Math.sin(t*61)*4);
             a.image(g.sprites.shared("arte/iconos/01_celular"),x,160,35,35);
             a.fill(ORO);a.rect(x-7,166,3,12);a.rect(x+40,166,3,12);
             return;
@@ -331,6 +377,7 @@ final class CivitaArte {
         a.noStroke();a.fill(18,10,33,208);a.rect(0,57,W,H-57);
         float u=PApplet.constrain((t-(salida?.15f:2.05f))/2.0f,0,1);
         int x=388,y=106;
+        LuzEscena.VIOLETA.dibujar(a,512,298,535,470,155);
         g.pixelPanel(a,x,y,248,345,0xff312151);
         a.fill(0xff15142d);a.rect(x+16,y+24,216,286,8);
         a.fill(LILA);a.rect(x+104,y+322,40,5);
@@ -344,22 +391,24 @@ final class CivitaArte {
             a.text(t<2.05f?"Descargando  "+(int)(descarga*100)+" %":"CIVITA · abriendo enlace",x+34,y+186);
         }
         float portal=salida?1-u:u;
+        float reloj=reducido?0:t;
         if(portal>.04f){
+            LuzEscena.CIAN.dibujar(a,512,324,215,177,135*portal);
             a.noFill();
             for(int i=0;i<5;i++){
-                float f=(t*.8f+i/5f)%1,radio=19+f*65;
+                float f=(reloj*.8f+i/5f)%1,radio=19+f*65;
                 a.stroke(i%2==0?244:166,i%2==0?192:103,232,portal*(1-f)*179);
                 a.strokeWeight(2.2f);a.ellipse(512,322,radio*2,radio*1.32f);
             }
             a.noStroke();
             for(int i=0;i<10;i++){
-                float yy=y+30+(i*29+t*178)%270,bar=8+(i*21)%125;
+                float yy=y+30+(i*29+reloj*178)%270,bar=8+(i*21)%125;
                 a.fill(189,122,236,portal*(28+i%3*22));a.rect(x+17+(i*11)%79,yy,bar,2,1);
             }
         }
         for(int i=0;i<30;i++) {
             float ang=i*2.39f,radio=(1-u)*112+i%9;
-            float px=512+(float)Math.cos(ang+t*3)*radio,py=338+(float)Math.sin(ang+t*3)*radio*.55f;
+            float px=512+(float)Math.cos(ang+reloj*3)*radio,py=338+(float)Math.sin(ang+reloj*3)*radio*.55f;
             a.fill(i%3==0?ORO:LILA);a.rect(px,py,3+i%4,2);
         }
         if(salida||t>=2.05f){

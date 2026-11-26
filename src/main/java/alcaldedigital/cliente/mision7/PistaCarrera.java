@@ -4,6 +4,8 @@ import alcaldedigital.compartido.carrera.EstadoCarrera.Corredor;
 import alcaldedigital.compartido.carrera.EstadoCarrera.Fase;
 import alcaldedigital.compartido.carrera.EstadoCarrera.Objeto;
 import alcaldedigital.compartido.carrera.EstadoCarrera.Vista;
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -64,6 +66,7 @@ final class PistaCarrera {
         encuadrar(vista.tick(), corredores, rolLocal, dosLocales, pausada);
         p.noStroke();
         decorado();
+        iluminacionPista(vista.tick());
         for (int rol = 0; rol < corredores.length; rol++) {
             Corredor c = corredores[rol];
             if (c.avisoAtaque() > 0) distraccion(c);
@@ -171,6 +174,34 @@ final class PistaCarrera {
         linea(META, "Meta · Parque", ACENTOS[3]);
     }
 
+    private void iluminacionPista(long tick) {
+        float tiempo = reducido ? 0 : tick / 60f;
+        float derecha = izquierda + ANCHO / escala;
+        float inicio = (float) Math.floor((izquierda - 250) / 320) * 320;
+        for (float mundo = inicio; mundo <= derecha + 250; mundo += 320) {
+            float x = pantallaX(mundo);
+            if (x < -190 || x > ANCHO + 190) continue;
+            int tramo = tramo(mundo);
+            var luz = switch (tramo) {
+                case 0 -> LuzEscena.AMBAR;
+                case 1 -> LuzEscena.CIAN;
+                case 2 -> LuzEscena.MAGENTA;
+                default -> LuzEscena.VIOLETA;
+            };
+            float brillo = contraste ? 82 : 142;
+            luz.dibujar(p.g,x,BORDE_SUPERIOR-18,290*escala,142,brillo);
+            luz.dibujar(p.g,x,BORDE_SUPERIOR+32,183*escala,83,brillo*.55f);
+            if (tramo != 3) continue;
+            for (int i = 0; i < 3; i++) {
+                float fase = (tiempo * .16f + i * .34f) % 1;
+                float yy = BORDE_SUPERIOR - 106 + fase * 88;
+                float xx = x + (i-1)*54 + 18 * PApplet.sin(fase * PApplet.TWO_PI);
+                p.fill(0xffd8b9ef,70 * PApplet.sin(fase * PApplet.PI));
+                p.rect(xx,yy,4,2);
+            }
+        }
+    }
+
     private void linea(float mundo, String nombre, int color) {
         float x = pantallaX(mundo);
         if (x < -165 || x > ANCHO + 165) return;
@@ -274,8 +305,16 @@ final class PistaCarrera {
             p.ellipse(x, y - 46, 78, 105);
             p.noStroke();
         }
-        int cuadro = cuenta || reducido || c.velocidad() <= 0 ? 0 : (int) (c.distancia() / 12) % 4;
-        sprite(arte.andar[rol][12 + cuadro], x, y, 90);
+        boolean parado = cuenta || c.velocidad() <= 0;
+        int cuadro = parado || reducido ? 0 : (int) (c.distancia() / 12) % 4;
+        if (!parado && c.velocidad()>=2.35f) {
+            var hoja = rol==0 ? PosesRemaster.PERIODISTA : PosesRemaster.INFLUENCER;
+            int fotograma = reducido ? 0 : PosesRemaster.paso(c.distancia(),rol==0?.08:.04,rol==0?8:4);
+            hoja.dibujar(p.g,fotograma,x,y,82,false);
+        } else {
+            PImage pose = rol==0 ? arte.marchaPeriodista[12+cuadro] : parado ? arte.influencerQuieto : arte.andar[rol][12+cuadro];
+            sprite(pose,x,y,90);
+        }
         if (c.frenado() > 0) {
             rect(x - 22, y + 7, 44, 15, TINTA);
             textoCentrado("FRENO", x, y + 19, 12, PELIGRO);

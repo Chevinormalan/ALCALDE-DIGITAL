@@ -1,4 +1,6 @@
 package alcaldedigital.cliente.mision4;
+
+import alcaldedigital.cliente.audio.SonidosRemaster;
 import java.awt.event.KeyEvent;
 import alcaldedigital.cliente.presentacion.*;
 /** Conserva los WAV originales y añade conducción continua, sin eventos atrasados. */
@@ -6,8 +8,15 @@ final class SoundEffects {
  private final AudioEscenaSalida salida;private boolean listo,guardia,frenando,linterna;private float espada,vx,vy,pasos;
  private int salud,vidasEnemigo,muertes,archivos,nodos,revelados,guardianes;private MisionCuatroGame.Phase fase;
  private float tiempoEscena;
- SoundEffects(){this(new AudioEscena("M4"));}SoundEffects(AudioEscenaSalida s){salida=s;}
- void play(String name){salida.efecto(name,"mision4/"+name,.27f,.08);}
+ SoundEffects(){
+  this(new AudioEscena("M4"));
+  SonidosRemaster.precargar("civita-portal","civita-espada","civita-escudo","civita-impacto");
+ }
+ SoundEffects(AudioEscenaSalida s){salida=s;}
+ void play(String name){
+  String sonido=switch(name){case "sword"->"civita-espada";case "shield"->"civita-escudo";default->"civita-impacto";};
+  salida.efecto(name,SonidosRemaster.ruta(sonido),.42f,.08);
+ }
  void observar(MisionCuatroGame g){
   boolean carro=g.scenes.current==MisionCuatroGame.Phase.CAR;float rapidez=(float)Math.hypot(g.carSpeed,g.carVelocityY),normal=Math.min(1,rapidez/205);
   int dx=(g.keys[KeyEvent.VK_D]||g.keys[KeyEvent.VK_RIGHT]?1:0)-(g.keys[KeyEvent.VK_A]||g.keys[KeyEvent.VK_LEFT]?1:0);
@@ -22,7 +31,7 @@ final class SoundEffects {
    if(g.scenes.current!=fase&&g.scenes.current==MisionCuatroGame.Phase.CIVITA_ENTRADA)
        salida.efecto("vibra","audio/fx/civitas",.40f,.3);
    if(g.scenes.current==fase&&fase==MisionCuatroGame.Phase.CIVITA_ENTRADA&&tiempoEscena<2.05f&&g.sceneTime>=2.05f)
-       salida.efecto("absorcion","audio/fx/absorcion",.45f,.3);
+       salida.efecto("absorcion",SonidosRemaster.ruta("civita-portal"),.59f,.3);
    if(g.scenes.current!=fase&&(g.scenes.current==MisionCuatroGame.Phase.CIVITA||g.scenes.current==MisionCuatroGame.Phase.CIVITA_SALIDA))
        salida.efecto("salto_digital","presentacion/audio/radio",.30f,.3);
    if(g.civita.linterna!=linterna)salida.efecto("linterna","audio/fx/click",.22f,.13);
@@ -37,7 +46,7 @@ final class SoundEffects {
    if(g.combat.swordTime>espada+.05f)play("sword");
    if(g.combat.guarding&&!guardia)play("shield");
    if(g.combat.health<salud)play("hit");
-   if(hp<vidasEnemigo&&vidasEnemigo>0||g.combat.kills>muertes)salida.efecto("golpe_enemigo","mision4/hit",.21f,.1);
+   if(hp<vidasEnemigo&&vidasEnemigo>0||g.combat.kills>muertes)salida.efecto("golpe_enemigo",SonidosRemaster.ruta("civita-impacto"),.36f,.1);
    if(!carro&&(int)(g.hero.walk/3)>(int)(pasos/3))salida.efecto("paso_adoquin","presentacion/audio/paso_adoquin",.17f,.16);
   }
   espada=g.combat.swordTime;guardia=g.combat.guarding;salud=g.combat.health;vidasEnemigo=hp;muertes=g.combat.kills;vx=g.carSpeed;vy=g.carVelocityY;pasos=g.hero.walk;frenando=freno;listo=true;

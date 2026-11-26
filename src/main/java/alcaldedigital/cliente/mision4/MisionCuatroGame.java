@@ -1,5 +1,8 @@
 package alcaldedigital.cliente.mision4;
 
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
+
 import processing.core.PApplet;
 import processing.core.PImage;
 import processing.core.PFont;
@@ -367,9 +370,19 @@ final class MisionCuatroGame {
     }
     void draw(processing.core.PGraphics a){
         a.textFont(pixelFont);
-        if(scenes.current==Phase.CIVITA){civita.arte.laberinto(a,this,civita,true);return;}
+        if(scenes.current==Phase.CIVITA){civita.arte.reiniciarTelefono();civita.arte.laberinto(a,this,civita,true);return;}
         if(scenes.current==Phase.CIVITA_SALIDA){
-            civita.arte.laberinto(a,this,civita,false);civita.arte.telefono(a,this,sceneTime,true);return;
+            if (!civita.arte.dibujarFondoTelefono(a,3)) {
+                civita.arte.laberinto(a,this,civita,false);
+                civita.arte.capturarFondoTelefono(a,3);
+            }
+            civita.arte.telefono(a,this,sceneTime,true);return;
+        }
+        int corte = scenes.current!=Phase.CIVITA_ENTRADA||sceneTime<1.02f ? 0 : sceneTime<2.05f ? 1 : 2;
+        if (corte==0) civita.arte.reiniciarTelefono();
+        else if (civita.arte.dibujarFondoTelefono(a,corte)) {
+            civita.arte.telefono(a,this,sceneTime,false);
+            return;
         }
         a.background(33,21,47);
         a.pushMatrix();
@@ -384,7 +397,10 @@ final class MisionCuatroGame {
         if(scenes.current==Phase.ANSWER)drawChoice(a,"RESPONDE ANTE EL PÚBLICO","SÍ","NO","S / N · flechas y ENTER");
         if(scenes.current==Phase.RUMOR)drawRumor(a);
         if(scenes.current==Phase.DOWNLOAD)drawDownload(a);
-        if(scenes.current==Phase.CIVITA_ENTRADA)civita.arte.telefono(a,this,sceneTime,false);
+        if(scenes.current==Phase.CIVITA_ENTRADA) {
+            if (corte!=0) civita.arte.capturarFondoTelefono(a,corte);
+            civita.arte.telefono(a,this,sceneTime,false);
+        }
         if(scenes.current==Phase.RETURN){a.fill(22,13,34,(int)(transition*255));a.rect(0,0,W,H);a.fill(245,232,251);a.textAlign(PApplet.CENTER);a.textSize(24);a.text("Las publicaciones siguen circulando...",W/2,280);a.textAlign(PApplet.LEFT);}
         if(scenes.current==Phase.COMPLETE)drawComplete(a);
         drawSceneTransition(a);
@@ -400,6 +416,9 @@ final class MisionCuatroGame {
     /** Escenario y actores se ordenan por la posición de sus pies. */
     void drawPlaza(processing.core.PGraphics a){
         a.image(sprites.image("plaza_presentacion"),0,0,1024,576);
+        LuzEscena.AMBAR.dibujar(a,391,191,580,335,127);
+        LuzEscena.VIOLETA.dibujar(a,823,304,388,334,85);
+        LuzEscena.AMBAR.dibujar(a,901,195,143,170,113);
         // Mobiliario reutilizado del parque; únicamente decoración en zonas ya bloqueadas.
         a.image(sprites.shared("arte/objetos/flores"),22,349,40,40);
         a.image(sprites.shared("arte/objetos/rosa"),864,84,33,33);
@@ -429,7 +448,10 @@ final class MisionCuatroGame {
             capas.add(new Capa(hero.y,()->drawHero(a,false)));
         capas.sort(java.util.Comparator.comparingDouble(Capa::pies));
         for(Capa capa:capas)capa.pintar().run();
-        if(scenes.current==Phase.PALOMO){PImage p=sprites.palomoVuelo((int)(elapsed*7)%4);a.image(p,palomoX-28,palomoY-26,56,56);}
+        if(scenes.current==Phase.PALOMO) {
+            int pose=civita.arte.reducido?2:PosesRemaster.paso(elapsed,23,8);
+            PosesRemaster.PALOMO.dibujar(a,pose,palomoX,palomoY+29,48,false);
+        }
         if(scenes.current==Phase.STAGE)drawPrompt(a,351,132,"ENTER · hablar");
         if(scenes.current==Phase.PLAZA&&Math.hypot(hero.x-212,hero.y-351)<56)drawPrompt(a,211,296,"ENTER · subir");
     }
@@ -446,6 +468,7 @@ final class MisionCuatroGame {
             a.translate(x+60,y+33);a.rotate(giroCarro);if(carroIzquierda)a.scale(-1,1);
             a.translate(-x-60,-y-33);
         }
+        LuzEscena.AMBAR.dibujar(a,x+134,y+18,123,38,marcha?160:74);
         a.image(sprites.image("vehiculo"),x,y-20,120,56);
         a.noStroke();a.fill(255,219,132,120+(int)(30*Math.sin(elapsed*3)));a.rect(x+112,y+7,5,4);
         a.fill(225,89,112,180);a.rect(x+3,y+8,4,4);
@@ -474,11 +497,16 @@ final class MisionCuatroGame {
             float progreso=combat.progresoGolpe(), impulso=(float)Math.sin(progreso*Math.PI);
             int dir=combat.direccionCivita();
             float dx=dir==2?-1:dir==3?1:0,dy=dir==1?-1:dir==0?1:0;
-            a.pushMatrix();a.translate(hero.x+dx*7*impulso,hero.y+dy*6*impulso);
-            a.rotate(dx*(progreso<.24f?-.12f:.095f*impulso));
-            sprites.juan.dibujar(a,progreso<.23f?"idle":progreso<.79f?"attack":"idle",
-                dir,hero.walk,elapsed,0,0,60,73);
-            a.popMatrix();
+            if (dir >= 2) {
+                PosesRemaster.JUAN.dibujar(a,PosesRemaster.corteJuan(progreso,civita.arte.reducido),
+                    hero.x+dx*4*impulso,hero.y,69,dir==2);
+            } else {
+                String pose = progreso < .23f ? "anticipacion" : progreso < .68f ? "attack" : "recobro";
+                sprites.juan.dibujar(a,pose,dir,hero.walk,elapsed,hero.x,hero.y+dy*6*impulso,60,73);
+            }
+        }else if(name.equals("attack")&&hero.direction>=2){
+            float progreso=1-Math.clamp(combat.swordTime/.16f,0,1);
+            PosesRemaster.JUAN.dibujar(a,PosesRemaster.corteJuan(progreso,civita.arte.reducido),hero.x,hero.y,69,hero.direction==2);
         }else if(name.equals("attack")||hero.invulnerable<=0||(int)(elapsed*12)%2==0){
             String pose=name.startsWith("walk_")?"walk":name.startsWith("combat_")?"idle":name;
             sprites.juan.dibujar(a,pose,hero.direction,hero.walk,elapsed,hero.x,hero.y+bob,fighting?60:50,fighting?73:66);
@@ -548,16 +576,32 @@ final class MisionCuatroGame {
     void drawEnemy(processing.core.PGraphics a){
         CombatSystem.Enemy e=combat.enemy;if(e==null)return;
         a.noStroke();a.fill(30,14,42,130);a.ellipse(e.x,e.y,52,13);
-        String asset=switch(e.pattern){case TROLL->"enemigo_troll";case SPAMBOT->"enemigo_spambot";case DEEPFAKE->"enemigo_deepfake";};
-        float bob=(float)Math.sin(e.age*6)*2;
-                if(e.flash<=0||(int)(elapsed*16)%2==0){
+        float bob=civita.arte.reducido?0:(float)Math.sin(e.age*6)*2;
+        if(e.windup>0||e.recovery>0||e.dashTime>0||e.flash>0) {
+            var hoja=switch(e.pattern){
+                case TROLL->PosesRemaster.TROLL;
+                case SPAMBOT->PosesRemaster.SPAMBOT;
+                case DEEPFAKE->PosesRemaster.DEEPFAKE;
+            };
+            int pose=e.flash>0?3:e.windup>0?0:e.dashTime>0||e.recovery>.37f?1:2;
+            hoja.dibujar(a,pose,e.x,e.y+2+bob,76,hero.x<e.x);
+        } else {
             float dx=hero.x-e.x,dy=hero.y-e.y;
             String dir=Math.abs(dx)>Math.abs(dy)?(dx<0?"left":"right"):(dy<0?"back":"front");
             String variant=e.pattern.name().toLowerCase(java.util.Locale.ROOT);
-            String frame="mision3/redisenio/enemy_"+variant+"_"+dir+"_"+(1+(int)(e.age*7)%4);
+            String frame="mision3/redisenio/enemy_"+variant+"_"+dir+"_"+(civita.arte.reducido?1:1+(int)(e.age*7)%4);
             a.image(sprites.shared(frame),e.x-33,e.y-78+bob,66,88);
         }
-        a.fill(32,21,47);a.rect(e.x-30,e.y-82,60,7);a.fill(244,203,106);a.rect(e.x-30,e.y-82,60f*e.hp/e.maxHp,7);
+        int color = switch (e.pattern) {
+            case TROLL -> 0xfff4cb6a;
+            case SPAMBOT -> 0xff79e2ed;
+            case DEEPFAKE -> 0xffee91d0;
+        };
+        if (e.flash > 0) LuzEscena.AMBAR.dibujar(a,e.x,e.y-40,104,104,190*e.flash/.23f);
+        a.fill(0xff20152f);a.rect(e.x-31,e.y-83,62,8);
+        a.fill(color);a.rect(e.x-29,e.y-81,58f*e.hp/e.maxHp,4);
+        a.fill(0xff20152f);
+        for (int i=1;i<e.maxHp;i++) a.rect(e.x-29+58f*i/e.maxHp,e.y-81,1,4);
         if(e.windup>0){a.fill(239,91,134);a.textSize(20);a.text("!",e.x-2,e.y-85);}
     }
     void drawHud(processing.core.PGraphics a){

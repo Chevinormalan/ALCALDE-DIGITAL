@@ -1,10 +1,14 @@
 package alcaldedigital.cliente.mision5;
 
+import alcaldedigital.cliente.audio.SonidosRemaster;
+
 import alcaldedigital.cliente.red.PantallaLan;
 import alcaldedigital.cliente.entrada.EntradaMandoLocal;
 import alcaldedigital.cliente.entrada.MandosJugadores;
 import static alcaldedigital.cliente.entrada.EstadoMando.Boton;
 
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import processing.core.*;
 import alcaldedigital.cliente.entrada.EstadoMando;
 import alcaldedigital.compartido.batalla.EstadoBatalla.*;
@@ -33,7 +37,7 @@ public final class MisionCincoVista implements AutoCloseable {
         {"PERIODISTA","Acércate al computador central. ¡Tenemos que reaccionar juntos!"}
     };
     private PApplet p;private final EstadoCiudad ciudadInicial;private final boolean reducido,contraste;
-    private PImage oficina,fondo;private final PImage[][] personajes=new PImage[2][16];private final PImage[][] enemigos=new PImage[3][4];private final PImage[] palomoVuelo=new PImage[4];private PImage palomo,telefono;
+    private PImage oficina,fondo;private final PImage[][] personajes=new PImage[2][16];private final PImage[][] enemigos=new PImage[3][4];private PImage palomo,telefono;
     private final PantallaLan pantallaLan=new PantallaLan(5,48505,"Ciudadano","Periodista");
     private int puertoLan=48505;
     private boolean esperandoLan;
@@ -76,14 +80,16 @@ public final class MisionCincoVista implements AutoCloseable {
     public boolean victoriaComun(){return v!=null&&v.fase()==Fase.FINAL&&v.gano();}
     public void iniciarEn(PApplet host){p=host;oficina=imagen("/cliente/mision2/oficina.png");fondo=imagen("/cliente/mision5/servidor-interior.png");hoja("/cliente/arte/mision1/sofi-caminar.png",personajes[0],new int[]{0,3,1,2});hoja("/cliente/mision2/periodista-caminar-hoja.png",personajes[1],new int[]{0,1,2,3});
         PImage atlas=imagen("/cliente/mision5/servidor-ataques.png");for(int r=0;r<3;r++)for(int c=0;c<4;c++)enemigos[r][c]=recorte(atlas.get(c*atlas.width/4,r*atlas.height/3,atlas.width/4,atlas.height/3));
-        telefono=imagen("/cliente/arte/iconos/01_celular.png");palomo=imagen("/cliente/mision3/redisenio/palomo_talk_1.png");for(int i=0;i<4;i++)palomoVuelo[i]=imagen("/cliente/mision3/redisenio/palomo_fly_"+(i+1)+".png");
-        for(String s:new String[]{"ui","alert","ping","hit"})alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/"+s);
+        telefono=imagen("/cliente/arte/iconos/01_celular.png");palomo=imagen("/cliente/mision3/redisenio/palomo_talk_1.png");
+        SonidosRemaster.precargar("servidor-alarma","servidor-turno","servidor-confirmar","servidor-impacto");
         String preview=System.getProperty("ad.mision5.vista","");if(!preview.isBlank())previsualizar(preview);
     }
     private PImage imagen(String ruta){try(var in=getClass().getResourceAsStream(ruta)){if(in==null)throw new IOException("Falta "+ruta);return new PImage(ImageIO.read(in));}catch(IOException e){throw new IllegalStateException(e);}}
     private PImage recorte(PImage im){im.loadPixels();int x0=im.width,y0=im.height,x1=-1,y1=-1;for(int y=0;y<im.height;y++)for(int x=0;x<im.width;x++)if((im.pixels[y*im.width+x]>>>24)>24){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);}return x1>=x0?im.get(x0,y0,x1-x0+1,y1-y0+1):im;}
     private void hoja(String ruta,PImage[] destino,int[] filas){PImage h=imagen(ruta);for(int r=0;r<4;r++)for(int c=0;c<4;c++)destino[r*4+c]=recorte(h.get(c*h.width/4,filas[r]*h.height/4,h.width/4,h.height/4));}
-    private void sonido(String s){sonidos.efecto(s,"mision3/audio/"+s,.42f,.12);}
+    private void sonido(String s){
+        sonidos.efecto(s,SonidosRemaster.ruta("servidor-"+s),.46f,.12);
+    }
     private GuardadoBatalla archivo(){return new GuardadoBatalla(GuardadoBatalla.directorio().resolve(modo==2||modo==3?"mision5-lan.bin":modo==1?"mision5-coop.bin":"mision5-solo.bin"));}
     private void elegirConexion(){
         if(modo!=3){conectar();return;}
@@ -114,7 +120,20 @@ public final class MisionCincoVista implements AutoCloseable {
         return (jugadores[0].conectado()?1:0)|(jugadores[1].conectado()?2:0);
     }
 
-    private void conectar(){if(conectando)return;conectando=true;mensaje="Preparando la partida…";final Dificultad nivel=dificultad;final int elegido=modo;final String ip=direccion;final int puerto=puertoLan;final boolean cargar=continuarGuardado;final int rolElegido=rolInvitado;final GuardadoBatalla guardado=archivo();
+    private alcaldedigital.cliente.misiones.UsuariosPuntajes.SelectorPuestos pedirPuestos;
+    public void pedirPuestos(alcaldedigital.cliente.misiones.UsuariosPuntajes.SelectorPuestos seleccionar){pedirPuestos=seleccionar;}
+    public boolean lanPuntajes(){return modo>=2;}
+    public int puestoPuntajes(){return rolLocal;}
+    private void conectar(){
+        if(modo==1&&pedirPuestos!=null){
+            String partida=null;
+            if(continuarGuardado)try{partida=archivo().cargar().vista().id();}
+            catch(IOException e){mensaje="No se pudo abrir: "+e.getMessage();return;}
+            if(pedirPuestos.elegir(partida,2,this::conectarAhora))return;
+        }
+        conectarAhora();
+    }
+    private void conectarAhora(){if(conectando)return;conectando=true;mensaje="Preparando la partida…";final Dificultad nivel=dificultad;final int elegido=modo;final String ip=direccion;final int puerto=puertoLan;final boolean cargar=continuarGuardado;final int rolElegido=rolInvitado;final GuardadoBatalla guardado=archivo();
         conexion=tareas.submit(()->{MotorBatalla motor;if(elegido==3){var cliente=new ClienteBatalla(ip,puerto,rolElegido,rolElegido==0?"Ciudadano":"Periodista");if(cerrada){cliente.close();throw new IOException("Conexión cancelada");}return cliente;}
             if(cargar){if(!guardado.existe())throw new IOException("No existe un guardado para este modo");motor=guardado.cargar();if(motor.vista().solo()!=(elegido==0))throw new IOException("Guardado de otro modo");}
             else{motor=new MotorBatalla(semilla++,elegido==0,nivel);motor.ciudadBase(ciudadInicial);}
@@ -160,8 +179,15 @@ public final class MisionCincoVista implements AutoCloseable {
         float pasoVisual=pausaVisible()?0:Math.min(.1f,dt);animacion+=pasoVisual;
         if(v.fase()==Fase.INTRO&&v.linea()>=4){float destino=v.linea()>=7?1340:870;palomoX+=Math.max(-500*pasoVisual,Math.min(500*pasoVisual,destino-palomoX));}
         else if(v.fase()==Fase.OFICINA&&palomoX<1340)palomoX=Math.min(1340,palomoX+500*pasoVisual);else palomoX=1340;
-        if(ultimaFase!=null&&v.fase()!=ultimaFase)sonido(v.fase()==Fase.AVISO?"alert":"ui");ultimaFase=v.fase();
-        int vidas=v.jugadores()[0].vidas()+v.jugadores()[1].vidas();if(ultVidas>=0&&vidas<ultVidas)sonido("hit");ultVidas=vidas;
+        if(ultimaFase!=null&&v.fase()!=ultimaFase){
+            if(v.fase()==Fase.AVISO){if(!gestionExterna)sonido("alarma");}
+            else if(v.fase()==Fase.TURNO){if(!gestionExterna)sonido("turno");}
+            else sonido("confirmar");
+        }
+        ultimaFase=v.fase();
+        int vidas=v.jugadores()[0].vidas()+v.jugadores()[1].vidas();
+        if(ultVidas>=0&&vidas<ultVidas)sonido("impacto");
+        ultVidas=vidas;
         if(v.fase()==Fase.FINAL&&!resultadoRegistrado)try{resultados.acreditar(v,ciudadInicial);resultadoRegistrado=true;estadoGuardado="Resultado y puntos guardados.";}catch(IOException e){estadoGuardado="Error al guardar resultado: "+e.getMessage();}
     }
     public void dibujar(){revisarBotonesAudio();p.pushStyle();p.noSmooth();p.textAlign(PApplet.LEFT,PApplet.BASELINE);p.background(FONDO);
@@ -234,21 +260,59 @@ public final class MisionCincoVista implements AutoCloseable {
                 px=640+(px-640)*k;py=400+(py-400)*k;
             }
             if(v.fase()==Fase.EPILOGO&&i==0){float k=Math.min(1,v.reloj()/75f);px=640+(px-640)*k;py=400+(py-400)*k;}
-            p.image(a,px-w/2,py-h,w,h);
+            if(i==0&&j.movido()&&j.orientacion()>=2&&!reducido) {
+                PosesRemaster.SOFI.dibujar(p.g,PosesRemaster.paso(v.tick(),.32,8),px,py,h*.93f,j.orientacion()==2);
+            } else p.image(a,px-w/2,py-h,w,h);
             texto(i==0?"CIUDADANO":v.solo()?"PERIODISTA · APOYO":"PERIODISTA",px-45,py+16,13,i==0?ORO:CIAN);
         }
         if((v.fase()==Fase.INTRO&&v.linea()>=4||v.fase()==Fase.OFICINA)&&palomoX<1320){
             boolean saliendo=v.fase()!=Fase.INTRO||v.linea()>=7;boolean volando=saliendo||Math.abs(palomoX-870)>2;
-            PImage a=volando?palomoVuelo[reducido?0:(int)(animacion*7)%4]:palomo;
-            p.pushMatrix();p.translate(palomoX,350);
-            if(volando&&!saliendo){p.translate(80,0);p.scale(-1,1);}
-            p.image(a,0,0,80,74);p.popMatrix();
+            if(volando) {
+                int pose=reducido?2:PosesRemaster.paso(animacion,23,8);
+                PosesRemaster.PALOMO.dibujar(p.g,pose,palomoX+40,418,63,!saliendo);
+            } else p.image(palomo,palomoX,350,80,74);
             if(v.fase()==Fase.INTRO&&v.linea()==6&&!volando)p.image(telefono,palomoX+55,385,25,36);
         }
         if(v.fase()==Fase.OFICINA||v.fase()==Fase.ABSORCION){p.fill(ORO);for(int i=0;i<4;i++)p.rect(585+i*26,370,14,7);}
     }
     private void corazon(float x,float y,int color,int numero,float tam){p.noStroke();p.fill(color);float q=tam/8;int[][] bandas={{1,0,2},{5,0,2},{0,1,8},{0,2,8},{1,3,6},{2,4,4},{3,5,2}};for(int[] a:bandas)p.rect(x-4*q+a[0]*q,y-3*q+a[1]*q,a[2]*q,q);if(numero>0)texto(""+numero,x-3,y+4,12,FONDO);}
-    private void combate(){p.image(fondo,0,0,1280,720);int frame=reducido?0:(int)(v.tick()/10)%4;p.image(enemigos[0][frame],545,90,190,195);marco(520,294,240,17,FONDO,LILA,false);p.noStroke();p.fill(ORO);p.rect(524,298,232*v.jefe()/100f,9);texto("DEFENSAS DE LA SEÑAL · "+v.jefe()+"%",515,329,14,PAPEL);
+    private static final int[][] LATIDOS={
+        {0x66,0xff,0xff,0x7e,0x3c,0x18,0x00},
+        {0x66,0xff,0xff,0xff,0x7e,0x3c,0x18},
+        {0x66,0xff,0xff,0xff,0x7e,0x3c,0x18},
+        {0x66,0xff,0xff,0x7e,0x7e,0x3c,0x18},
+        {0x66,0x7e,0xff,0x7e,0x3c,0x18,0x00},
+        {0x24,0x7e,0xff,0x7e,0x3c,0x18,0x00}
+    };
+
+    private void corazonEnArena(Jugador j,int rol) {
+        float x=j.x(),y=j.y();
+        int numero=rol+1;
+        int color=rol==0?ORO:CIAN;
+        int fase=reducido?1:(int)(v.tick()/5+rol*3)%LATIDOS.length;
+        if(j.invulnerable()>0) {
+            var luz=rol==0?LuzEscena.AMBAR:LuzEscena.CIAN;
+            luz.dibujar(p.g,x,y,45,43,reducido?73:80+29*PApplet.sin((float)(v.tick()*.27)));
+        }
+        float px=2.7f;
+        p.noStroke();p.fill(FONDO,225);p.ellipse(x,y+.5f,25,20);
+        p.fill(color);
+        int[] filas=LATIDOS[fase];
+        for(int fila=0;fila<filas.length;fila++){
+            int mascara=filas[fila];
+            while(mascara!=0){
+                int columna=Integer.numberOfTrailingZeros(mascara);
+                int largo=Integer.numberOfTrailingZeros(~(mascara>>>columna));
+                p.rect(x+(columna-4)*px,y+(fila-3)*px,largo*px,px);
+                mascara &= ~(((1<<largo)-1)<<columna);
+            }
+        }
+        texto(""+numero,x-3,y+4,12,FONDO);
+    }
+
+    private void combate(){p.image(fondo,0,0,1280,720);
+        diagnosticoVisual();
+        int frame=reducido?0:(int)(v.tick()/10)%4;p.image(enemigos[0][frame],545,90,190,195);marco(520,294,240,17,FONDO,LILA,false);p.noStroke();p.fill(ORO);p.rect(524,298,232*v.jefe()/100f,9);texto("DEFENSAS DE LA SEÑAL · "+v.jefe()+"%",515,329,14,PAPEL);
         caja(MotorBatalla.AX-4,MotorBatalla.AY-4,MotorBatalla.AW+8,MotorBatalla.AH+8);p.noStroke();p.fill(FONDO);p.rect(MotorBatalla.AX,MotorBatalla.AY,MotorBatalla.AW,MotorBatalla.AH);
         p.clip((int)MotorBatalla.AX,(int)MotorBatalla.AY,(int)MotorBatalla.AW,(int)MotorBatalla.AH);
         var ritmo=PaqueteRastreador.para(v.dificultad());
@@ -257,7 +321,7 @@ public final class MisionCincoVista implements AutoCloseable {
             else if(a.tipo()==PaqueteCruzado.TIPO)AtaquesPixel.cruzado(p,a,enemigos[1],reducido);
             else AtaquesPixel.dibujar(p,a,v.patron(),reducido);
         }
-        for(int i=0;i<participantes();i++){Jugador j=v.jugadores()[i];if(j.vidas()>0&&(reducido||j.invulnerable()==0||v.tick()%8<5))corazon(j.x(),j.y(),i==0?ORO:CIAN,i+1,22);}
+        for(int i=0;i<participantes();i++){Jugador j=v.jugadores()[i];if(j.vidas()>0)corazonEnArena(j,i);}
         p.noClip();
         for(var a:v.obstaculos())if(a.tipo()==2){
             boolean aviso=a.edad()<a.aviso();
@@ -289,6 +353,26 @@ public final class MisionCincoVista implements AutoCloseable {
         marco(280,632,720,29,FONDO,LILA,false);
         texto(pista,294,652,16,colorPista);
     }
+    private void diagnosticoVisual() {
+        float t = reducido ? 0 : v.tick() / 60f;
+        boolean critico = v.jefe() <= 30;
+        var luz = critico ? LuzEscena.MAGENTA : LuzEscena.CIAN;
+        int color = critico ? 0xffe37eaa : CIAN;
+        luz.dibujar(p.g,640,193,590,345,140);
+        LuzEscena.VIOLETA.dibujar(p.g,154,354,270,435,96);
+        LuzEscena.VIOLETA.dibujar(p.g,1126,354,270,435,96);
+        p.noStroke();
+        for (int lado = -1; lado <= 1; lado += 2) {
+            for (int i = 0; i < 5; i++) {
+                float x = 640 + lado * (151 + i * 35);
+                float y = 160 + i * 21;
+                p.fill(0xff241731);p.rect(x-11,y-4,22,8);
+                float opacidad = i * 20 < v.jefe() ? 120 + 75 * PApplet.sin(t * 2 + i) : 36;
+                p.fill(color,opacidad);p.rect(x-8,y-1,16,2);
+            }
+        }
+    }
+
     private void hud(){marco(10,8,680,70,FONDO,LILA,true);texto("MISIÓN 5 · EL SERVIDOR CRÍTICO",25,32,22,ORO);texto("RONDA "+Math.min(5,v.ronda()+1)+"/5 · "+v.dificultad().nombre()+" · "+(modo>=2?"SALA LAN":"PARTIDA LOCAL"),25,61,17,LILA);
         for(int i=0;i<participantes();i++){Jugador j=v.jugadores()[i];float x=720+i*275;marco(x-10,8,260,70,FONDO,LILA,true);texto((i+1)+" "+j.nombre()+" · "+j.puntos()+" pts",x,27,17,i==0?ORO:CIAN);for(int k=0;k<5;k++)corazon(x+12+k*25,48,k<j.vidas()?(i==0?ORO:CIAN):0xff604077,0,18);texto(v.solo()?"INDIVIDUAL · 5 vidas":j.recuperaciones()+" rescate · "+(j.conectado()?"conectado":"ausente"),x,71,13,PAPEL);}
         marco(10,684,1256,30,FONDO,LILA,false);texto("WASD / flechas: mover · Espacio / X: salto · E / Enter: acción · Esc / P: pausa · H: ayuda · T: estructuras",25,705,15,LILA);

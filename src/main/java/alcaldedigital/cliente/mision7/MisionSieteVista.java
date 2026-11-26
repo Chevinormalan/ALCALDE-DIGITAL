@@ -1,5 +1,7 @@
 package alcaldedigital.cliente.mision7;
 
+import alcaldedigital.cliente.audio.SonidosRemaster;
+
 import alcaldedigital.cliente.red.PantallaLan;
 import alcaldedigital.cliente.entrada.EntradaMandoLocal;
 import alcaldedigital.cliente.entrada.MandosJugadores;
@@ -62,10 +64,19 @@ public final class MisionSieteVista implements AutoCloseable {
     public void cerrarConsultaComun(){panel=0;}
     public boolean victoriaComun(){return v!=null&&v.fase()==Fase.RESULTADO&&v.ganador()<2&&v.humano(v.ganador());}
     public void iniciarEn(PApplet p){this.p=p;arte=new ArteCarrera();pista=new PistaCarrera(p,arte,reducido,contraste);
-        for(String s:new String[]{"ui","alert","ping","hit"})alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/"+s);
+        SonidosRemaster.precargar("carrera-alerta","carrera-prensa","carrera-paso-a","carrera-paso-b");
+        alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/ui");
         String preview=System.getProperty("ad.mision7.vista","");if(!preview.isBlank())previsualizar(preview);
     }
-    private void sonido(String nombre){sonidos.efecto(nombre,"mision3/audio/"+nombre,.42f,.12);}
+    private float distanciaSonora;
+    private void sonido(String nombre){
+        String ruta=switch(nombre){
+            case "alert"->SonidosRemaster.ruta("carrera-alerta");
+            case "ping"->SonidosRemaster.ruta("carrera-prensa");
+            default->"mision3/audio/"+nombre;
+        };
+        sonidos.efecto(nombre,ruta,.42f,.12);
+    }
     private GuardadoCarrera archivo(int modo){return new GuardadoCarrera(GuardadoBatalla.directorio().resolve(modo>=2?"mision7-lan.bin":modo==1?"mision7-dos.bin":"mision7-solo-"+rolElegido+".bin"));}
     private void elegirConexion(){
         if(modo!=3){conectar();return;}
@@ -96,7 +107,22 @@ public final class MisionSieteVista implements AutoCloseable {
         return (jugadores[0].conectado()?1:0)|(jugadores[1].conectado()?2:0);
     }
 
-    private void conectar(){if(conectando)return;conectando=true;mensaje="Preparando la carrera…";
+    private alcaldedigital.cliente.misiones.UsuariosPuntajes.SelectorPuestos pedirPuestos;
+    public void pedirPuestos(alcaldedigital.cliente.misiones.UsuariosPuntajes.SelectorPuestos seleccionar){pedirPuestos=seleccionar;}
+    public boolean lanPuntajes(){return modo>=2;}
+    public int puestoPuntajes(){return rolLocal;}
+    private void conectar(){
+        if(modo==1&&pedirPuestos!=null){
+            String partida=null;
+            if(continuar)try{partida=archivo(modo).cargar().vista().id();}
+            catch(IOException e){mensaje="No se pudo abrir: "+e.getMessage();return;}
+            if(pedirPuestos.elegir(partida,2,this::conectarAhora))return;
+        }
+        conectarAhora();
+    }
+    private void conectarAhora(){if(conectando)return;conectando=true;mensaje="Preparando la carrera…";
+        // En el mismo teclado el puesto J1 corresponde al rol 0 y J2 al rol 1.
+        if(modo==1)rolElegido=0;
         int seleccionado=modo,rol=rolElegido;boolean cargar=continuar,mantener=asistido;Dificultad nivel=dificultad;String host=ip;int puerto=puertoLan;var archivo=archivo(modo);EstadoCiudad baseElegida=ciudadCampana;
         conexion=tareas.submit(()->{
             if(seleccionado==3){var cliente=new ClienteCarrera(host,puerto,rol);if(cerrada){cliente.close();throw new IOException("Conexión cancelada");}return cliente;}
@@ -140,7 +166,16 @@ public final class MisionSieteVista implements AutoCloseable {
         }
         canal.actualizar(dt);v=canal.vista();
         if(!pausada()&&v.fase()==Fase.ENCUENTRO&&v.linea()>=3)palomoX=Math.max(820,palomoX-450*Math.min(.1f,dt));
-        if(faseAnterior!=null&&v.fase()!=faseAnterior)sonido(v.fase()==Fase.CUENTA?"alert":"ui");faseAnterior=v.fase();
+        if(faseAnterior!=null&&v.fase()!=faseAnterior)sonido(v.fase()==Fase.CUENTA?"alert":"ui");
+        float distancia=v.corredores()[rolLocal].distancia();
+        int paso=(int)(distancia/50);
+        if(v.fase()==Fase.CARRERA&&faseAnterior==Fase.CARRERA&&!pausada()&&distancia>distanciaSonora
+            &&paso>(int)(distanciaSonora/50)){
+            String tipo=paso%2==0?"carrera-paso-a":"carrera-paso-b";
+            sonidos.efecto("paso",SonidosRemaster.ruta(tipo),.48f,.12);
+        }
+        distanciaSonora=distancia;
+        faseAnterior=v.fase();
         int pts=v.corredores()[rolLocal].puntos();if(puntosAnteriores>=0&&pts>puntosAnteriores)sonido("ping");puntosAnteriores=pts;
         if(v.fase()==Fase.RESULTADO&&!registrado)try{ciudadCampana=repo.acreditar(v,ciudadCampana);registrado=true;guardado="Resultado y campaña guardados. Elección definitiva pendiente de misión 8.";}catch(IOException e){guardado="Error al guardar: "+e.getMessage();}
     }

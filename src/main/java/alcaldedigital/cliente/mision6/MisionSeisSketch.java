@@ -1,5 +1,6 @@
 package alcaldedigital.cliente.mision6;
 
+import alcaldedigital.cliente.presentacion.LuzEscena;
 import processing.core.*;
 import java.awt.Font;
 import javax.imageio.ImageIO;
@@ -17,7 +18,34 @@ public final class MisionSeisSketch {
  private AutoguardadoSeis guardado;private Properties guardada;private boolean elegirGuardado;private int focoGuardado;private long ultimoGuardado;private String firmaGuardada="";
  private final Map<String,PImage> recursos=new HashMap<>();
  private PGraphics canvas;private PFont fuente;private long previo;private float deuda;
- private boolean gestionExterna, modoRed, caminandoRed, invitadoRed;
+ private boolean gestionExterna, modoRed, caminandoRed, invitadoRed, movimientoReducido;
+ private final PImage[] rotor = new PImage[12], explosion = new PImage[10];
+ private PImage cieloIluminado;
+ private final PImage[] nubes=new PImage[2];
+ private final VueloVisual vueloVisual=new VueloVisual();
+
+ private static final class VueloVisual {
+  private float lectura=Float.NaN;
+  private final float[] x=new float[2],y=new float[2],angulo=new float[2];
+  private Fase fase;
+  void observar(MisionSeisMotor motor,boolean reducido) {
+   float transcurrido=motor.global-lectura;
+   if(reducido||fase!=motor.fase||!Float.isFinite(transcurrido)||transcurrido<0||transcurrido>.25f) {
+    for(int i=0;i<2;i++){x[i]=motor.naves[i].x;y[i]=motor.naves[i].y;angulo[i]=0;}
+   } else if(transcurrido>0) {
+    for(int i=0;i<2;i++){
+     var nave=motor.naves[i];
+     float vertical=(nave.y-y[i])/transcurrido, horizontal=(nave.x-x[i])/transcurrido;
+     float destino=Math.clamp(vertical*.00032f-horizontal*.00013f,-.16f,.16f);
+     angulo[i]=PApplet.lerp(angulo[i],destino,(float)(1-Math.exp(-12*transcurrido)));
+     x[i]=nave.x;y[i]=nave.y;
+    }
+   }
+   lectura=motor.global;fase=motor.fase;
+  }
+ }
+
+ public void movimientoReducido(boolean valor) { movimientoReducido = valor; }
  public void verRed(RedSeis.Vista vista, boolean invitado){
   if(!modoRed){modoRed=true;elegirGuardado=false;sonido.restablecer();}
   game=vista.motor();caminandoRed=vista.caminando();invitadoRed=invitado;
@@ -88,7 +116,7 @@ public final class MisionSeisSketch {
  public void cerrar(){cerrar(true);}
  public void cerrar(boolean guardarLocal){
   if(guardado!=null){if(guardarLocal&&!modoRed&&!elegirGuardado)guardarSiCorresponde(true);if(!guardado.cerrarYEsperar())System.err.println("No se confirmó el autoguardado de la misión 6");guardado=null;}
-  sonido.close();game.perderFoco();recursos.clear();canvas=null;
+  sonido.close();game.perderFoco();recursos.clear();cieloIluminado=null;canvas=null;
  }
  private void panel(PGraphics g,float x,float y,float w,float h){
   alcaldedigital.cliente.interfaz.MarcosProcessing.marco(g,x,y,w,h,0xff2f1e40,0xffbe91da);
@@ -101,6 +129,7 @@ public final class MisionSeisSketch {
   alcaldedigital.cliente.interfaz.MarcosProcessing.marco(g,x,y,w,h,activo?0xfff4cb6a:0xff604077,0xffbd91d5);g.fill(activo?0xff21152f:0xfff5e8fb);g.textSize(16);g.textAlign(PApplet.CENTER,PApplet.CENTER);g.text(s,x+w/2,y+h/2);g.textAlign(PApplet.LEFT,PApplet.BASELINE);
  }
  private void dibujar(PGraphics g){
+  vueloVisual.observar(game,movimientoReducido);
   switch(game.fase){
    case DISCURSO -> {dibujarPlaza(g,true);cuadroDialogo(g,game.interlocutor(),game.textoMostrado(),"ENTER · continuar");}
    case BUSCAR -> dibujarPlaza(g,false);
@@ -125,26 +154,112 @@ public final class MisionSeisSketch {
  private void fondo(PGraphics g,String name){g.image(imagen(name),0,0,W,H);}
  private void cabecera(PGraphics g){g.noStroke();g.fill(25,15,38,225);g.rect(0,0,W,54);g.fill(189,145,213);g.rect(0,53,W,2);texto(g,"CIUDAD NOVA  /  MISIÓN 6",20,21,13,0xfff4cb6a);texto(g,"Cielos de campaña",20,43,18,0xfff5e8fb);texto(g,"ESC / P · pausa y controles",780,33,14,0xfff4cb6a);}
  private void cielo(PGraphics g){
-  float deriva=(float)Math.sin(game.global*.13)*16;
-  g.image(imagen("mision6/cielo"),-20+deriva,0,W+40,H);
-  g.noStroke();g.fill(28,18,51,42);g.rect(0,0,W,H);
+  float t=movimientoReducido?0:game.global;
+  float deriva=(float)Math.sin(t*.13)*16;
+  if(cieloIluminado==null) cieloIluminado=prepararCielo();
+  g.image(cieloIluminado,Math.round(-20+deriva),0,W+40,H);
+  for(int i=0;i<4;i++) {
+   float x=(79+i*276-t*(7+i%3*3))%1320;
+   if(x < -160) x+=1320;
+   float ancho=103+i%3*26;
+   PImage nube=nubes[i%2];
+   g.image(nube,x,95+i%3*81,ancho,ancho*nube.height/nube.width);
+  }
+ }
+ private PImage prepararCielo(){
+  var capa=new java.awt.image.BufferedImage(1330,720,java.awt.image.BufferedImage.TYPE_INT_RGB);
+  var g=capa.createGraphics();
+  g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+  var original=(java.awt.image.BufferedImage)imagen("mision6/cielo").getNative();
+  g.drawImage(original,0,0,capa.getWidth(),capa.getHeight(),null);
+  nubes[0]=recorteNube(original,78,145,402,82);
+  nubes[1]=recorteNube(original,1730,137,442,96);
+  g.scale(1.25,1.25);
+  g.translate(20,0);
+  LuzEscena.AMBAR.dibujar(g,755,408,900,244,.48f);
+  LuzEscena.VIOLETA.dibujar(g,278,119,675,255,.38f);
+  g.setColor(new java.awt.Color(28,18,51,32));
+  g.fillRect(-20,0,W+40,H);
+  g.dispose();
+  return new PImage(capa);
+ }
+ private PImage recorteNube(java.awt.image.BufferedImage original,int ox,int oy,int w,int h) {
+  var imagen=new java.awt.image.BufferedImage(w,h,java.awt.image.BufferedImage.TYPE_INT_ARGB);
+  for(int y=0;y<h;y++) {
+   int fondo=(original.getRGB(0,oy+y)>>>16)&255;
+   for(int x=0;x<w;x++) {
+    int pixel=original.getRGB(x+ox,y+oy);
+    int distancia=((pixel>>>16)&255)-fondo;
+    int alfa=Math.clamp((distancia-14)*2,0,100);
+    if(alfa>0) imagen.setRGB(x,y,(alfa<<24)|(pixel&0xffffff));
+   }
+  }
+  return new PImage(imagen);
+ }
+ private PImage celda(String nombre,PImage[] celdas,int columnas,int i) {
+  if(celdas[i]==null){
+   PImage hoja=imagen(nombre);
+   int w=hoja.width/columnas,h=hoja.height/(celdas.length/columnas);
+   celdas[i]=hoja.get(i%columnas*w,i/columnas*h,w,h);
+  }
+  return celdas[i];
+ }
+ private void explosion(PGraphics g,float x,float y,float tam,float progreso) {
+  float t=Math.clamp(progreso,0,1);
+  int i=movimientoReducido?2:Math.min(9,(int)(t*10));
+  LuzEscena.AMBAR.dibujar(g,x,y,tam*1.22f,tam*1.1f,210*(1-t));
+  g.tint(255,Math.min(255,330*(1-t)));
+  g.image(celda("mision6/explosion-remaster",explosion,5,i),x-tam/2,y-tam/2,tam,tam);
+  g.noTint();
  }
  private void helicoptero(PGraphics g,float x,float y,float size,boolean dano,boolean fuego){
   helicoptero(g,x,y,size,dano,fuego,-1,1);
  }
  private void helicoptero(PGraphics g,float x,float y,float size,boolean dano,boolean fuego,int rol,float rotorActivo){
-  g.pushMatrix();g.translate(x,y+(float)Math.sin(game.global*4+x*.01)*2*rotorActivo);g.scale(size);
-  if(dano&&((int)(game.global*12)%2==0))g.tint(255,150,150);g.image(imagen("mision6/helicoptero"),-85,-48,170,96);g.noTint();
-  g.stroke(216,207,235,190*rotorActivo);g.strokeWeight(3);float rotor=70+(float)Math.sin(game.global*35)*16;g.line(-rotor,-34,rotor,-34);g.strokeWeight(1);g.line(-rotor*.8f,-38,rotor*.8f,-38);g.noStroke();
+  float t=game.global;
+  g.pushMatrix();
+  g.translate(x,y+(movimientoReducido?0:(float)Math.sin(t*4+x*.01)*2*rotorActivo));
+  g.scale(size);
+  if(rol>=0) {
+   if(game.naves[rol].vida<=2&&game.fase==Fase.COMBATE) humo(g,rol);
+   g.rotate(vueloVisual.angulo[rol]);
+  }
+  if(dano&&(movimientoReducido||(int)(t*12)%2==0))g.tint(255,175,188);
+  g.image(imagen("mision6/helicoptero-cuerpo"),-85,-48,170,96);
+  g.noTint();
+  float frenado=1-rotorActivo;
+  int cuadro=movimientoReducido||rotorActivo==0?0:
+   Math.floorMod((int)((t-.225f*frenado*frenado)*33),rotor.length);
+  g.image(celda("mision6/helicoptero-rotor",rotor,6,cuadro),-70,-39,158,24);
+  g.noStroke();
   if(rol>=0){
    g.fill(0xff241530);g.rect(-24,8,24,10);
    g.fill(colorNave(rol));g.rect(-23,9,22,8);
    g.fill(0xff241530);
    for(int i=0;i<=rol;i++)g.rect(-19+i*7,10,4,6);
   }
-  if(fuego){g.fill(255,219,113,230);g.triangle(78,-3,108,-9,94,3);}
+  if(fuego){
+   LuzEscena.AMBAR.dibujar(g,88,-2,50,30,202);
+   g.fill(255,151,77,219);g.triangle(78,-5,109,-2,80,5);
+   g.fill(255,239,185);g.triangle(78,-2,98,-2,78,3);
+  }
   g.popMatrix();
  }
+ private void humo(PGraphics g,int rol) {
+  float reloj=movimientoReducido?.1f:game.global;
+  g.noStroke();
+  for(int i=0;i<7;i++){
+   float u=(reloj*1.15f+i/7f)%1;
+   float dx=-52-u*91,dy=-2-u*(12+i%3*2);
+   g.fill(28,20,46,137*(1-u));
+   g.ellipse(dx,dy,11+u*20,8+u*14);
+   g.fill(111,74,120,65*(1-u));
+   g.ellipse(dx,dy-3,7+u*16,5+u*9);
+  }
+  float pulso=movimientoReducido?95:90+58*(float)Math.sin(reloj*17+rol);
+  LuzEscena.AMBAR.dibujar(g,-43,-3,33,33,pulso);
+ }
+
  private static int colorNave(int rol){return rol==0?0xfff4cb6a:0xff8bdcec;}
  private void marcaSuelo(PGraphics g,float x,float y,float ancho){
   g.noStroke();g.fill(244,203,106,37);g.ellipse(x,y,ancho,ancho*.28f);
@@ -193,7 +308,7 @@ public final class MisionSeisSketch {
   // Atlas de 5 columnas y 3 filas: vuelo, disparo y daño. Mirada hacia el jugador.
   int fila=game.fase==MisionSeisMotor.Fase.RETIRADA||game.impacto>0?2:
       game.fase==Fase.COMBATE&&game.avisoDron!=null&&game.ataqueJefe<.14f?1:0;
-  int frame=(int)(game.global*10)%5;String clave="dron-"+fila+"-"+frame;
+  int frame=movimientoReducido?0:(int)(game.global*10)%5;String clave="dron-"+fila+"-"+frame;
   PImage sprite=recursos.get(clave);
   if(sprite==null){PImage atlas=imagen("mision6/dron_atlas");int cw=atlas.width/5,ch=atlas.height/3;
    sprite=atlas.get(frame*cw,fila*ch,cw,ch);recursos.put(clave,sprite);}
@@ -203,7 +318,7 @@ public final class MisionSeisSketch {
  private void dibujarAutodestruccion(PGraphics g){
   float t=game.tiempo,x=game.jefeX,y=game.jefeY;
   if(t<.75f){if((int)(t*22)%2==0)g.tint(255,130,120);dron(g,x+(float)Math.sin(t*70)*4,y,150);g.noTint();}
-  if(t>=.5f&&t<2.3f){float p=(t-.5f)/1.8f,size=90+210*p;g.tint(255,255*(1-p));g.image(imagen("mision6/impacto"),x-size/2,y-size/2,size,size);g.noTint();
+  if(t>=.5f&&t<2.3f){float p=(t-.5f)/1.8f,size=165+165*p;explosion(g,x,y,size,p);
    g.noStroke();for(int i=0;i<9;i++){float ang=i*PApplet.TWO_PI/9;g.fill(244,203,106,255*(1-p));g.rect(x+(float)Math.cos(ang)*p*145,y+(float)Math.sin(ang)*p*100+35*p*p,6,4);}
   }
  }
@@ -309,10 +424,17 @@ public final class MisionSeisSketch {
   for(var c:game.corazones){float y=c.y+(float)Math.sin(game.global*5)*3;corazon(g,c.x,y,29);texto(g,"+1 VIDA",c.x-23,y-23,11,0xffffbed7);}
   for(var p:game.proyectiles){
    g.noStroke();if(p.enemigo){dibujarDisparoDron(g,p);}
-   else if(p.especial){g.image(imagen("mision6/misil"),p.x-32,p.y-14,64,28);}
+   else if(p.especial){
+    g.noStroke();g.fill(215,133,199,72);g.ellipse(p.x-36,p.y,38,7);
+    g.fill(255,192,107,175);g.triangle(p.x-19,p.y-3,p.x-55,p.y,p.x-19,p.y+3);
+    g.image(imagen("mision6/misil"),p.x-32,p.y-14,64,28);
+   }
    else{g.fill(244,203,106);g.rect(p.x-8,p.y-2,17,4);g.fill(255,246,194);g.rect(p.x-5,p.y-1,12,2);}
   }
-  if(game.impacto>0){float size=65+(1-game.impacto/.5f)*45;g.tint(255,Math.min(255,game.impacto*510));g.image(imagen("mision6/impacto"),game.impactoX-size/2,game.impactoY-size/2,size,size);g.noTint();}
+  if(game.impacto>0){
+   float t=1-Math.clamp(game.impacto/.5f,0,1);
+   explosion(g,game.impactoX,game.impactoY,71+56*t,t);
+  }
   if(game.etapa()==2){g.stroke(226,207,255,80);g.strokeWeight(2);for(int i=0;i<5;i++){float wx=(i*240-game.global*90)%1200;if(wx<0)wx+=1200;float y=170+i*55;g.line(wx,y,wx+65,y+18*(float)Math.sin(game.global*1.6));}g.noStroke();}
   for(int i=0;i<(game.modo==Modo.SOLO?1:2);i++){
    var n=game.naves[i];

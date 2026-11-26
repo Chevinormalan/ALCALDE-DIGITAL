@@ -12,11 +12,13 @@ import alcaldedigital.cliente.audio.MezclaMusical.*;
 
 /** Una sola salida estéreo. Carga asíncrona, PCM acotado, mezcla y canales independientes. */
 public final class MotorAudio implements AutoCloseable {
+ private static final int MAX_EFECTOS=100;
  private static final class Holder {static final MotorAudio VALOR=new MotorAudio();}
  public static MotorAudio global(){return Holder.VALOR;}
  private final ExecutorService carga=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"audio-carga");t.setDaemon(true);return t;});
  private final ConcurrentLinkedQueue<Runnable> ordenes=new ConcurrentLinkedQueue<>();
- private final Map<String,Pcm> cache=new ConcurrentHashMap<>();private final Set<String> cargando=ConcurrentHashMap.newKeySet();
+ private final Map<String,Pcm> cache=Collections.synchronizedMap(new LinkedHashMap<>(128,.75f,true));
+ private final Set<String> cargando=ConcurrentHashMap.newKeySet();
  private final Map<String,Voz> bucles=new HashMap<>();private final List<Voz> efectos=new ArrayList<>();
  private final Map<String,Long> ultimos=new ConcurrentHashMap<>();private final Set<String> suspendidos=ConcurrentHashMap.newKeySet();
  private final MezclaMusical musica=new MezclaMusical();private final Properties catalogo=new Properties();
@@ -80,7 +82,22 @@ public final class MotorAudio implements AutoCloseable {
  public void fx(String id){efecto("guion",id,"audio/fx/"+id,.75f,.12,Bus.EFECTOS);}
  public void interfaz(String id){efecto("interfaz",id,"audio/fx/"+id,.7f,.055,Bus.INTERFAZ);}
  public boolean voces(){return opciones!=null&&opciones.actual().voces();}
- public void precargar(String recurso){if(!activo||sinSalida||cache.containsKey(recurso)||!cargando.add(recurso)||cerrado)return;carga.execute(()->{try{if(cache.size()<100)cache.put(recurso,leer(recurso));}catch(Exception ex){traza("EFECTO_ERROR "+recurso+" "+ex.getMessage());}finally{cargando.remove(recurso);}});}
+ public void precargar(String recurso){
+  if(!activo||sinSalida||cerrado||cache.containsKey(recurso)||!cargando.add(recurso))return;
+  try{
+   carga.execute(()->{
+    try{
+     Pcm pcm=leer(recurso);
+     synchronized(cache){
+      if(cerrado||sinSalida)return;
+      cache.put(recurso,pcm);
+      if(cache.size()>MAX_EFECTOS)cache.remove(cache.keySet().iterator().next());
+     }
+    }catch(Exception ex){traza("EFECTO_ERROR "+recurso+" "+ex.getMessage());}
+    finally{cargando.remove(recurso);}
+   });
+  }catch(RejectedExecutionException ex){cargando.remove(recurso);if(!cerrado)throw ex;}
+ }
  public void bucle(String grupo,String id,String recurso,float v){if(cerrado)return;suspendidos.remove(grupo);if(!activo||sinSalida||Boolean.getBoolean("ad.audio.mudo"))return;String clave=grupo+":"+id;Pcm pcm=cache.get(recurso);if(pcm==null){precargar(recurso);return;}ordenes.add(()->{Voz voz=bucles.get(clave);if(voz==null||!voz.recurso.equals(recurso)){voz=new Voz(grupo,recurso,pcm,Bus.AMBIENTE,true,v);bucles.put(clave,voz);traza("BUCLE "+clave+" "+recurso);}voz.volumen=Math.clamp(v,0,1);});}
  public void suspender(String grupo){suspendidos.add(grupo);ordenes.add(()->efectos.removeIf(v->v.grupo.equals(grupo)));}
  public void reanudar(String grupo){suspendidos.remove(grupo);}

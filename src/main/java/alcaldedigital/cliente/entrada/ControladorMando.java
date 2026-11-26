@@ -32,6 +32,12 @@ public final class ControladorMando {
     public void actualizar(EstadoMando estado,JuegoCliente juego,RenderJuego render,
                            MisionDosSketch misionDos,MisionTresSketch misionTres,Runnable salirMisionActual) {
         juego.mandoActivo=estado.conectado();juego.nombreMando=estado.nombre();
+        if(juego.usuarios()!=null&&juego.usuarios().panel()!=null){
+            if(nuevo(estado,Boton.B))juego.accion("volver");
+            else if(nuevo(estado,Boton.A))render.activarFoco(juego);
+            else navegar(estado,juego,render);
+            anterior=estado;return;
+        }
         if(juego.tutorial()!=null){juego.tutorial().mando(estado);anterior=estado;direccionAnterior=0;return;}
         if(juego.pantalla==JuegoCliente.Pantalla.MISION_CUATRO||juego.pantalla==JuegoCliente.Pantalla.MISION_SEIS){
             if(misionCampana!=null)misionCampana.mando(estado);anterior=estado;return;

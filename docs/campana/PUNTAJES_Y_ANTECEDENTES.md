@@ -1,14 +1,23 @@
 # Puntajes y antecedentes de las misiones 1 a 7
 
-La misma tabla ocupa la franja superior del cierre de cada capítulo, con columnas
-para indicadores y decisiones, cuatro filas y un marco morado y dorado. Los
-paneles propios de cada misión y los controles quedan visibles debajo. Muestra
-un puntaje de 0 a 100 y el resultado del intento. El puntaje describe
-el intento: **solo la condición de victoria de cada motor desbloquea la misión
-siguiente**. Una derrota conserva su fila y permite reintentar. El botón manual
-del selector abre capítulos para revisión, pero no registra victorias.
+La primera vez que se pulsa **Jugar** se elige o crea un usuario local antes
+del tutorial. **Cambiar usuario** permite alternar campañas desde el menú.
+Desde allí se puede eliminar un usuario con confirmación. Sus archivos se
+archivan en `usuarios-eliminados/`. La campaña anterior se puede vincular a
+un usuario al crear su perfil. Cada perfil guarda sus intentos y su progreso
+en una carpeta propia.
 
-[Vista del cierre de la misión 1 con tabla y paneles visibles](evidencias/tabla-mision1.png).
+Las ocho misiones comparten el cierre con resultado, puntaje de 0 a 100,
+desglose y decisiones. **Misiones → Puntajes** muestra el mejor y el último
+intento por misión, y el acumulado suma los ocho mejores personales posibles,
+hasta 800 puntos. El fallo crítico inevitable y los finales de prueba quedan
+fuera de ese acumulado. En cooperativo se asignan usuarios a los puestos y se
+registra la marca de equipo. En la carrera se calcula la marca de cada corredor.
+
+El puntaje describe el intento. **Solo la condición de victoria de cada motor
+abre la misión siguiente**. La tabla de campaña conserva sus antecedentes y el
+historial personal se guarda por separado. **Restablecer juego** archiva ambos
+del usuario activo y comienza su campaña desde la misión 1 con acumulado cero.
 
 | Misión | Victoria | Base del puntaje |
 | --- | --- | --- |

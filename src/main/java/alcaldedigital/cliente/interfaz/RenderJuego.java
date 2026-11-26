@@ -1,6 +1,8 @@
 package alcaldedigital.cliente.interfaz;
 
 import alcaldedigital.cliente.*;
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
 import static alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
 import alcaldedigital.cliente.mision2.MisionDosSketch;
@@ -28,6 +30,7 @@ public final class RenderJuego {
     private static final double DURACION_REVELADO=.32, DURACION_AVISO_RUMOR=1.4;
     private final Recursos recursos=new Recursos();
     private final PortadasMisiones portadasMisiones=new PortadasMisiones();
+    private final RenderPuntajes renderPuntajes=new RenderPuntajes(this);
     private final RenderInvestigacionSofi renderInvestigacion=new RenderInvestigacionSofi(this);
     private Vista investigacion;
     BufferedImage arteParque() {return recursos.imagen("mision1/parque");}
@@ -115,6 +118,9 @@ public final class RenderJuego {
             g.dispose();return lienzo;
         }
         rect(0,0,1280,720,tinta);
+        if(juego.usuarios()!=null&&juego.usuarios().panel()!=null){
+            renderPuntajes.dibujar(juego.usuarios());
+        }else{
         var vistaMisionUno=juego.misionUno==null?null:juego.misionUno.vista();
         investigacion=juego.misionUno==null?null:juego.misionUno.investigacion();
         actualizarPresentacionMisionUno(vistaMisionUno);
@@ -162,6 +168,7 @@ public final class RenderJuego {
         }
         if(juego.pausa&&!juego.pausaUnificada) pausa();
         else if(juego.tecladoNumericoActivo) tecladoNumerico();
+        }
         if(!botones.isEmpty()) {
             juego.foco=Math.floorMod(juego.foco,botones.size());
             Rectangle r=botones.get(juego.foco).area();g.setStroke(new BasicStroke(2));g.setColor(oro);
@@ -269,7 +276,8 @@ public final class RenderJuego {
         imagen("portada",462,0,1080,720);
         TemaPixel.marco(g,18,18,467,683,tinta,papel,true);
         imagen("iconos/20_reloj",47,44,24,24);
-        int victorias=0;for(int n=1;n<=7;n++)if(juego.progreso.ganada(n))victorias++;
+        boolean perfilListo=juego.usuarios()==null||juego.usuarios().activo()!=null;
+        int victorias=0;if(perfilListo)for(int n=1;n<=7;n++)if(juego.progreso.ganada(n))victorias++;
         texto("CIUDAD NOVA  /  "+(victorias==0?"NUEVA CAMPAÑA":victorias+" MISIONES GANADAS"),84,64,17,oro,true);
         texto(NombreJuego.NOMBRE+":",44,150,54,papel,true);
         texto(NombreJuego.SUBTITULO,44,207,43,oro,true);
@@ -295,13 +303,23 @@ public final class RenderJuego {
             boton("Cómo jugar","ayuda",48,504,364,false);boton("Salir","salir",48,560,364,false);
             boton("Laboratorio de estructuras","laboratorio",875,536,362,false);
         }
+        if(juego.usuarios()!=null&&juego.usuarios().activo()!=null) {
+            var activo=juego.usuarios().activo();
+            panel(905,565,333,103,PaletaMorada.PANEL);
+            texto(activo.nombre(),926,598,19,papel,true);
+            boton("Cambiar usuario","usuarios",924,611,296,false);
+        }
         rect(48,610,364,2,TemaPixel.CIAN);
-        int disponibles=0;for(int n=1;n<=7;n++)if(juego.progreso.disponible(n))disponibles++;
+        int disponibles=1;if(perfilListo){
+            disponibles=0;for(int n=1;n<=7;n++)if(juego.progreso.disponible(n))disponibles++;
+        }
         texto("MISIONES 1–7 · "+disponibles+" DISPONIBLES",48,639,15,oro,true);
         texto("Ciudad Nova · campaña local",48,666,16,tenue,false);
+        if(juego.usuarios()==null){
         panel(917,605,320,69,new Color(56,38,75,225));
         texto(juego.mandoActivo?"Mando conectado":"Una ciudad. Muchas versiones.",938,634,17,papel,true);
         texto(juego.mandoActivo?"A: elegir · B: volver":"Explora · contrasta · decide",938,657,14,oro,false);
+        }
         if(juego.segundosAviso>0&&!juego.aviso.isBlank())pie(juego.aviso);
     }
     private void guardado(){
@@ -334,7 +352,8 @@ public final class RenderJuego {
             panel(28,615,350,44,PaletaMorada.PANEL);
             texto("TODAS LAS MISIONES DISPONIBLES",42,643,16,oro,true);
         }else boton("Desbloquear todas las misiones","desbloquearTodas",28,615,350,false);
-        texto("Acceso libre",396,643,15,tenue,false);
+        if(juego.usuarios()!=null)boton("Puntajes","puntajes",468,615,294,false);
+        else texto("Acceso libre",396,643,15,tenue,false);
         boton("Restablecer juego","pedirRestablecer",952,615,300,false);
         pie(juego.segundosAviso>0?juego.aviso:(juego.mandoActivo?"Stick/cruceta: elegir · A: confirmar · B: volver  |  ":"")+
             "Ciudad: confianza "+juego.estadoCampana.confianza()+" · desinformación "+
@@ -343,11 +362,12 @@ public final class RenderJuego {
     private void confirmarReinicio(){
         cabecera("Restablecer juego","Comenzar otra vez desde la misión 1.");
         panel(240,175,800,370,PaletaMorada.PANEL);
-        texto("¿Restablecer todo el progreso?",285,245,30,oro,true);
+        String nombre=juego.usuarios()==null?"":juego.usuarios().activo().nombre();
+        texto(nombre.isEmpty()?"¿Restablecer todo el progreso?":"¿Restablecer la campaña de "+nombre+"?",285,245,24,oro,true);
         parrafo("Se archivarán las partidas guardadas, victorias, puntajes, decisiones de campaña y el desbloqueo total. El perfil anterior quedará en una carpeta de respaldo.",285,285,710,19,papel);
         boton("Cancelar y volver","cancelarRestablecer",285,405,340,true);
         boton("Sí, restablecer juego","confirmarRestablecer",650,405,345,false);
-        pie("Después del reinicio, la misión 1 estará disponible y las misiones 2 a 7 volverán a bloquearse.");
+        pie("La misión 1 quedará disponible y el acumulado activo volverá a 0 / 800.");
     }
     private void controles(){
         int n=juego.controlesMision;boolean dos=juego.controlesDosJugadores&&n>=5;
@@ -607,8 +627,11 @@ public final class RenderJuego {
         g.translate(vx-camX*escala,vy-camY*escala);g.scale(escala,escala);
         g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
         imagen("mision1/parque",0,0,640,480);
+        LuzEscena.AMBAR.dibujar(g,153,117,290,177,.23f);
+        LuzEscena.VIOLETA.dibujar(g,493,309,320,190,.15f);
         int agua=juego.movimientoReducido?0:(int)(juego.animacion*5)%4;
         celda("mision1/fuente-agua",4,1,agua,276,164,88,90);
+        brilloFuente();
         if(!fondo&&investigacion!=null) ambienteInvestigacion(s,investigacion);
         if(s.fase()==SesionMisionUno.Fase.CRISIS&&s.ciudad().conflictos()>=29) {
             rect(295,207,5,3,new Color(0x675B8B));rect(340,226,7,2,new Color(0x675B8B));
@@ -651,8 +674,7 @@ public final class RenderJuego {
             if(t>1.55) {
                 double trayecto=Math.clamp((t-1.55)/2.65,0,1);
                 int x=473-(int)(trayecto*184),y=117+(int)(Math.sin(Math.PI*trayecto)*53);
-                int pose=juego.movimientoReducido?4:4+(int)(juego.animacion*11)%4;
-                celda("mision1/palomo",4,2,pose,x,y,39,47);
+                vueloPalomo(x+20,y+42,true);
             }
         } else if(!fondo&&investigacion!=null&&(investigacion.escena()==Escena.RUMORES||investigacion.escena()==Escena.CIERRE))
             dibujarPalomo(new SesionMisionUno.Palomo(s.palomo().lado(),
@@ -666,10 +688,11 @@ public final class RenderJuego {
             if(investigacion!=null&&investigacion.premium()&&!juego.movimientoReducido) {
                 double r=juego.investigacionSofi.finRecogida-juego.animacion;
                 if(fondo&&investigacion.abierto()!=0&&r>.75) {
-                    double gesto=Math.sin(Math.PI*Math.clamp((1.12-r)/.37,0,1));
-                    int bajar=(int)(gesto*13);
-                    celda("mision1/sofi-caminar",4,4,sofiFrame,x+(int)(gesto*5),y+bajar,32,47-bajar);
-                    papelSuelo((int)(s.x()+13),(int)(s.y()-gesto*22),false);
+                    double gesto=Math.clamp((1.12-r)/.37,0,1);
+                    int cuadro=Math.min(5,(int)(gesto*6));
+                    int px=Math.round(s.x()), py=Math.round(s.y());
+                    var atlas=arte("mision1/sofi-recogida");
+                    g.drawImage(atlas,px-27,py-53,px+37,py+7,cuadro*64,0,(cuadro+1)*64,60,null);
                     g.dispose();g=previo;
                     return;
                 }
@@ -677,8 +700,8 @@ public final class RenderJuego {
                     int alzar=(int)(Math.sin(investigacion.segundosEscena()*5)*3);
                     celda("mision1/sofi-caminar",4,4,2,x,y-alzar,32,47);
                     texto("♪",x+29,y+4,13,oro,true);
-                } else celda("mision1/sofi-caminar",4,4,sofiFrame,x,y,32,47);
-            } else celda("mision1/sofi-caminar",4,4,sofiFrame,x,y,32,47);
+                } else dibujarPasoSofi(s,sofiFrame,x,y);
+            } else dibujarPasoSofi(s,sofiFrame,x,y);
             if(!s.caminando()&&s.direccion()==0&&!juego.movimientoReducido) {
                 double t=juego.animacion%5.2;
                 if(t<.22) parpadeoSofi(x,y,t<.10);
@@ -854,15 +877,38 @@ public final class RenderJuego {
         int x=(int)Math.round(origenes[lado][0]+(148-origenes[lado][0])*suavizado);
         int y=(int)Math.round(origenes[lado][1]+(78-origenes[lado][1])*suavizado
             -12*Math.sin(Math.PI*recorrido));
-        BufferedImage atlas=recursos.imagen("mision1/palomo");
-        int frame=4+(juego.movimientoReducido?0:(int)(juego.animacion*11)%4);
-        int sx=(frame%4)*atlas.getWidth()/4,sy=atlas.getHeight()/2+48;
-        int ex=(frame%4+1)*atlas.getWidth()/4,ey=atlas.getHeight();
         boolean haciaIzquierda=palomo.estado()==SesionMisionUno.EstadoPalomo.LLEGANDO?
             lado==1:lado!=1;
-        g.drawImage(atlas,haciaIzquierda?x+48:x,y,
-            haciaIzquierda?x:x+48,y+48,sx,sy,ex,ey,null);
+        vueloPalomo(x+24,y+42,haciaIzquierda);
     }
+    private void vueloPalomo(int x,int y,boolean espejo) {
+        int pose=juego.movimientoReducido?2:PosesRemaster.paso(juego.animacion,23,8);
+        PosesRemaster.PALOMO.dibujar(g,pose,x,y,43,espejo);
+    }
+
+    private void dibujarPasoSofi(SesionMisionUno.Vista s,int pose,int x,int y) {
+        int direccion=s.direccion();
+        if(s.caminando()&&(direccion==1||direccion==2)&&!juego.movimientoReducido) {
+            int cuadro=PosesRemaster.paso(juego.animacion,21,8);
+            PosesRemaster.SOFI.dibujar(g,cuadro,x+16,y+47,45,direccion==1);
+        } else {
+            celda("mision1/sofi-caminar",4,4,juego.movimientoReducido?direccion*4:pose,x,y,32,47);
+        }
+    }
+
+    private void brilloFuente() {
+        LuzEscena.CIAN.dibujar(g,320,215,86,64,.35f);
+        if (juego.movimientoReducido) return;
+        float t = (float) juego.animacion;
+        for (int i = 0; i < 7; i++) {
+            float fase = (t * (.62f + i * .035f) + i * .37f) % 1;
+            int x = 320 + (int) ((i - 3) * (4 + fase * 3));
+            int y = 206 + (int) (fase * 29 - Math.sin(fase * Math.PI) * (5 + i % 3));
+            int alfa = (int) (105 * Math.sin(Math.PI * fase));
+            rect(x,y,2,1,new Color(200,242,242,alfa));
+        }
+    }
+
     private void celda(String nombre,int columnas,int filas,int indice,int x,int y,int w,int h) {
         BufferedImage im=recursos.imagen(nombre);
         int col=indice%columnas,row=indice/columnas;

@@ -7,14 +7,14 @@ import static alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
 
 /** Preferencias de la pantalla de investigación. El progreso pertenece a la sesión. */
 public final class InvestigacionSofi {
-    public double finAviso, finRecogida, finPagina, finSello, ultimaPista, inicioLupa;
+    public double finAviso, finRecogida, finPagina, finSello, ultimaPista;
     public double finRespuestaVecino;
     public int vecinoAviso=-1;
     public boolean ayuda;
     public boolean libreta;
 
     public void reiniciar() {
-        libreta=false;ayuda=false;finAviso=0;finRecogida=0;finPagina=0;finSello=0;ultimaPista=0;inicioLupa=0;
+        libreta=false;ayuda=false;finAviso=0;finRecogida=0;finPagina=0;finSello=0;ultimaPista=0;
         finRespuestaVecino=0;vecinoAviso=-1;
     }
     public Caso papelCercano(SesionMisionUno.Vista s) {

@@ -56,7 +56,8 @@ public final class VistaCampana implements AutoCloseable {
     public void bloquearTeclas(Collection<Integer> retenidas){pulsadas.addAll(retenidas);}
     public void iniciarEn(PApplet app) {
         this.app=app;
-        if(cuatro!=null){cuatro.iniciarEn(app);return;}
+        if(cuatro!=null){cuatro.movimientoReducido(juego.movimientoReducido);cuatro.iniciarEn(app);return;}
+        seis.movimientoReducido(juego.movimientoReducido);
         seis.iniciarEn(app);
         if(app==null||Boolean.getBoolean("ad.mision46.revision")||Boolean.getBoolean("ad.mision6.integracion")||Boolean.getBoolean("ad.sistema.revision")){
             jugandoLocal=true;return;
@@ -71,7 +72,17 @@ public final class VistaCampana implements AutoCloseable {
         pantallaLan.modos(()->{
             jugandoLocal=true;
             pantallaLan.close();
-            elegirPartida(juego.continuarGuardado&&juego.modoContinuacion!=2);
+            boolean continuar=juego.continuarGuardado&&juego.modoContinuacion!=2;
+            elegirPartida(continuar);
+            if(continuar&&dosTeclados()&&juego.asignarPuestos(6,seis.motor().partida,2,()->{
+                jugandoLocal=true;
+                pantallaLan.close();
+                centrarMando=true;
+            })){
+                jugandoLocal=false;
+                modosSeis();
+                return;
+            }
             centrarMando=true;
         },()->crearLan(false),this::buscarLan,()->salir=true);
     }
@@ -141,6 +152,12 @@ public final class VistaCampana implements AutoCloseable {
     }
     public boolean listaComun(){return pantallaLan==null||!pantallaLan.activa();}
     public boolean invitadoLan(){return redSeis!=null&&!redSeis.anfitrion();}
+    public boolean lanPuntajes(){return redSeis!=null;}
+    public String partidaPuntajes(){return seis==null||!listaComun()?null:seis.motor().partida;}
+    public boolean reintentarPuntajes(){
+        if(seis==null||invitadoLan()||seis.motor().fase!=MisionSeisMotor.Fase.DERROTA)return false;
+        press(VK_ENTER);release(VK_ENTER);return true;
+    }
     public boolean victoriaComun(){return cuatro!=null?cuatro.resultado().completada():listaComun()&&seis.resultado().completada();}
     public alcaldedigital.compartido.guardado.TablaPuntajes.Fila filaFinal(){
         if(cuatro!=null)return cuatro.resultado().completada()?PuntajesMision.cuatro(cuatro.resultado()):null;
@@ -161,7 +178,16 @@ public final class VistaCampana implements AutoCloseable {
     public Properties estado(){return cuatro!=null?cuatro.estado():seis.motor().capturar();}
     private void press(int k){
         if(redSeis!=null){teclaLan(k,true);return;}
-        if(cuatro!=null)cuatro.pulsarTecla((char)k,k);else seis.pulsarTecla((char)k,k);}
+        if(cuatro!=null){cuatro.pulsarTecla((char)k,k);return;}
+        var motor=seis.motor();
+        boolean duo=motor.fase==MisionSeisMotor.Fase.MODO&&
+            (k==VK_2||((k==VK_ENTER||k==VK_SPACE)&&motor.seleccion==1));
+        if(duo&&juego.asignarPuestos(2,()->{
+            seis.pulsarTecla((char)k,k);
+            seis.soltarTecla(k);
+        }))return;
+        seis.pulsarTecla((char)k,k);
+    }
     private void release(int k){
         if(redSeis!=null){teclaLan(k,false);return;}
         if(cuatro!=null)cuatro.soltarTecla(k);else seis.soltarTecla(k);}

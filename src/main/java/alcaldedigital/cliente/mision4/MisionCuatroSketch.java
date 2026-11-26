@@ -28,7 +28,8 @@ public final class MisionCuatroSketch {
     private final SoundEffects sound=new SoundEffects();
     private final Autoguardado saves=new Autoguardado(Autoguardado.defaultPath());
     private Properties saved;
-    private boolean gestionExterna;
+    private boolean gestionExterna, movimientoReducido;
+    public void movimientoReducido(boolean valor){movimientoReducido=valor;}
     public void gestionExterna(boolean v){gestionExterna=v;}
     public void guardarAhora()throws Exception{saveIfNeeded(true);saves.esperar();}
     private boolean chooseSave;
@@ -46,6 +47,7 @@ public final class MisionCuatroSketch {
     public PImage dibujarEnJuego(){
         if(canvas==null)throw new IllegalStateException("Misión 4 sin iniciar");
         canvas.beginDraw();canvas.pushMatrix();canvas.scale(1.25f);
+        game.civita.arte.reducido=movimientoReducido;
         game.draw(canvas);
         if(chooseSave){
             canvas.noStroke();canvas.fill(15,10,25,225);canvas.rect(0,0,1024,576);

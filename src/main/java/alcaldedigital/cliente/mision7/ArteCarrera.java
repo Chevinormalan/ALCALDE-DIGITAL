@@ -11,6 +11,8 @@ final class ArteCarrera {
         palomo=imagen("/cliente/mision3/redisenio/palomo_talk_1.png"),
         candidato=imagen("/cliente/arte/actores/candidato_00.png"),telefono=imagen("/cliente/arte/iconos/01_celular.png");
     final PImage[][] andar=new PImage[2][16];
+    final PImage[] marchaPeriodista=hoja("/cliente/mision2/periodista-caminar-hoja.png",4,4);
+    final PImage influencerQuieto=imagen("/cliente/mision3/redisenio/player_right_idle.png");
     final PImage[] reacciones=hoja("/cliente/mision7/reacciones.png",4,2),ciudadanos=hoja("/cliente/mision7/ciudadanos-estados.png",4,6),
         antiguosA=hoja("/cliente/arte/mision1/transeuntes-direcciones-a.png",4,4),antiguosB=hoja("/cliente/arte/mision1/transeuntes-direcciones-b.png",4,4),
         objetos=hoja("/cliente/mision7/objetos.png",4,4),sofi=hoja("/cliente/arte/mision1/sofi-caminar.png",4,4);

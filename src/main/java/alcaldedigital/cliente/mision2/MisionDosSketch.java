@@ -1,6 +1,10 @@
 package alcaldedigital.cliente.mision2;
 
+import alcaldedigital.cliente.audio.SonidosRemaster;
+
 import alcaldedigital.cliente.entrada.EstadoMando;
+import alcaldedigital.cliente.presentacion.LuzEscena;
+import alcaldedigital.cliente.presentacion.PosesRemaster;
 import processing.core.PApplet;
 import processing.core.PImage;
 import java.io.IOException;
@@ -95,7 +99,6 @@ public final class MisionDosSketch {
     private final PImage[][] carrera=new PImage[4][4];
     private final PImage[][] salto=new PImage[4][4];
     private final PImage[] acciones=new PImage[4];
-    private final PImage[] palomoVuelo=new PImage[4];
     private PImage palomoHabla;
     private PImage fotograma;
     private Fase fase=Fase.ENTRADA;
@@ -106,6 +109,9 @@ public final class MisionDosSketch {
     private final Set<Integer> pulsadas=new HashSet<>();
     private final alcaldedigital.cliente.presentacion.AudioEscena sonidos=new alcaldedigital.cliente.presentacion.AudioEscena("M2");
     private float px=640,py=672, palomoX=1340,palomoY=86, vuelo=0, restante;
+    private boolean movimientoReducido;
+    public void movimientoReducido(boolean valor) { movimientoReducido = valor; }
+
     private float mandoX,mandoY,animacion, avisoTiempo,interaccionTiempo,remateTiempo,proximoAtaque,tiempoFalloCritico;
     private float saltoTiempo,esperaSalto,saltoDX,saltoDY;
     private String aviso="";
@@ -135,8 +141,6 @@ public final class MisionDosSketch {
             acciones[fila*2+col]=recortar(poses.get(x,y,
                 (col+1)*poses.width/2-x,(fila+1)*poses.height/2-y));
         }
-        for(int i=0;i<4;i++) palomoVuelo[i]=imagen(
-            "/cliente/mision3/redisenio/palomo_fly_"+(i+1)+".png");
         palomoHabla=imagen("/cliente/mision3/redisenio/palomo_talk_1.png");
         for(String sonido:new String[]{"ui","alert","ping","hit"}) cargarSonido(sonido);
         anterior=System.nanoTime();
@@ -187,8 +191,16 @@ public final class MisionDosSketch {
         } catch(IOException e) {throw new IllegalStateException("Imagen inválida: "+ruta,e);}
     }
 
-    private void cargarSonido(String nombre) {alcaldedigital.cliente.audio.MotorAudio.global().precargar("mision3/audio/"+nombre);}
-    private void sonar(String nombre) {sonidos.efecto(nombre,"mision3/audio/"+nombre,.5f,.08);}
+    private static String rutaSonido(String nombre) {
+        return switch(nombre) {
+            case "alert"->SonidosRemaster.ruta("red-alarma");
+            case "ping"->SonidosRemaster.ruta("red-estacion");
+            case "hit"->SonidosRemaster.ruta("red-fallo");
+            default->"mision3/audio/"+nombre;
+        };
+    }
+    private void cargarSonido(String nombre) {alcaldedigital.cliente.audio.MotorAudio.global().precargar(rutaSonido(nombre));}
+    private void sonar(String nombre) {sonidos.efecto(nombre,rutaSonido(nombre),.52f,.08);}
     public alcaldedigital.cliente.audio.Partitura.Contexto contextoAudio(){return new alcaldedigital.cliente.audio.Partitura.Contexto(2,fase.name(),Math.max(1-restante/dificultad.segundos(),(6-red.protegidas())/6f),0,fase!=Fase.DEFENSA,exito,"");}
 
     public java.util.Properties capturar(){
@@ -463,6 +475,7 @@ public final class MisionDosSketch {
         }
         p.image(fondo,0,0,W,H);
         if(fase==Fase.DEFENSA||fase==Fase.FALLO_CRITICO||terminada) {
+            dibujarEnlaces();
             dibujarServidor();dibujarEstaciones();
         }
         dibujarPeriodista();
@@ -484,6 +497,11 @@ public final class MisionDosSketch {
     }
 
     private void dibujarPeriodista() {
+        if (fase==Fase.DEFENSA && interaccionTiempo<=0 && corriendo && !enSalto && direccion>=2) {
+            int cuadro = movimientoReducido ? 0 : PosesRemaster.paso(animacion,24,8);
+            PosesRemaster.PERIODISTA.dibujar(p.g,cuadro,px,py,82,direccion==2);
+            return;
+        }
         PImage sprite;
         if(fase==Fase.ENTRADA||fase==Fase.INTRO) sprite=acciones[0];
         else if(fase==Fase.SALIDA) sprite=acciones[1];
@@ -492,7 +510,7 @@ public final class MisionDosSketch {
             sprite=salto[direccion][Math.min(3,(int)(saltoTiempo*4/DURACION_SALTO))];
         else if(fase==Fase.DEFENSA&&interaccionTiempo>0) sprite=acciones[1];
         else if(terminada) sprite=acciones[exito?3:2];
-        else sprite=andando?(corriendo?carrera[direccion][(int)(animacion*14)%4]:
+        else sprite=andando&&!movimientoReducido?(corriendo?carrera[direccion][(int)(animacion*14)%4]:
             periodista[direccion][(int)(animacion*10)%4]):periodista[direccion][0];
         float ancho=sprite==acciones[0]?87:72, alto=sprite==acciones[0]?87:85;
         float altura=enSalto?18*PApplet.sin(PApplet.PI*saltoTiempo/DURACION_SALTO):0;
@@ -500,8 +518,12 @@ public final class MisionDosSketch {
         p.image(sprite,px-ancho/2,py-alto-altura,ancho,alto);
     }
     private void dibujarPalomo() {
-        PImage sprite=fase==Fase.INTRO||fase==Fase.FINAL?palomoHabla:palomoVuelo[(int)(animacion*10)%4];
-        p.image(sprite,palomoX-35,palomoY-58,70,70);
+        if(fase==Fase.INTRO||fase==Fase.FINAL) p.image(palomoHabla,palomoX-35,palomoY-58,70,70);
+        else {
+            int pose=movimientoReducido?2:PosesRemaster.paso(animacion,23,8);
+            boolean izquierda=fase==Fase.ENTRADA||fase==Fase.REGRESO;
+            PosesRemaster.PALOMO.dibujar(p.g,pose,palomoX,palomoY+10,60,izquierda);
+        }
     }
 
     private void dibujarEspanto() {
@@ -555,9 +577,43 @@ public final class MisionDosSketch {
         }
     }
 
+    // Puntos medidos en los cables del fondo, del servidor a las estaciones.
+    private static final int[][] CABLES = {
+        {552,345, 480,345, 397,317, 364,252, 341,207, 323,204, 280,204},
+        {552,375, 510,375, 465,375, 417,375, 370,375, 327,375, 280,373},
+        {558,409, 481,426, 414,445, 375,498, 343,542, 324,545, 280,545}
+    };
+
+    private void dibujarEnlaces() {
+        boolean alarma = falloCriticoActivado;
+        (alarma ? LuzEscena.MAGENTA : LuzEscena.CIAN).dibujar(p.g,640,355,325,254,120);
+        for (int i = 0; i < RedCivitas.ESTACIONES; i++) {
+            boolean activo = red.enPeligro(i);
+            int color = activo ? 0xfffa588e : 0xff5de2dd;
+            int[] cable = CABLES[i % 3];
+            boolean derecha = i >= 3;
+            float x = derecha ? 1280-cable[12] : cable[12], y = cable[13];
+            (activo ? LuzEscena.MAGENTA : LuzEscena.CIAN).dibujar(p.g,x,y,116,70,activo?180:81);
+            if (!activo) continue;
+            float fase = movimientoReducido ? .5f : (animacion * .64f + i * .29f) % 1;
+            p.noStroke();
+            for (int j = 6; j >= 0; j--) {
+                float t = fase - j*.029f;
+                if (t < 0) continue;
+                int k = t < .55f ? 0 : 6;
+                float u = k == 0 ? t/.55f : (t-.55f)/.45f;
+                float xx = p.bezierPoint(cable[k],cable[k+2],cable[k+4],cable[k+6],u);
+                float yy = p.bezierPoint(cable[k+1],cable[k+3],cable[k+5],cable[k+7],u);
+                if (derecha) xx = 1280-xx;
+                p.fill(j==0 ? 0xffffd4e0 : color,240-j*32);
+                p.rect(xx-4,yy-2,8,4);
+            }
+        }
+    }
+
     private void dibujarServidor() {
         boolean rojo=red.protegidas()<RedCivitas.ESTACIONES||falloCriticoActivado;
-        int paso=(int)(animacion*(rojo?9:5))%4;
+        int paso=movimientoReducido?0:(int)(animacion*(rojo?9:5))%4;
         int luz=rojo?p.color(255,75,111):p.color(78,241,253);
         int tenue=rojo?p.color(178,47,90,125):p.color(67,216,244,115);
         p.noStroke();

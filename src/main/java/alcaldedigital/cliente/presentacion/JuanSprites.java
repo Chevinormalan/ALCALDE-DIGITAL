@@ -17,6 +17,8 @@ public final class JuanSprites {
   Frame f=new Frame(celda.get(x0,y0,x1-x0+1,y1-y0+1),cw/2f-x0,ch*(nombre.equals("atlas")?.90f:.82f));frames.put(key,f);return f;
  }
  public String seleccion(String estado,int dir,float pasos,float tiempo){
+  if(estado.equals("anticipacion"))return "acciones:"+(dir==1?2:dir>=2?1:0)+":1";
+  if(estado.equals("recobro"))return dir==1?"acciones:3:2":dir>=2?"atlas:2:6":"atlas:2:2";
   if(estado.equals("attack")||estado.equals("defend")||estado.equals("hurt")||estado.equals("seated"))return "acciones:"+(dir==1?2:dir>=2?1:0)+":"+(estado.equals("attack")?0:estado.equals("defend")?1:estado.equals("hurt")?2:3);
   if(estado.equals("walk")){if(dir==1)return "acciones:3:"+Math.floorMod((int)pasos,4);return "atlas:2:"+(dir>=2?4+Math.floorMod((int)pasos,6):Math.floorMod((int)pasos,4));}
   if(estado.equals("speech"))return "atlas:1:"+new int[]{1,2,5,6,8}[Math.floorMod((int)(tiempo*2),5)];

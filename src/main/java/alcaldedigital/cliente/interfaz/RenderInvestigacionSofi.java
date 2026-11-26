@@ -4,7 +4,6 @@ import alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
 import alcaldedigital.compartido.protocolo.SesionMisionUno;
 import alcaldedigital.cliente.recursos.PaletaMorada;
 import java.awt.*;
-import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import static alcaldedigital.compartido.modelo.InvestigacionCiudadana.*;
 
@@ -19,7 +18,7 @@ final class RenderInvestigacionSofi {
     };
     private final RenderJuego ui;
     private final PergaminoSofi pergamino;
-    private final BufferedImage muestra=new BufferedImage(75,75,BufferedImage.TYPE_INT_ARGB);
+    private final LupaArchivo lente = new LupaArchivo();
 
     RenderInvestigacionSofi(RenderJuego ui) {this.ui=ui;pergamino=new PergaminoSofi(ui);}
 
@@ -285,15 +284,25 @@ final class RenderInvestigacionSofi {
             }
             if(v.lupa()) ui.botones.add(new RenderJuego.Boton(r,"invest:hallazgo:"+zona.name(),zona.etiqueta));
         }
-        if(!v.lupa()) return;
+        if(!v.lupa()) {
+            lente.dibujar(ui,0,0,false,false,false);
+            return;
+        }
         int x=ui.ratonX,y=ui.ratonY;
-        if(x<0) {
+        boolean teclado=x<0;
+        if(teclado) {
             var b=ui.botones.get(Math.floorMod(ui.juego.foco,ui.botones.size()));
-            if(!b.accion().startsWith("invest:hallazgo:")) return;
+            if(!b.accion().startsWith("invest:hallazgo:")) {
+                lente.dibujar(ui,0,0,false,false,false);
+                return;
+            }
             x=(int)b.area().getCenterX();y=(int)b.area().getCenterY();
         }
-        if(!PAGINA.contains(x,y)) return;
-        ampliar(x,y);
+        if(!PAGINA.contains(x,y)) {
+            lente.dibujar(ui,0,0,false,false,false);
+            return;
+        }
+        lente.dibujar(ui,x,y,true,teclado,false);
         for(Zona z:Zona.values()) if(ZONAS[z.ordinal()].contains(x,y)) {
             int lx=Math.clamp(x-100,37,560),ly=Math.clamp(y+76,147,620);
             String etiqueta=z.etiqueta+(dificultad!=SesionMisionUno.Dificultad.DIFICIL&&caso.hallazgo(z)!=null?
@@ -303,23 +312,7 @@ final class RenderInvestigacionSofi {
             break;
         }
     }
-    private void ampliar(int x,int y) {
-        int sx=Math.clamp(x-37,PAGINA.x,PAGINA.x+PAGINA.width-75);
-        int sy=Math.clamp(y-37,PAGINA.y,PAGINA.y+PAGINA.height-75);
-        Graphics2D copia=muestra.createGraphics();
-        copia.drawImage(ui.lienzo,0,0,75,75,sx,sy,sx+75,sy+75,null);
-        copia.dispose();
-        var lente=new Ellipse2D.Double(x-72,y-72,144,144);
-        Graphics2D g=(Graphics2D)ui.g.create();
-        g.clip(lente);
-        g.drawImage(muestra,x-72,y-72,144,144,null);
-        g.dispose();
-        ui.g.setStroke(new BasicStroke(8));
-        ui.g.setColor(ui.tinta);ui.g.drawLine(x+49,y+49,x+88,y+88);
-        ui.g.setStroke(new BasicStroke(3));
-        ui.g.setColor(ui.oro);ui.g.draw(lente);ui.g.drawLine(x+52,y+52,x+87,y+87);
-        ui.rect(x-3,y,7,1,ui.tinta);ui.rect(x,y-3,1,7,ui.tinta);
-    }
+
 
     private void contraste(SesionMisionUno.Vista s,Vista v,Caso caso) {
         ui.cabecera("Libreta / Comprobación rápida","Compara el titular con la fuente y elige una conclusión.");

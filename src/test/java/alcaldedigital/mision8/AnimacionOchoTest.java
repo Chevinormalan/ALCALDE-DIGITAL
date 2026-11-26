@@ -20,6 +20,20 @@ class AnimacionOchoTest {
    for(int i=0;i<20;i++)m.paso();assertEquals(rol*16,AnimacionOcho.cuadroHeroe(m,0));
   }
  }
+ @Test void elAtaqueConservaSuFamiliaAlSoltarYTrasRestaurar(){
+  for(int tecla:new int[]{MotorOcho.DOS,MotorOcho.TRES}){
+   var m=MisionOchoTest.combate(0,false,1,1,1);
+   m.entrada(0,tecla);m.paso();
+   int cuadro=tecla==MotorOcho.DOS?27:29;
+   assertEquals(cuadro,AnimacionOcho.cuadroHeroe(m,0));
+   m.entrada(0,0);m.paso();
+   var recuperado=MotorOcho.restaurar(m.capturar());
+   assertEquals(cuadro,AnimacionOcho.cuadroHeroe(recuperado,0));
+   for(int i=0;i<19;i++)recuperado.paso();
+   assertEquals(16,AnimacionOcho.cuadroHeroe(recuperado,0));
+  }
+ }
+
  @Test void laInfeccionRecorreLosDieciseisCuadrosYSostieneElUltimo(){
   Set<Integer>vistos=new HashSet<>();int anterior=0;
   for(int t=0;t<=150;t++){int cuadro=AnimacionOcho.cuadroInfeccion(t);assertTrue(cuadro>=anterior&&cuadro-anterior<=1);vistos.add(cuadro);anterior=cuadro;}
