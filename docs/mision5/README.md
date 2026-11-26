@@ -10,7 +10,13 @@ El ciudadano entra a la oficina de la periodista. Dialogan, aparece Mr. Palomo c
 
 En individual hay un solo corazón, el del ciudadano. En cooperativo hay dos corazones numerados y de colores distintos. Cada jugador tiene cinco vidas de conexión e invulnerabilidad individual tras un impacto. No chocan entre sí. Solo en cooperativo, si un jugador cae y el otro sobrevive a la oleada, vuelve con dos vidas una sola vez por partida. En individual no hay acompañante ni rescate automático: perder las cinco vidas del ciudadano termina la defensa. En cooperativo se pierde cuando ambos caen.
 
-Son cinco rondas de tres patrones originales y un turno de respuesta conjunta. Los quince patrones combinan paquetes cruzados, quietud cian, pasillos, salto de altura variable, plataformas, gravedad lateral, columnas, haces con objetivo fijado y anillos con abertura. Entre patrones hay una transición breve de 0,6 segundos, con la arena visible y movimiento habilitado; se retiró la tarjeta «Patrón 1, 2…». Los haces conservan su aviso previo. Soltar salto limita su altura; caer por gravedad cuenta como movimiento ante un paquete cian. Los haces alternan su objetivo entre los jugadores vivos. La cantidad de obstáculos no se duplica en cooperativo.
+Son cinco rondas de tres patrones originales y un turno de respuesta conjunta. Los quince patrones combinan paquetes cruzados, quietud cian, pasillos, salto de altura variable, plataformas, gravedad lateral, columnas, haces con objetivo fijado y pulsos que alternan el borde y el centro de la arena. Entre patrones hay una transición breve de 0,6 segundos, con la arena visible y movimiento habilitado; se retiró la tarjeta «Patrón 1, 2…». Los haces conservan su aviso previo. Soltar salto limita su altura; caer por gravedad cuenta como movimiento ante un paquete cian. Los haces alternan su objetivo entre los jugadores vivos. La cantidad de obstáculos no se duplica en cooperativo.
+
+Cada patrón contiene tres oleadas con variantes elegidas por la semilla. Los carriles libres cambian de una oleada a otra. Los paquetes, paredes, haces y plataformas tienen fotogramas pixelados. Ámbar indica el aviso y su progreso, magenta marca la descarga que se esquiva, y cian señala cuándo mantenerse quieto. Los fotogramas avanzan con el reloj de la simulación. Consulta la [comprobación de refugios y rutas](PASABILIDAD.md).
+
+En Antenas gemelas, el haz y la lluvia de columnas van seguidos de un cuadrito rastreador. El aviso identifica al jugador objetivo, J1 en individual y J2 en cooperativo si sigue en combate. El cuadrito gira mientras lo persigue, se detiene para marcar la ruta punteada y se lanza en línea recta. Durante esa pausa puedes esquivar hacia un lado. El cuadrito reutiliza cuatro fotogramas del virus y se disipa al final del recorrido.
+
+En Tormenta del cortafuegos, el patrón 15, dos tandas de cuadritos cruzan la arena. Sus puntos de entrada y direcciones cambian según la semilla. El aviso punteado muestra hacia dónde viajan, y la estela acompaña los cuatro fotogramas del virus. El pulso cian va después de las tandas. En Difícil aparecen dos cuadritos rastreadores, uno antes de las tandas y otro después del cian. En cooperativo avisan a J1 y J2 por turnos antes de perseguirlos.
 
 En Fácil y Normal, al completar cada ronda de tres ataques, cada superviviente recupera automáticamente un corazón, hasta un máximo de cinco. En Difícil no hay recuperación automática. Esta ayuda no revive a un jugador caído ni suma puntos; el rescate cooperativo y la acción de reparación mantienen sus reglas propias. El servidor aplica la recuperación una sola vez antes del turno y la incluye en el historial y los guardados.
 
@@ -22,8 +28,8 @@ Cada turno permite verificar una publicación, responder con un pulso de precisi
 
 - **Individual:** solo el ciudadano juega dentro del servidor: un corazón, cinco vidas, sus propios puntos y decisiones. La periodista es un NPC narrativo de la oficina y no combate. WASD/flechas, E/Enter y Espacio para saltar.
 - **Dos en el mismo teclado:** ciudadano WASD/E/Espacio; periodista flechas/Enter/Shift. Durante la respuesta: 1/2/3 para ciudadano y 7/8/9 para periodista. Ambos usan una sola sesión local autoritativa.
-- **Crear sala LAN:** ejecuta el servidor TCP en este equipo y conecta al ciudadano. El menú muestra sus direcciones IP. Espera a que el segundo rol se conecte y ambos confirmen Listo.
-- **Unirse LAN:** escribir la IPv4 o nombre del equipo anfitrión; rol predeterminado periodista. F cambia el rol al unirse a un servidor dedicado. El servidor rechaza un rol ocupado.
+- **Crear sala LAN:** el anfitrión ocupa el puesto de Ciudadano y ve «Partida creada · 1 de 2». La misión empieza al conectarse la Periodista.
+- **Unirse LAN:** el buscador muestra las salas de misión 5 con cupo. Selecciona una sala para ocupar su puesto disponible. «Conectar por IP» permite indicar IPv4 o nombre del equipo y elegir puesto.
 - **Mando:** stick izquierdo mueve, X salta, A confirma, cruceta navega, Menú pausa/reanuda, B vuelve desde la ayuda al menú de pausa, Vista abre ayuda, LB muestra estructuras, Y alterna continuar/nueva partida en configuración.
 - **Pausa:** Esc/P abre el menú; arriba/abajo o Tab eligen y Enter/E/A confirma. Esc vuelve desde ayuda o estructuras a la pausa; Esc/P desde el menú reanuda. El ratón permite elegir todas las opciones. Guardar y salir es una opción explícita del menú; si sale el anfitrión se cierra su sala. Un invitado puede volver a unirse al mismo rol mientras el anfitrión permanezca abierto.
 - **Ayuda:** el botón «Ayuda · momentos y patrones» abre la ronda actual. Siete páginas: controles/reglas, cinco rondas con tres patrones cada una y decisión/ataque final. Cada patrón explica qué sucede y cómo esquivarlo. Clic en las pestañas, flechas izquierda/derecha o botones Anterior/Siguiente cambian de página. El botón Volver o Esc regresa a la pausa sin reanudar.
@@ -33,7 +39,7 @@ En LAN cada jugador controla únicamente su rol. Las confirmaciones de ambos sol
 
 ## Sockets y autoridad
 
-El protocolo de batalla está reservado a la misión **5**. El servidor acepta dos roles y utiliza el puerto **TCP 48505**; la misión 7 tiene su propia sala competitiva TCP 48507 y las otras misiones conservan su flujo individual. El servidor simula 60 pasos por segundo y mantiene reloj, azar con semilla, jugadores, obstáculos, objetivos, colisiones, publicaciones, relaciones de difusión, puntuaciones y turnos. Los clientes intercambian órdenes y vistas aproximadamente cada 25 ms; no envían valores de vida, puntos, resultado ni posición absoluta. El rol pertenece a la conexión y las secuencias repetidas se descartan.
+El protocolo de batalla está reservado a la misión **5**. El servidor acepta dos roles y utiliza el puerto **TCP 48505**. El servidor simula 60 pasos por segundo y mantiene reloj, azar con semilla, jugadores, obstáculos, objetivos, colisiones, publicaciones, relaciones de difusión, puntuaciones y turnos. Los clientes intercambian órdenes y vistas aproximadamente cada 25 ms; no envían valores de vida, puntos, resultado ni posición absoluta. El rol pertenece a la conexión y las secuencias repetidas se descartan.
 
 La prueba automática usa dos clientes TCP en el mismo equipo; una sesión entre dos computadores físicos depende de que ambos estén en la misma red y de que el puerto del anfitrión sea accesible. No se requieren internet, cuentas externas ni dependencias nuevas.
 
@@ -43,7 +49,7 @@ Servidor dedicado opcional desde la carpeta del juego:
 java -cp 'distribucion/alcalde-digital.jar:distribucion/lib/*' alcaldedigital.app.ServidorSalaApp
 ```
 
-En ese caso ambos jugadores eligen Unirse y seleccionan roles distintos con F. `-Dad.continuar=true` carga el guardado LAN disponible al iniciar el servidor dedicado.
+En ese caso ambos jugadores eligen Unirse → Conectar por IP y seleccionan roles distintos. `-Dad.continuar=true` carga el guardado LAN disponible al iniciar el servidor dedicado.
 
 ## Guardados y campaña
 
@@ -52,7 +58,7 @@ Por defecto se escriben en `~/.local/state/alcalde-digital/`:
 - `mision5-solo.bin`, `mision5-coop.bin`, `mision5-lan.bin`: modos separados. Guardan identificador de sala, semilla, fase, ronda, patrón, reloj, posiciones, velocidades, vidas, puntos, recuperación, elecciones, historial, publicaciones, obstáculos y ciudad inicial. Se reemplazan de forma atómica en cada cambio de fase y cada diez segundos. G y salir también guardan.
 - `campana.properties`: resultado por sala, puntuación de cada rol, mejores puntuaciones y siete indicadores. Acreditar una sala ya registrada no vuelve a sumar sus cambios. La ciudad del resultado proviene de la sesión autoritativa del anfitrión y se replica a ambos clientes.
 
-En la configuración, R alterna partida nueva o continuar. Continuar restaura la instantánea; en LAN el anfitrión continúa y el otro jugador vuelve a unirse. Una partida nueva reemplaza el checkpoint de su modo, conservando los resultados ya registrados. Los errores de lectura/escritura se muestran en pantalla. `-Dad.guardados=RUTA` permite un directorio independiente; las pruebas usan carpetas temporales y no alteran el perfil del usuario. El guardado de campañas aquí se realiza al completar esta misión; las sesiones antiguas de las otras misiones siguen con su comportamiento previo.
+En la configuración, R alterna partida nueva o continuar. Continuar restaura la instantánea. Si el guardado es anterior a este cambio y estaba en pleno combate, vuelve al inicio del patrón actual, conservando ronda, vidas, puntaje y decisiones. En LAN el anfitrión continúa y el otro jugador vuelve a unirse. Una partida nueva reemplaza el checkpoint de su modo, conservando los resultados ya registrados. Los errores de lectura/escritura se muestran en pantalla. `-Dad.guardados=RUTA` permite un directorio independiente; las pruebas usan carpetas temporales y no alteran el perfil del usuario. El guardado de campañas aquí se realiza al completar esta misión; las sesiones antiguas de las otras misiones siguen con su comportamiento previo.
 
 ## Arte y accesibilidad
 
@@ -74,7 +80,7 @@ Corrección de ubicaciones e individual: el render usa las posiciones de la sesi
 
 ## Dificultades y estilo
 
-En la configuración se elige **Fácil, Normal o Difícil** con clic, izquierda/derecha, 1/2/3 o cruceta del mando. Normal es la selección inicial y conserva los valores anteriores de los ataques activos. La dificultad del anfitrión se transmite a ambos clientes y se conserva en el guardado. Al continuar se respeta el nivel guardado. Los archivos del formato anterior se cargan como Normal.
+En la configuración se elige **Fácil, Normal o Difícil** con clic, izquierda/derecha, 1/2/3 o cruceta del mando. Normal es la selección inicial y ofrece el aviso y la separación de oleadas intermedios. La dificultad del anfitrión se transmite a ambos clientes y se conserva en el guardado. Al continuar se respeta el nivel guardado. Los archivos del formato anterior se cargan como Normal.
 
 | Nivel | Velocidad de obstáculos | Intervalo entre llegadas | Aviso previo | Ancho de los pasillos |
 | --- | ---: | ---: | ---: | ---: |

@@ -22,26 +22,27 @@ El primero obtiene la primicia; si ambos cruzan en el mismo instante, se reconoc
 
 - Juan honesto puede ganar si obtiene respaldo suficiente; otro candidato puede superarlo.
 - Confirmar el pacto registra que Juan autorizó un pago oculto y un montaje. Juan queda corrupto y excluido del liderazgo electoral.
-- Leer la propuesta solo abre una advertencia. Se debe confirmar una segunda vez la opción que indica explícitamente que Juan no podrá ganar: 2/8, clic en ese botón o A con esa opción seleccionada. Rechazar o dejar vencer la oferta no ejecuta el pacto. E/Q/K/Y conservan su acción de usar ayudas y nunca aceptan un pacto.
+- Leer la propuesta solo abre una advertencia. Se debe confirmar una segunda vez la opción que indica explícitamente que Juan no podrá ganar: 2/8, clic en ese botón, E con esa opción seleccionada o A del mando. Rechazar o dejar vencer la oferta no ejecuta el pacto. Q/K/Y usan ayudas y nunca aceptan un pacto.
 - La corrupción es irreversible dentro de la campaña. Más reputación, reiniciar una carrera o cargar un checkpoint anterior no la borra.
 - La CPU nunca acepta el pacto. Las decisiones humanas determinan esa condición.
-- El resultado de misión 7 es provisional. No escribe una proclamación definitiva ni desarrolla la misión 8 por adelantado.
+- El cierre de la misión 7 muestra el resultado de la carrera, los puntajes y los indicadores de la ciudad. Los antecedentes electorales se registran para el escrutinio de la misión 8.
 
 ## Modos y controles
 
-Hay Individual contra CPU, Dos personas en teclado, Crear sala LAN y Unirse LAN; Fácil, Normal y Difícil. La dificultad cambia ritmo, precisión y errores de CPU, sin otorgarle velocidad superior ni inmunidad. Se puede elegir periodista o influencer. El invitado propone influencer por defecto, pero se puede cambiar de rol si está libre.
+Hay Individual contra CPU, Dos personas en teclado, Crear sala LAN y Unirse LAN; Fácil, Normal y Difícil. La dificultad cambia ritmo, precisión y errores de CPU, sin otorgarle velocidad superior ni inmunidad. Se puede elegir periodista o influencer. El anfitrión elige su personaje y el invitado ocupa el personaje libre al seleccionar la sala.
 
 | Acción | Individual / LAN | Periodista en teclado compartido | Influencer en teclado compartido |
 |---|---|---|---|
 | Cambiar carril | W/S o flechas | W/S | Flechas arriba/abajo |
 | Correr | Espacio | Espacio | Mayús |
-| Usar ayuda | Q (E anterior) | Q (E anterior) | K |
+| Usar ayuda | Q | Q | K |
 | Elegir noticia | 1 / 2 / 3 | 1 / 2 / 3 | 7 / 8 / 9 |
+| Confirmar noticia seleccionada | E / Enter | E | Las teclas 7 / 8 / 9 responden directamente |
 | Avanzar diálogo | E / Enter | E | Enter |
 
 «Mantener» genera un ritmo de cinco pulsaciones por segundo. «Pulsar» acepta una nueva pulsación cada diez pasos (seis por segundo como máximo). Ambos modos tienen velocidad máxima de cuatro unidades por paso. La repetición automática del teclado no crea pulsaciones adicionales. Se puede cambiar la modalidad desde la pausa. En dos personas, J2 usa este mismo teclado como influencer; el mando y el botón de asistencia corresponden al rol seleccionado en configuración.
 
-Mando: stick cambia de carril, X corre, LB/RB seleccionan una noticia y A la confirma; Y usa una ayuda. A avanza diálogos; cruceta navega. Menú pausa/reanuda, B vuelve desde una consulta a pausa y Vista abre ayuda. En configuración, LB cambia el personaje e Y alterna mantener/pulsar. Se mantienen contraste alto y movimiento reducido.
+Mando: stick cambia de carril, RB corre (X sigue como alternativa), cruceta izquierda/derecha selecciona una noticia y A la confirma; Y usa una ayuda. A avanza diálogos. Menú pausa/reanuda, B vuelve desde una consulta a pausa y Vista abre ayuda. En configuración, LB cambia el personaje e Y alterna mantener/pulsar. Se mantienen contraste alto y movimiento reducido.
 
 Esc/P pausa; H ayuda; T estructuras; V campaña electoral; G guardar. La pausa tiene botones de continuar, ayuda, estructuras, campaña, modalidad de carrera, guardar y salir. Ayuda, estructuras y campaña mantienen la simulación detenida. Todos sus clics y teclas se consumen sin alcanzar pantallas de fondo. Al reanudar se deben soltar las teclas mantenidas y centrar el mando. Perder foco pausa la carrera.
 
@@ -53,7 +54,7 @@ Esc/P pausa; H ayuda; T estructuras; V campaña electoral; G guardar. La pausa t
 - Árbol n-ario: organiza las cuatro noticias por cada rol y sus tres alternativas; registra las rutas ejecutadas y las recupera al cargar.
 - Grafo dirigido de Civitas: BFS determina los destinatarios. Los mensajes llegan de forma escalonada cada veinte pasos; hay ondas pendientes persistidas. Los grupos cambian entre normal, celular, alterado y aclarado. Estas reacciones afectan a las aglomeraciones del recorrido.
 
-Crear sala inicia `ServidorCarrera` en **TCP 48507**. Se admite un cliente por rol. El servidor vincula cada rol a su conexión, rechaza secuencias repetidas y no acepta que un cliente actúe por otro. Los clientes intercambian órdenes/vistas cada unos 25 ms, fuera del hilo gráfico. Desconectar pausa la sala; se puede reconectar con el mismo rol y reanudar cuando estén ambos. Una sala de carrera es independiente de la batalla de misión 5, que usa 48505. Solo misiones 5 y 7 tienen salas TCP de dos personas; el vestíbulo general de cuatro jugadores sigue pendiente.
+Crear sala inicia `ServidorCarrera` en **TCP 48507**. Se admite un cliente por rol. El servidor vincula cada rol a su conexión, rechaza secuencias repetidas y no acepta que un cliente actúe por otro. Los clientes intercambian órdenes/vistas cada unos 25 ms, fuera del hilo gráfico. Desconectar pausa la sala; se puede reconectar con el mismo rol y reanudar cuando estén ambos. Una sala de carrera es independiente de la batalla de misión 5, que usa 48505. El buscador muestra las salas de la misión con cupos libres. Una sala nueva comienza cuando entran ambos roles.
 
 ## Guardados
 
@@ -85,12 +86,18 @@ Son **48 cuadros originales nuevos y un escenario**. Las direcciones completas d
 
 Se usó la herramienta integrada **imagegen**. Archivos fuente y prompts exactos: [referencias de arte](../../tools/arte/referencias-mision7/PROMPTS.md). Capturas de revisión: [anuncio](vista-anuncio.png), [rivalidad](vista-rivalidad.png), [dos personas](vista-dos.png), [pacto](vista-pacto.png), [ciudadanos](vista-ciudadanos.png), [campaña](vista-eleccion.png) y [resultado](vista-resultado.png).
 
+### Presentación de la carrera
+
+La pista dibuja los límites de la calzada, marcas de carril, la salida y la meta. Nova Prensa, Avenida Civitas, Pasaje Electoral y el parque usan distintas fachadas, colores y señales. La cámara deja espacio por delante, encuadra a ambos corredores en teclado compartido y sigue al jugador local en individual o LAN cuando se separan mucho.
+
+La barra de avance reúne los marcadores de la Periodista y el Influencer. Los peatones de acera y los ciudadanos de la pista se distinguen por posición y señalización. Las franjas rayadas muestran el alcance vertical y el tiempo restante de cada distracción. Las tarjetas de noticias muestran la opción enfocada y su tiempo disponible, incluida la advertencia del pacto al jugar con dos personas. La presentación usa la `Vista` existente, con las mismas reglas, guardados y protocolo de red.
+
 ## Verificación
 
 `bash herramientas.sh paquete` compila, ejecuta JUnit y actualiza la distribución. Las pruebas incluyen recorridos completos con cualquiera de los dos personajes y ambos humanos en las tres dificultades, límites de velocidad/pulsaciones, ayudas, colisiones, aviso de sabotaje, noticias, roles, difusión, AVL, decisiones, guardado/restauración exacta, corrupción explícita e irreversible, elegibilidad y apoyo, acreditación idempotente, pausa modal, controles, teclado compartido y dos clientes reales TCP con reconexión y checkpoint.
 
 Las capturas usan `-Dad.mision7.integracion=true`, `-Dad.mision7.vista=anuncio|rivalidad|salida|encuentro|avenida|noticia|ciudadanos|pacto|dos|llegada|resultado|ayuda|eleccion|estructuras|pausa` y `-Dad.mision7.captura=RUTA`. Son recorridos de revisión que avanzan la simulación legalmente; no añaden inmunidad ni cambian velocidad. Usar siempre un directorio temporal con `ad.guardados` para estas revisiones. Sin `ad.mision7.vista`, `ad.mision7.integracion` únicamente abre la configuración normal.
 
-La conexión se ha comprobado con dos clientes en el mismo equipo. Un mando físico y una LAN entre dos computadores distintos requieren comprobación manual. La misión 8 continúa pendiente; la misión 7 conserva los datos necesarios para ella.
+La conexión se ha comprobado con dos clientes en el mismo equipo. Un mando físico y una LAN entre dos computadores distintos requieren comprobación manual. La misión 7 conserva los datos que usa el escrutinio de la misión 8.
 
 Validación final del 12 de noviembre de 2026: **146 pruebas JUnit, cero fallos y cero errores**, paquete generado con BUILD SUCCESS. Incluye las 115 pruebas anteriores y 31 nuevas de misión 7. Se completaron nueve recorridos con física real (tres dificultades × individual con cada rol o dos humanos), se inspeccionaron las escenas y advertencias en Processing y se comprobaron dos clientes TCP. La pausa y su [ayuda](vista-ayuda.png) también se revisaron gráficamente; [menú de pausa](vista-pausa.png).

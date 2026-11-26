@@ -33,6 +33,22 @@ public final class PuntajesMision {
         int responsables=0;
         for(String d:sesion.decisionesRegistradas())if(d.contains("contrastada; compartir con contexto")||
             d.startsWith("Publicación 1: contrastada; reportar con contexto"))responsables++;
+        var investigacion=sesion.investigacion();
+        if(investigacion!=null) {
+            responsables=(int)sesion.decisionesRegistradas().stream().filter(d->
+                d.contains("contrastada; compartir con contexto")||d.contains("contrastada; reportar con contexto")).count();
+            int vecinos=investigacion.calmaClasica()?v.calmados()*6:investigacion.ciudadanos()*12;
+            String conteo=investigacion.calmaClasica()?"Vecinos calmados: "+v.calmados()+"/8":
+                "Vecinos calmados: "+investigacion.ciudadanos()+"/4";
+            int score=redondear(investigacion.clasificados()*10+vecinos+
+                12.0*investigacion.evidencias()/alcaldedigital.compartido.modelo.InvestigacionCiudadana.totalEvidencias());
+            return new Fila(1,sesion.partida(),"BUENO".equals(v.desenlace()),score,v.dificultad().name(),
+                List.of("Casos clasificados: "+investigacion.clasificados()+"/4",
+                    "Evidencias: "+investigacion.evidencias(),conteo),
+                sesion.decisionesRegistradas(),cambio(EstadoCiudad.inicial(),v.ciudad()),
+                Map.of("vecinos_calmados",v.calmados(),"publicaciones_responsables",responsables,"burlas",sesion.burlas(),
+                    "casos_clasificados",investigacion.clasificados(),"evidencias",investigacion.evidencias()));
+        }
         int score=redondear(v.calmados()*5+responsables*40.0/3+
             Math.max(0,Math.min(20,v.puntos()/4.0)));
         return new Fila(1,sesion.partida(),"BUENO".equals(v.desenlace()),score,v.dificultad().name(),
@@ -67,10 +83,10 @@ public final class PuntajesMision {
             if(i==2)neutrales++;else if(opcion==0)favorables++;else desfavorables++;
             respuestas.add("Pregunta "+(i+1)+": "+(opcion==0?"No":"Sí")+" · "+valoracion);
         }
-        int score=(r.completada()?40:0)+r.publicacionesValidadas()*10+
+        int score=(r.completada()?40:0)+redondear(r.publicacionesValidadas()*30.0/r.totalPublicaciones())+
             redondear(favorables*20.0/3)+redondear(r.enemigos()*10.0/3);
         return new Fila(4,r.partida(),r.completada(),score,"",
-            List.of("Fuentes investigadas: "+r.publicacionesValidadas()+"/3",
+            List.of("Fuentes investigadas: "+r.publicacionesValidadas()+"/"+r.totalPublicaciones(),
                 "Respuestas: "+favorables+" favorables, "+desfavorables+" "+(desfavorables==1?"desfavorable":"desfavorables")+
                     ", "+neutrales+" "+(neutrales==1?"neutral":"neutrales"),
                 "Amenazas detenidas: "+r.enemigos()+"/3"),respuestas,
@@ -116,7 +132,6 @@ public final class PuntajesMision {
             datos.add((i==0?"Periodista":"Influencer")+": "+c.puntos()+" puntos, reputación "+c.reputacion());}
         for(String h:v.historial())if(h.matches("r[01]e[0-3]a[0-3].*")){decisiones.add(h);if(h.matches("r[01]e[0-3]a0.*"))verificadas++;}
         datos.add("Noticias contrastadas: "+verificadas);
-        datos.add("Juan corrupto: "+(v.electoral().juanCorrupto()?"sí":"no"));
         int score=(gano?35:0)+redondear(25.0*reputacion/(100*Math.max(1,humanos)))+
             Math.min(20,verificadas*5)+Math.min(20,Math.max(0,total)/20);
         return new Fila(7,v.id(),gano,score,v.dificultad().name(),datos,decisiones,cambio(v.base(),v.ciudad()),

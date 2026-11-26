@@ -43,17 +43,17 @@ class MisionSeisEntregaTest {
     mantener(m,KeyEvent.VK_W,n.y>objetivo+12);mantener(m,KeyEvent.VK_S,n.y<objetivo-12);
     m.pulsar(modo==Modo.SOLO?KeyEvent.VK_J:KeyEvent.VK_F);
     if(modo==Modo.DUO)m.pulsar(KeyEvent.VK_L);
-    if(m.etapa()>1&&n.misil<=0){int k=modo==Modo.SOLO?KeyEvent.VK_K:KeyEvent.VK_G;m.pulsar(k);m.soltar(k);}
-    for(var b:m.proyectiles)if(b.enemigo&&b.x>n.x&&b.x-n.x<110&&Math.abs(b.y-n.y)<40){m.pulsar(KeyEvent.VK_SHIFT);m.soltar(KeyEvent.VK_SHIFT);break;}
+    if(m.etapa()>1&&n.misil<=0){int k=KeyEvent.VK_Q;m.pulsar(k);m.soltar(k);}
+    for(var b:m.proyectiles)if(b.enemigo&&b.x>n.x&&b.x-n.x<110&&Math.abs(b.y-n.y)<40){m.pulsar(KeyEvent.VK_SPACE);m.soltar(KeyEvent.VK_SPACE);break;}
     m.actualizar(1f/60);
     if(i==120){m=MisionSeisMotor.restaurar(m.capturar());assertNotNull(m);}
    }
    assertEquals(14,fases,"El combate debe recorrer sus tres fases");assertEquals(Fase.RETIRADA,m.fase,modo.toString());
-   for(int i=0;i<TRANSMISION.length;i++)confirmar(m);assertEquals(Fase.LLEGADA,m.fase);paso(m,6.1f);assertEquals(Fase.EXPLORAR_SALA,m.fase);m.pulsar(KeyEvent.VK_A);paso(m,.98f);m.soltar(KeyEvent.VK_A);m.pulsar(KeyEvent.VK_W);paso(m,.6f);m.soltar(KeyEvent.VK_W);m.pulsar(KeyEvent.VK_ENTER);confirmar(m);confirmar(m);
+   for(int i=0;i<TRANSMISION.length;i++)confirmar(m);assertEquals(Fase.LLEGADA,m.fase);paso(m,6.1f);assertEquals(Fase.EXPLORAR_SALA,m.fase);m.pulsar(KeyEvent.VK_D);paso(m,3.0f);m.soltar(KeyEvent.VK_D);m.pulsar(KeyEvent.VK_ENTER);confirmar(m);confirmar(m);
    assertEquals(Fase.ENTREVISTA,m.fase);
    for(int i=0;i<3;i++){m.pulsar(modo==Modo.SOLO?KeyEvent.VK_1:KeyEvent.VK_2);confirmar(m);}
    assertEquals(Fase.FINAL,m.fase);assertEquals(modo==Modo.SOLO?Ruta.ESCUCHA:Ruta.CONVICCION,m.ruta());
-   m.pulsar(KeyEvent.VK_ENTER);assertTrue(m.resultado().completada());
+   confirmar(m);assertEquals("INFLUENCER",m.interlocutor());confirmar(m);assertTrue(m.resultado().completada());
   }
  }
 }

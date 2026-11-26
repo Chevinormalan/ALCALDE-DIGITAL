@@ -4,6 +4,8 @@ import java.lang.reflect.Proxy;
 import net.java.games.input.Component;
 import net.java.games.input.Controller;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import static alcaldedigital.cliente.entrada.EstadoMando.Boton;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,5 +59,36 @@ class LectorJInputTest {
         for(var boton:new Boton[]{Boton.A,Boton.X,Boton.LT,Boton.RT,Boton.VISTA,Boton.MENU})
             assertTrue(estado.pulsado(boton),boton.name());
         assertFalse(estado.pulsado(Boton.B));
+    }
+
+    @Test @EnabledOnOs(OS.LINUX)
+    void traduceBotonesLinuxDePlayStationPorPosicion() {
+        String nombre="Sony DualSense Wireless Controller";
+        assertEquals(Boton.A,unBoton(nombre,Component.Identifier.Button.A));
+        assertEquals(Boton.B,unBoton(nombre,Component.Identifier.Button.B));
+        assertEquals(Boton.Y,unBoton(nombre,Component.Identifier.Button.X));
+        assertEquals(Boton.X,unBoton(nombre,Component.Identifier.Button.Y));
+        assertEquals(Boton.LB,unBoton(nombre,Component.Identifier.Button.LEFT_THUMB));
+        assertEquals(Boton.RB,unBoton(nombre,Component.Identifier.Button.RIGHT_THUMB));
+        assertEquals(Boton.LT,unBoton(nombre,Component.Identifier.Button.LEFT_THUMB2));
+        assertEquals(Boton.RT,unBoton(nombre,Component.Identifier.Button.RIGHT_THUMB2));
+        assertEquals(Boton.MENU,unBoton(nombre,Component.Identifier.Button.START));
+        assertEquals(Boton.VISTA,unBoton(nombre,Component.Identifier.Button.SELECT));
+    }
+
+    @Test void xboxWirelessNoUsaElPerfilDePlayStation() {
+        String nombre="Xbox Wireless Controller";
+        assertFalse(LectorJInput.esPlayStation(nombre));
+        assertEquals(Boton.A,unBoton(nombre,Component.Identifier.Button._0));
+        assertEquals(Boton.X,unBoton(nombre,Component.Identifier.Button.X));
+        assertEquals(Boton.Y,unBoton(nombre,Component.Identifier.Button.Y));
+        assertEquals(Boton.LB,unBoton(nombre,Component.Identifier.Button.LEFT_THUMB));
+        assertEquals(Boton.RT,unBoton(nombre,Component.Identifier.Button.RIGHT_THUMB2));
+    }
+
+    private Boton unBoton(String nombre,Component.Identifier.Button identificador) {
+        var estado=LectorJInput.convertir(mando(nombre,componente(identificador,1)));
+        assertEquals(1,estado.botones().size(),identificador.getName());
+        return estado.botones().iterator().next();
     }
 }

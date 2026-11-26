@@ -32,6 +32,6 @@ class AudioMisionSeisTest {
  @Test void rotorRespondeAlMovimientoYLosPasosDependenDeCaminar(){
   var m=new MisionSeisMotor();m.comenzar(Modo.SOLO);m.fase=Fase.ENTRENAMIENTO;var s=new SalidaAudioPrueba();var a=new AudioMisionSeis(s);a.observar(m);m.actualizar(1f/60);a.observar(m);float quieto=s.bucles.get("rotor");
   m.pulsar(KeyEvent.VK_D);m.actualizar(1f/60);a.observar(m);assertTrue(s.bucles.get("rotor")>quieto);
-  m.fase=Fase.EXPLORAR_SALA;m.perderFoco();m.pulsar(KeyEvent.VK_A);for(int i=0;i<30;i++){m.actualizar(1f/60);a.observar(m);}assertTrue(s.cuenta("paso_madera")>0);long pasos=s.cuenta("paso_madera");m.perderFoco();for(int i=0;i<30;i++){m.actualizar(1f/60);a.observar(m);}assertEquals(pasos,s.cuenta("paso_madera"));
+  m.fase=Fase.EXPLORAR_SALA;m.perderFoco();m.pulsar(KeyEvent.VK_D);for(int i=0;i<30;i++){m.actualizar(1f/60);a.observar(m);}assertTrue(s.cuenta("paso_madera")>0);long pasos=s.cuenta("paso_madera");m.perderFoco();for(int i=0;i<30;i++){m.actualizar(1f/60);a.observar(m);}assertEquals(pasos,s.cuenta("paso_madera"));
  }
 }

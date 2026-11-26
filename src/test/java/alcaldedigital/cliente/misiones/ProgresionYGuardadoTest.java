@@ -30,12 +30,12 @@ class ProgresionYGuardadoTest {
   assertEquals(perfilAlConstruir,ArchivosPartida.directorio());juegoAlConstruir.victoria(1);
   assertTrue(Files.isRegularFile(perfilAlConstruir.resolve("progreso-misiones.properties")));
  }
- @Test void perfilNuevoSoloAbreLaUnoYNoPermiteSaltarPorAccionDirecta(){var j=juego();j.accion("jugar");var r=new RenderJuego();r.dibujar(j);assertEquals(List.of("mision1"),r.botones().stream().map(b->b.accion()).filter(a->a.matches("mision[1-7]")).toList());for(int n=2;n<=7;n++){j.accion("mision"+n);assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);}j.accion("m2dificultad:NORMAL");assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);}
+ @Test void perfilNuevoSoloAbreLaUnoYNoPermiteSaltarPorAccionDirecta(){var j=juego();j.abrir(JuegoCliente.Pantalla.MISIONES);var r=new RenderJuego();r.dibujar(j);assertEquals(List.of("mision1"),r.botones().stream().map(b->b.accion()).filter(a->a.matches("mision[1-7]")).toList());for(int n=2;n<=7;n++){j.accion("mision"+n);assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);}j.accion("m2dificultad:NORMAL");assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);}
  @Test void victoriasPersistenEnOrdenYUnaDerrotaNoDesbloquea(){var j=juego();j.victoria(4);assertFalse(j.progreso.ganada(4));j.victoria(1);assertTrue(juego().progreso.disponible(2));j.terminarMisionDos(new MisionDosSketch.Resultado(true,false,5,0));assertFalse(j.progreso.disponible(3));j.terminarMisionDos(new MisionDosSketch.Resultado(true,true,6,0));assertTrue(juego().progreso.disponible(3));assertFalse(j.progreso.disponible(4));}
- @Test void tenerCheckpointNoEsHaberGanado(){var p=new Properties();p.setProperty("version","1");assertDoesNotThrow(()->GuardadoCampana.guardar(6,p));var j=juego();j.accion("jugar");j.accion("mision6");assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);assertFalse(j.progreso.disponible(6));}
+ @Test void tenerCheckpointNoEsHaberGanado(){var p=new Properties();p.setProperty("version","1");assertDoesNotThrow(()->GuardadoCampana.guardar(6,p));var j=juego();j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision6");assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);assertFalse(j.progreso.disponible(6));}
  @Test void botonOpcionalDesbloqueaTodasSinInventarVictoriasYPersiste()throws Exception{
   var j=juego();j.accion("desbloquearTodas");assertFalse(j.progreso.disponible(7));
-  j.accion("jugar");var r=new RenderJuego();r.dibujar(j);
+  j.abrir(JuegoCliente.Pantalla.MISIONES);var r=new RenderJuego();r.dibujar(j);
   var boton=r.botones().stream().filter(b->b.accion().equals("desbloquearTodas")).findFirst().orElseThrow();
   assertEquals("Desbloquear todas las misiones",boton.texto());
   r.pulsar(j,(int)boton.area().getCenterX(),(int)boton.area().getCenterY());
@@ -59,12 +59,12 @@ class ProgresionYGuardadoTest {
   String anterior=System.getProperty("ad.guardados");Path perfil=tmp.resolve("perfil");
   System.setProperty("ad.guardados",perfil.toString());
   try{
-   var j=juego();j.accion("jugar");j.accion("desbloquearTodas");j.victoria(1);
+   var j=juego();j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("desbloquearTodas");j.victoria(1);
    var guardado=new Properties();guardado.setProperty("version","1");
    GuardadoCampana.guardar(1,guardado);
    assertTrue(j.progreso.disponible(7));
    j.accion("pedirRestablecer");assertEquals(JuegoCliente.Pantalla.CONFIRMAR_REINICIO,j.pantalla);
-   j.accion("confirmarRestablecer");assertEquals(JuegoCliente.Pantalla.MISIONES,j.pantalla);
+   j.accion("confirmarRestablecer");assertEquals(JuegoCliente.Pantalla.MENU,j.pantalla);
    assertTrue(j.progreso.disponible(1));assertFalse(j.progreso.disponible(2));
    assertFalse(j.progreso.ganada(1));assertFalse(j.progreso.todasDesbloqueadas());
    assertFalse(Files.exists(GuardadoCampana.archivo(1)));
@@ -115,7 +115,7 @@ class ProgresionYGuardadoTest {
   j.abrir(JuegoCliente.Pantalla.MENU);j.accion("continuarMision");
   assertEquals(JuegoCliente.Pantalla.MISION_SIETE,j.pantalla);assertEquals(1,j.rolContinuacion);
  }
- @Test void selectorDePartidaConservaVictoriasYDejaElegirNueva(){var j=juego();j.accion("jugar");j.accion("mision1");j.accion("m1dificultad:FACIL");assertDoesNotThrow(j::guardarMisionUno);j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision1");assertEquals(JuegoCliente.Pantalla.GUARDADO,j.pantalla);new RenderJuego().dibujar(j);j.accion("partida:continuar");assertEquals(JuegoCliente.Pantalla.PARQUE,j.pantalla);assertEquals(SesionMisionUno.Dificultad.FACIL,j.misionUno.vista().dificultad());j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision1");j.accion("partida:nueva");assertEquals(JuegoCliente.Pantalla.DIFICULTAD,j.pantalla);}
+ @Test void selectorDePartidaConservaVictoriasYDejaElegirNueva(){var j=juego();j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision1");j.accion("m1dificultad:FACIL");assertDoesNotThrow(j::guardarMisionUno);j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision1");assertEquals(JuegoCliente.Pantalla.GUARDADO,j.pantalla);new RenderJuego().dibujar(j);j.accion("partida:continuar");assertEquals(JuegoCliente.Pantalla.PARQUE,j.pantalla);assertEquals(SesionMisionUno.Dificultad.FACIL,j.misionUno.vista().dificultad());j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision1");j.accion("partida:nueva");assertEquals(JuegoCliente.Pantalla.DIFICULTAD,j.pantalla);}
  @Test void guardarUnoRecuperaFasePosicionesFuentesYArboles(){var m=new SesionMisionUnoLocal(2026,SesionMisionUno.Dificultad.FACIL);m.actualizar(2);for(int i=0;i<4;i++)m.solicitar("intro"+i,"continuar");m.actualizar(2);m.solicitar("ver","verificar:1");var copia=SesionMisionUnoLocal.restaurar(m.capturar());assertEquals(m.vista(),copia.vista());m.actualizar(.1);copia.actualizar(.1);assertEquals(m.vista(),copia.vista());}
  @Test void guardarDosRecuperaRedTiempoSaltoYLaSecuenciaDeAtaques(){var m=new MisionDosSketch(MisionDosSketch.Dificultad.NORMAL,9817);var p=m.capturar();p.setProperty("estado.fase","DEFENSA");p.setProperty("estado.proximoAtaque","0.2");m=MisionDosSketch.restaurar(p);for(int i=0;i<30;i++)m.actualizarEstado(1f/60);var copia=MisionDosSketch.restaurar(m.capturar());for(int i=0;i<650;i++){m.actualizarEstado(1f/60);copia.actualizarEstado(1f/60);}assertEquals(m.resultado(),copia.resultado());assertEquals(m.capturar(),copia.capturar());}
  @Test void azarRestauradoProduceLasMismasOleadasQueRandomJava(){var a=new AzarPartida(2026);var b=new java.util.Random(2026);for(int i=0;i<50;i++)assertEquals(b.nextInt(6),a.nextInt(6));long estado=a.estado();var c=new AzarPartida(0);c.restaurar(estado);for(int i=0;i<50;i++)assertEquals(a.nextDouble(),c.nextDouble());}

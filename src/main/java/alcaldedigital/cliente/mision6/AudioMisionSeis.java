@@ -4,14 +4,15 @@ import java.util.*;
 import static alcaldedigital.cliente.mision6.MisionSeisMotor.*;
 /** Observador de presentación: nunca modifica la simulación. */
 public final class AudioMisionSeis implements AutoCloseable {
- private final AudioEscenaSalida salida;private boolean listo;private Fase fase;private float tiempo,ataque,impacto;
+ private final AudioEscenaSalida salida;private boolean listo;private Fase fase;private float tiempo,impacto;
+ private int etapaDron,salvas;
  private final float[] armas=new float[2],misiles=new float[2],x=new float[2],y=new float[2],impulsos=new float[2];private final int[] vidas=new int[2];
  private float global,pasos;private final Set<Proyectil> especiales=Collections.newSetFromMap(new IdentityHashMap<>());
  public AudioMisionSeis(){this(new AudioEscena("M6"));}public AudioMisionSeis(AudioEscenaSalida s){salida=s;}
  private void fx(String id,float vol,double intervalo){salida.efecto(id,"presentacion/audio/"+id,vol,intervalo);}
  public void observar(MisionSeisMotor m){
   boolean vuelo=switch(m.fase){case DESPEGUE,AVISO,ENTRENAMIENTO,COMBATE,RETIRADA,LLEGADA->true;default->false;};
-  float aterrizaje=m.fase==Fase.LLEGADA?Math.min(1,m.tiempo/5.2f):0;
+  float aterrizaje=m.fase==Fase.LLEGADA?Math.min(1,m.tiempo/4.45f):0;
   float movimiento=m.fase==Fase.DESPEGUE?.8f:.15f,dt=m.global-global;
   if(listo&&dt>0&&(m.fase==Fase.COMBATE||m.fase==Fase.ENTRENAMIENTO)){movimiento=0;for(int i=0;i<(m.modo==Modo.SOLO?1:2);i++)movimiento=Math.max(movimiento,Math.min(1,(float)Math.hypot(m.naves[i].x-x[i],m.naves[i].y-y[i])/dt/350));}
   salida.bucle("hover","presentacion/audio/helicoptero_hover",vuelo?.17f*(1-movimiento)*(1-aterrizaje):0);
@@ -26,9 +27,14 @@ public final class AudioMisionSeis implements AutoCloseable {
     if(m.naves[i].vida<vidas[i])fx("dano",.24f,.16);
     if(m.naves[i].vida>vidas[i]&&m.fase==Fase.COMBATE)salida.efecto("curacion","mision3/audio/ui",.18f,.15);
    }
-   if(m.fase==Fase.COMBATE&&fase==Fase.COMBATE&&m.ataqueJefe>ataque+.3f)fx("disparo_dron",.34f,.12);
+   if(m.fase==Fase.COMBATE&&fase==Fase.COMBATE&&m.ataquesLanzados>0
+       &&(m.etapaAtaque!=etapaDron||m.ataquesLanzados>salvas)){
+    if(m.choque>0)salida.efecto("halo","mision3/audio/dash",.30f,.20);
+    else fx("disparo_dron",.34f,.12);
+   }
    boolean coheteImpacto=false;for(Proyectil p:especiales)if(!m.proyectiles.contains(p)&&p.edad<8&&Math.hypot(p.x-m.jefeX,p.y-m.jefeY)<80&&(m.fase==Fase.COMBATE&&fase==Fase.COMBATE||m.fase==Fase.RETIRADA&&p.x==m.impactoX&&p.y==m.impactoY))coheteImpacto=true;
-   if(coheteImpacto||m.impacto>impacto+.025f)fx(coheteImpacto||m.impacto>.2f?"explosion_cohete":"impacto",coheteImpacto||m.impacto>.2f?.43f:.24f,.085);
+   if(m.fase==Fase.ENTRENAMIENTO&&m.impacto>impacto+.025f)fx("impacto",.24f,.085);
+   else if(coheteImpacto||m.impacto>impacto+.025f)fx(coheteImpacto||m.impacto>.2f?"explosion_cohete":"impacto",coheteImpacto||m.impacto>.2f?.43f:.24f,.085);
    if(m.fase==Fase.RETIRADA&&fase!=Fase.RETIRADA)fx("radio",.18f,.5);
    if(m.fase==Fase.DESPEGUE&&fase!=Fase.DESPEGUE)fx("encendido_helicoptero",.20f,.5);
    if(m.fase==Fase.RETIRADA&&m.tiempo>=.5f&&(fase!=Fase.RETIRADA||tiempo<.5f))fx("destruccion_dron",.51f,1);
@@ -37,7 +43,7 @@ public final class AudioMisionSeis implements AutoCloseable {
   especiales.clear();for(Proyectil p:m.proyectiles)if(p.especial&&!p.enemigo)especiales.add(p);
   for(int i=0;i<2;i++){armas[i]=m.naves[i].arma;misiles[i]=m.naves[i].misil;vidas[i]=m.naves[i].vida;x[i]=m.naves[i].x;y[i]=m.naves[i].y;impulsos[i]=m.naves[i].recargaImpulso;}
   global=m.global;pasos=m.pasos;
-  fase=m.fase;tiempo=m.tiempo;ataque=m.ataqueJefe;impacto=m.impacto;listo=true;
+  fase=m.fase;tiempo=m.tiempo;etapaDron=m.etapaAtaque;salvas=m.ataquesLanzados;impacto=m.impacto;listo=true;
  }
  public void confirmar(){salida.efecto("confirmar","mision3/audio/ui",.11f,.12);}
  public void pausar(){salida.pausar();}public void restablecer(){listo=false;especiales.clear();}

@@ -12,7 +12,7 @@ public final class ServidorSalaApp {
         int puerto=Integer.parseInt(System.getProperty("ad.puerto","48505"));
         var g=new GuardadoBatalla(GuardadoBatalla.directorio().resolve("mision5-lan.bin"));
         MotorBatalla motor=Boolean.getBoolean("ad.continuar")&&g.existe()?g.cargar():new MotorBatalla(System.currentTimeMillis(),false);
-        var servidor=new ServidorBatalla(InetAddress.getByName("0.0.0.0"),puerto,motor,g);
+        var servidor=new ServidorBatalla(InetAddress.getByName("0.0.0.0"),puerto,motor,g,true);
         Runtime.getRuntime().addShutdownHook(new Thread(servidor::close));
         System.out.println("Sala misión 5 · TCP "+servidor.puerto()+" · guardado "+g.archivo());
         new CountDownLatch(1).await();

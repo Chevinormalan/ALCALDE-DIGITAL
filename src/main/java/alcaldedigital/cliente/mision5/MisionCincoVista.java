@@ -1,8 +1,15 @@
 package alcaldedigital.cliente.mision5;
 
+import alcaldedigital.cliente.red.PantallaLan;
+import alcaldedigital.cliente.entrada.EntradaMandoLocal;
+import alcaldedigital.cliente.entrada.MandosJugadores;
+import static alcaldedigital.cliente.entrada.EstadoMando.Boton;
+
 import processing.core.*;
 import alcaldedigital.cliente.entrada.EstadoMando;
 import alcaldedigital.compartido.batalla.EstadoBatalla.*;
+import alcaldedigital.compartido.batalla.PaqueteCruzado;
+import alcaldedigital.compartido.batalla.PaqueteRastreador;
 import alcaldedigital.servidor.batalla.*;
 import alcaldedigital.compartido.modelo.EstadoCiudad;
 import java.io.*;
@@ -27,6 +34,10 @@ public final class MisionCincoVista implements AutoCloseable {
     };
     private PApplet p;private final EstadoCiudad ciudadInicial;private final boolean reducido,contraste;
     private PImage oficina,fondo;private final PImage[][] personajes=new PImage[2][16];private final PImage[][] enemigos=new PImage[3][4];private final PImage[] palomoVuelo=new PImage[4];private PImage palomo,telefono;
+    private final PantallaLan pantallaLan=new PantallaLan(5,48505,"Ciudadano","Periodista");
+    private int puertoLan=48505;
+    private boolean esperandoLan;
+    private volatile String avisoLan="";
     private CanalBatalla canal;private ServidorBatalla servidor;private Vista v;
     private final Set<Integer> teclas=new HashSet<>(),teclasBloqueadas=new HashSet<>();
     private enum PanelPausa { MENU, AYUDA, ESTRUCTURAS }
@@ -37,20 +48,27 @@ public final class MisionCincoVista implements AutoCloseable {
     private final ExecutorService tareas=Executors.newSingleThreadExecutor(r->{Thread t=new Thread(r,"m5-conectar");t.setDaemon(true);return t;});
     private Future<CanalBatalla> conexion;
     private volatile boolean cerrada;private int rolInvitado=1;private Fase ultimaFase;private int ultVidas=-1;
-    private boolean configurando=true,continuarGuardado,salir,resultadoRegistrado,conectando,seleccionIP,controlesConfiguracion;
+    private boolean configurando=true,continuarGuardado,salir,resultadoRegistrado,conectando,controlesConfiguracion;
     private int modo,rolLocal,eleccion;private Dificultad dificultad=Dificultad.NORMAL;
     private final Map<String,PImage> marcos=new HashMap<>();private String direccion="127.0.0.1",mensaje="",estadoGuardado="";private long semilla;private float animacion,palomoX=1340;private EstadoMando mando=EstadoMando.desconectado();
     private final RepositorioResultados resultados=new RepositorioResultados(GuardadoBatalla.directorio().resolve("campana.properties"));
     public MisionCincoVista(long semilla,EstadoCiudad ciudad,boolean reducido,boolean contraste){this.semilla=semilla;ciudadInicial=ciudad;this.reducido=reducido;this.contraste=contraste;}
     private boolean gestionExterna;
     public void gestionExterna(boolean v){gestionExterna=v;}
-    public boolean listaComun(){return canal!=null&&v!=null&&!configurando;}
+    public boolean listaComun(){return canal!=null&&v!=null&&!configurando&&!pantallaLan.activa();}
     public void continuarDesdeSistema(boolean continuar){continuarGuardado=continuar;}
     public void preseleccionarGuardado(int modalidad){if(modalidad>=0&&modalidad<=2)modo=modalidad;}
     public boolean pausaComun(){return pausaVisible();}
     public void pausarComun(){pausar();}
     public void reanudarComun(){reanudar();}
     public String guardarComun()throws IOException{if(canal==null)throw new IOException("No hay partida iniciada");comando(rolLocal,"GUARDAR",0);if(!canal.error().isBlank())throw new IOException(canal.error());return modo>=2?"Guardado solicitado al servidor.":"Partida guardada.";}
+    private final EntradaMandoLocal mandoDos=new EntradaMandoLocal();
+    private int eleccionDos;
+    public MandosJugadores.Contexto contextoMandos(){
+        if(modo==1)return new MandosJugadores.Contexto(2,0);
+        if(modo>=2&&(canal!=null||pantallaLan.reconectando()))return new MandosJugadores.Contexto(1,rolLocal);
+        return MandosJugadores.Contexto.INDIVIDUAL;
+    }
     public boolean dosTeclados(){return modo==1;}
     public boolean consultaAbiertaComun(){return panelPausa!=PanelPausa.MENU;}
     public void abrirConsultaComun(){pausar();panelPausa=PanelPausa.ESTRUCTURAS;}
@@ -67,18 +85,61 @@ public final class MisionCincoVista implements AutoCloseable {
     private void hoja(String ruta,PImage[] destino,int[] filas){PImage h=imagen(ruta);for(int r=0;r<4;r++)for(int c=0;c<4;c++)destino[r*4+c]=recorte(h.get(c*h.width/4,filas[r]*h.height/4,h.width/4,h.height/4));}
     private void sonido(String s){sonidos.efecto(s,"mision3/audio/"+s,.42f,.12);}
     private GuardadoBatalla archivo(){return new GuardadoBatalla(GuardadoBatalla.directorio().resolve(modo==2||modo==3?"mision5-lan.bin":modo==1?"mision5-coop.bin":"mision5-solo.bin"));}
-    private void conectar(){if(conectando)return;conectando=true;mensaje="Preparando la partida…";final Dificultad nivel=dificultad;final int elegido=modo;final String ip=direccion;final boolean cargar=continuarGuardado;final int rolElegido=rolInvitado;final GuardadoBatalla guardado=archivo();
-        conexion=tareas.submit(()->{MotorBatalla motor;if(elegido==3){var cliente=new ClienteBatalla(ip,48505,rolElegido,rolElegido==0?"Ciudadano":"Periodista");if(cerrada){cliente.close();throw new IOException("Conexión cancelada");}return cliente;}
+    private void elegirConexion(){
+        if(modo!=3){conectar();return;}
+        mensaje="";
+        pantallaLan.buscar(destino->{
+            direccion=destino.ip();puertoLan=destino.puerto();rolInvitado=destino.puesto();
+            conectar();
+        },()->{pantallaLan.close();mensaje="";});
+    }
+
+    private void actualizarVestibulo(){
+        if(modo<2||v==null)return;
+        if(modo==3&&canal.error().startsWith("Conexión perdida:")&&!conectando){
+            if(configurando)return;
+            mensaje=canal.error();
+            canal.close();canal=null;configurando=true;
+            pantallaLan.reconectar(this::conectar,()->salir=true);
+            return;
+        }
+        if(esperandoLan&&mascaraLan()==3&&v.fase()!=Fase.ESPERA){
+            esperandoLan=false;pantallaLan.close();detenerEntrada();
+        }
+    }
+
+    private int mascaraLan(){
+        if(v==null)return 0;
+        var jugadores=v.jugadores();
+        return (jugadores[0].conectado()?1:0)|(jugadores[1].conectado()?2:0);
+    }
+
+    private void conectar(){if(conectando)return;conectando=true;mensaje="Preparando la partida…";final Dificultad nivel=dificultad;final int elegido=modo;final String ip=direccion;final int puerto=puertoLan;final boolean cargar=continuarGuardado;final int rolElegido=rolInvitado;final GuardadoBatalla guardado=archivo();
+        conexion=tareas.submit(()->{MotorBatalla motor;if(elegido==3){var cliente=new ClienteBatalla(ip,puerto,rolElegido,rolElegido==0?"Ciudadano":"Periodista");if(cerrada){cliente.close();throw new IOException("Conexión cancelada");}return cliente;}
             if(cargar){if(!guardado.existe())throw new IOException("No existe un guardado para este modo");motor=guardado.cargar();if(motor.vista().solo()!=(elegido==0))throw new IOException("Guardado de otro modo");}
             else{motor=new MotorBatalla(semilla++,elegido==0,nivel);motor.ciudadBase(ciudadInicial);}
             if(cerrada)throw new IOException("Conexión cancelada");
-            if(elegido==2){servidor=new ServidorBatalla(InetAddress.getByName("0.0.0.0"),48505,motor,guardado);try{var cliente=new ClienteBatalla("127.0.0.1",48505,0,"Ciudadano");if(cerrada){cliente.close();servidor.close();throw new IOException("Conexión cancelada");}return cliente;}catch(Exception e){servidor.close();servidor=null;throw e;}}
+            if(elegido==2){servidor=new ServidorBatalla(InetAddress.getByName("0.0.0.0"),48505,motor,guardado,true);try{var cliente=new ClienteBatalla("127.0.0.1",48505,0,"Ciudadano");try{servidor.anunciar();}catch(IOException noDisponible){avisoLan="Búsqueda automática no disponible. Los invitados pueden conectar por IP.";}if(cerrada){cliente.close();servidor.close();throw new IOException("Conexión cancelada");}return cliente;}catch(Exception e){servidor.close();servidor=null;throw e;}}
             return new CanalLocal(motor,guardado);
         });
     }
     public void actualizar(float dt){
-        if(conexion!=null&&conexion.isDone()){try{canal=conexion.get();rolLocal=modo==3?rolInvitado:0;configurando=false;mensaje="";v=canal.vista();dificultad=v.dificultad();}catch(Exception e){Throwable causa=e.getCause()==null?e:e.getCause();mensaje="No se pudo abrir: "+causa.getMessage();}conexion=null;conectando=false;}
-        if(canal==null)return;boolean estabaPausada=pausaVisible();v=canal.vista();if(v==null)return;
+        if(conexion!=null&&conexion.isDone()){
+            try{
+                canal=conexion.get();rolLocal=modo==3?rolInvitado:0;v=canal.vista();
+                dificultad=v.dificultad();configurando=false;mensaje="";
+                if(modo>=2){
+                    if(!pantallaLan.reconectando())esperandoLan=mascaraLan()!=3||v.fase()==Fase.ESPERA;
+                    if(esperandoLan)pantallaLan.esperar(()->salir=true);
+                    else pantallaLan.close();
+                    detenerEntrada();
+                }
+            }catch(Exception e){
+                Throwable causa=e.getCause()==null?e:e.getCause();mensaje="No se pudo abrir: "+causa.getMessage();
+            }
+            conexion=null;conectando=false;
+        }
+        if(canal==null)return;boolean estabaPausada=pausaVisible();v=canal.vista();if(v==null)return;actualizarVestibulo();if(pantallaLan.activa()||canal==null)return;
         if(v.pausa())pausaPendiente=false;
         if(estabaPausada&&!pausaVisible()){panelPausa=PanelPausa.MENU;detenerEntrada();}
         if(esperarMandoNeutro&&Math.abs(mando.izquierdaX())<.2f&&Math.abs(mando.izquierdaY())<.2f&&!mando.pulsado(EstadoMando.Boton.X))esperarMandoNeutro=false;
@@ -90,7 +151,8 @@ public final class MisionCincoVista implements AutoCloseable {
                 dx=(activa(rr)?1:0)-(activa(l)?1:0);dy=(activa(d)?1:0)-(activa(u)?1:0);
                 if(modo!=1){dx+=(activa(39)?1:0)-(activa(37)?1:0);dy+=(activa(40)?1:0)-(activa(38)?1:0);}
                 salto=activa(primero?32:16);
-                if(r==rolLocal&&mando.conectado()&&!esperarMandoNeutro){dx+=mando.izquierdaX();dy+=mando.izquierdaY();salto|=mando.pulsado(EstadoMando.Boton.X);}
+                if(r==rolLocal&&mando.conectado()&&!esperarMandoNeutro){dx+=mando.izquierdaX();dy+=mando.izquierdaY();salto|=mando.pulsado(Boton.X);}
+                if(modo==1&&r==1){dx+=mandoDos.x();dy+=mandoDos.y();salto|=mandoDos.estado().pulsado(Boton.X);}
             }
             canal.movimiento(r,dx,dy,salto);
         }
@@ -103,6 +165,7 @@ public final class MisionCincoVista implements AutoCloseable {
         if(v.fase()==Fase.FINAL&&!resultadoRegistrado)try{resultados.acreditar(v,ciudadInicial);resultadoRegistrado=true;estadoGuardado="Resultado y puntos guardados.";}catch(IOException e){estadoGuardado="Error al guardar resultado: "+e.getMessage();}
     }
     public void dibujar(){revisarBotonesAudio();p.pushStyle();p.noSmooth();p.textAlign(PApplet.LEFT,PApplet.BASELINE);p.background(FONDO);
+        if(pantallaLan.activa()){pantallaLan.dibujar(p,mensaje.isBlank()?avisoLan:mensaje,conectando,modo==2,2,mascaraLan());p.popStyle();return;}
         if(configurando){p.image(oficina,0,0,1280,720);configuracion();if(controlesConfiguracion)alcaldedigital.cliente.misiones.PantallaControles.dibujar(p,new alcaldedigital.cliente.entrada.MapaControles.Contexto(5,modo==1,"Ciudadano","Periodista",mando.nombre()));p.popStyle();return;}
         if(v==null){caja(180,235,920,140);texto("Esperando al servidor…",220,310,28,ORO);p.popStyle();return;}
         boolean exterior=Set.of(Fase.INTRO,Fase.OFICINA,Fase.ABSORCION,Fase.EPILOGO,Fase.FINAL,Fase.ESPERA).contains(v.fase());
@@ -153,11 +216,9 @@ public final class MisionCincoVista implements AutoCloseable {
         texto("Arriba/abajo: modo · izquierda/derecha: dificultad",170,435,17,LILA);
         if(gestionExterna){marco(170,455,340,42,FONDO,LILA,false);texto(continuarGuardado?"Continuar partida guardada":"Partida nueva",186,483,17,PAPEL);}
         else boton(continuarGuardado?"Continuar guardado [R]":"Partida nueva [R]",170,455,340,continuarGuardado);
-        marco(535,455,555,42,contraste?0xff140C1D:FONDO,seleccionIP?ORO:LILA,false);
-        texto("IP: "+direccion+(seleccionIP?"_":"")+" [Tab]",550,483,17,PAPEL);
-        texto(modo==1?"Jugador 2: usa este mismo teclado · Periodista · flechas / Enter":
-            continuarGuardado?"El guardado conserva su dificultad.":"TCP 48505 · F cambia rol al unirse: "+(rolInvitado==0?"Ciudadano":"Periodista"),170,527,17,LILA);
-        boton(conectando?"Conectando…":"Comenzar [Enter / A]",170,550,425,true);
+        texto(modo==1?"Jugador 2: mismo teclado · Periodista · flechas / Enter":
+            continuarGuardado?"El guardado conserva su dificultad.":"Las partidas LAN se buscan en la red local.",170,527,17,LILA);
+        boton(conectando?"Conectando…":modo==2?"Crear partida LAN":modo==3?"Buscar partidas LAN":"Comenzar [Enter / A]",170,550,425,true);
         boton("Controles [H]",640,550,210,false);boton("Volver a misiones",870,550,220,false);
         texto(mensaje,170,629,16,CIAN);
     }
@@ -190,10 +251,43 @@ public final class MisionCincoVista implements AutoCloseable {
     private void combate(){p.image(fondo,0,0,1280,720);int frame=reducido?0:(int)(v.tick()/10)%4;p.image(enemigos[0][frame],545,90,190,195);marco(520,294,240,17,FONDO,LILA,false);p.noStroke();p.fill(ORO);p.rect(524,298,232*v.jefe()/100f,9);texto("DEFENSAS DE LA SEÑAL · "+v.jefe()+"%",515,329,14,PAPEL);
         caja(MotorBatalla.AX-4,MotorBatalla.AY-4,MotorBatalla.AW+8,MotorBatalla.AH+8);p.noStroke();p.fill(FONDO);p.rect(MotorBatalla.AX,MotorBatalla.AY,MotorBatalla.AW,MotorBatalla.AH);
         p.clip((int)MotorBatalla.AX,(int)MotorBatalla.AY,(int)MotorBatalla.AW,(int)MotorBatalla.AH);
-        for(Obstaculo a:v.obstaculos()){boolean aviso=a.edad()<a.aviso();int color=a.tipo()==1?CIAN:a.tipo()==3?ORO:ROSA;p.noStroke();p.fill(color,aviso?75:235);p.rect(a.x(),a.y(),a.w(),a.h());if(a.tipo()==2){p.stroke(aviso?ORO:ROSA);p.strokeWeight(aviso?2:5);p.line(a.x(),a.y()+a.h()/2,a.x()+a.w(),a.y()+a.h()/2);p.noStroke();}else if(a.tipo()!=3&&a.w()<60&&a.h()<75)p.image(enemigos[1][frame],a.x()-3,a.y()-3,a.w()+6,a.h()+6);}
+        var ritmo=PaqueteRastreador.para(v.dificultad());
+        for(Obstaculo a:v.obstaculos()){
+            if(a.tipo()==PaqueteRastreador.TIPO)AtaquesPixel.rastreador(p,a,ritmo,enemigos[1],reducido);
+            else if(a.tipo()==PaqueteCruzado.TIPO)AtaquesPixel.cruzado(p,a,enemigos[1],reducido);
+            else AtaquesPixel.dibujar(p,a,v.patron(),reducido);
+        }
         for(int i=0;i<participantes();i++){Jugador j=v.jugadores()[i];if(j.vidas()>0&&(reducido||j.invulnerable()==0||v.tick()%8<5))corazon(j.x(),j.y(),i==0?ORO:CIAN,i+1,22);}
-        p.noClip();for(var a:v.obstaculos())if(a.tipo()==2){p.image(enemigos[2][a.edad()<a.aviso()?1:2],205,a.y()-18,64,64);texto("OBJ "+(a.objetivo()+1),185,a.y()-23,14,a.objetivo()==0?ORO:CIAN);}
-        texto(v.gravedad()?v.gravedadDir()==1?"GRAVEDAD: PARED DERECHA · salto hacia la izquierda":"GRAVEDAD: SUELO · salto de altura variable":(v.solo()?"MOVIMIENTO LIBRE · solo el ciudadano":"MOVIMIENTO LIBRE · los corazones no chocan entre sí"),280,649,17,CIAN);
+        p.noClip();
+        for(var a:v.obstaculos())if(a.tipo()==2){
+            boolean aviso=a.edad()<a.aviso();
+            boolean vertical=a.h()>a.w();
+            float x=vertical?a.x()+a.w()/2-25:220,y=vertical?286:a.y()-13;
+            p.image(enemigos[2][aviso?1:2],x,y,50,50);
+            texto("J"+(a.objetivo()+1),x+14,y+13,13,a.objetivo()==0?ORO:CIAN);
+        }
+        String pista=v.gravedad()?v.gravedadDir()==1?"GRAVEDAD: PARED DERECHA · salto hacia la izquierda":"GRAVEDAD: SUELO · salto de altura variable"
+            :(v.solo()?"MOVIMIENTO LIBRE · solo el ciudadano":"MOVIMIENTO LIBRE · los corazones no chocan entre sí");
+        int colorPista=CIAN;
+        for(var a:v.obstaculos()){
+            if(a.tipo()==1){
+                pista=a.edad()<a.aviso()?"CIAN EN CARGA · prepárate para detenerte":"PULSO CIAN · mantente quieto";
+                colorPista=CIAN;
+                break;
+            }
+            if(a.tipo()==PaqueteRastreador.TIPO){
+                pista="RASTREADOR J"+(a.objetivo()+1)+" · "+switch(ritmo.fase(a)){
+                    case AVISO -> "en carga";
+                    case SEGUIMIENTO -> "en persecución";
+                    case FIJADO -> "ruta marcada, esquiva hacia un lado";
+                    case EMBESTIDA -> "embestida";
+                    case DISIPACION -> "se disipa";
+                };
+                colorPista=ORO;
+            }
+        }
+        marco(280,632,720,29,FONDO,LILA,false);
+        texto(pista,294,652,16,colorPista);
     }
     private void hud(){marco(10,8,680,70,FONDO,LILA,true);texto("MISIÓN 5 · EL SERVIDOR CRÍTICO",25,32,22,ORO);texto("RONDA "+Math.min(5,v.ronda()+1)+"/5 · "+v.dificultad().nombre()+" · "+(modo>=2?"SALA LAN":"PARTIDA LOCAL"),25,61,17,LILA);
         for(int i=0;i<participantes();i++){Jugador j=v.jugadores()[i];float x=720+i*275;marco(x-10,8,260,70,FONDO,LILA,true);texto((i+1)+" "+j.nombre()+" · "+j.puntos()+" pts",x,27,17,i==0?ORO:CIAN);for(int k=0;k<5;k++)corazon(x+12+k*25,48,k<j.vidas()?(i==0?ORO:CIAN):0xff604077,0,18);texto(v.solo()?"INDIVIDUAL · 5 vidas":j.recuperaciones()+" rescate · "+(j.conectado()?"conectado":"ausente"),x,71,13,PAPEL);}
@@ -217,6 +311,7 @@ public final class MisionCincoVista implements AutoCloseable {
         String[] opciones={"Verificar una publicación: baja la velocidad de los paquetes","Pulso de precisión: responde al servidor y suma puntos",(v.solo()?"Recuperar una vida del ciudadano":"Reparar al compañero: recupera una vida")};for(int i=0;i<3;i++)boton((i+1)+". "+opciones[i],175,360+i*48,930,i==eleccion);
         for(int i=0;i<participantes();i++)if(v.jugadores()[i].accionLista()){p.fill(i==0?ORO:CIAN);p.rect(200+MotorBatalla.indicador(v.golpes()[i])*870,288+i*7,8,53);}
         texto("Ciudadano: "+(v.jugadores()[0].accionLista()?"listo":"eligiendo")+(v.solo()?"":" · Periodista: "+(v.jugadores()[1].accionLista()?"listo":"eligiendo")),175,535,17,ORO);
+        if(modo==1&&mandoDos.estado().conectado()&&!v.jugadores()[1].accionLista())texto("J2",1060,387+48*eleccionDos,16,CIAN);
         texto(v.dificultad()==Dificultad.DIFICIL?"Difícil: sin recuperación automática de corazones.":"Ronda superada: +1 corazón por superviviente, hasta cinco vidas.",175,584,15,CIAN);
         texto((v.solo()?"1 / 2 / 3: elige la acción del ciudadano":"1 / 2 / 3: ciudadano · 7 / 8 / 9: periodista en teclado compartido"),175,564,17,CIAN);texto((v.solo()?"E / A: confirmar selección · solo cuenta tu respuesta.":"E / A: confirmar selección · no hay nuevo turno hasta que ambos respondan."),175,605,17,LILA);
     }
@@ -225,6 +320,8 @@ public final class MisionCincoVista implements AutoCloseable {
         texto("Puedo volver a ser útil. ¿Me dejarán conectado? La señal todavía fluctúa.",105,545,20,PAPEL);
         boton("Perdonar · afrontar último pulso [1]",105,570,510,Math.min(1,eleccion)==0);
         boton("Aislar · recuperar la red [2]",645,570,530,Math.min(1,eleccion)==1);
+        if(modo==1&&mandoDos.estado().conectado()&&!v.jugadores()[1].accionLista())
+            texto("J2",Math.min(1,eleccionDos)==0?580:1130,597,16,CIAN);
         texto(v.solo()?"Tú decides · arriba/abajo y A también funcionan":"Ambos confirman su elección · segundo teclado 7 / 8",105,645,16,CIAN);
     }
     private void epilogo(){if(v.solo()){
@@ -266,7 +363,7 @@ public final class MisionCincoVista implements AutoCloseable {
     private void comando(int rol,String a,int n){if(canal==null)return;canal.accion(rol,a,n);v=canal.vista();alcaldedigital.cliente.audio.InterfazSonora.activar(a.equals("GUARDAR")?"guardar":a.equals("REANUDAR")?"reanudar":"click");}
     private boolean pausaVisible(){return pausaPendiente||v!=null&&v.pausa();}
     private boolean activa(int k){return teclas.contains(k)&&!teclasBloqueadas.contains(k);}
-    private void detenerEntrada(){teclasBloqueadas.addAll(teclas);esperarMandoNeutro=true;if(canal!=null)for(int i=0;i<2;i++)canal.movimiento(i,0,0,false);}
+    private void detenerEntrada(){mandoDos.bloquear();teclasBloqueadas.addAll(teclas);esperarMandoNeutro=true;if(canal!=null)for(int i=0;i<2;i++)canal.movimiento(i,0,0,false);}
     private void pausar(){if(canal==null)return;detenerEntrada();if(!pausaVisible()){focoPausa=0;pausaPendiente=true;comando(rolLocal,"PAUSA",0);}}
     private void reanudar(){detenerEntrada();panelPausa=PanelPausa.MENU;pausaPendiente=false;mensaje="";comando(rolLocal,"REANUDAR",0);}
     private void abrirAyuda(boolean controles){
@@ -299,8 +396,8 @@ public final class MisionCincoVista implements AutoCloseable {
         if(k==10||k==69||k==32)activarPausa();
     }
     private void continuar(int rol){if(v==null||pausaVisible())return;switch(v.fase()){case ESPERA->comando(rol,"LISTO",0);case INTRO,EPILOGO->comando(rol,"CONTINUAR",0);case OFICINA->comando(rol,"INTERACTUAR",0);case TURNO->comando(rol,"ACCION",eleccion);case FINAL->salir=true;default->{}}}
-    public void pulsar(char c,int k){if(k==13)k=10;if(!teclas.add(k))return;if(configurando&&conectando)return;
-        if(configurando){if(controlesConfiguracion){if(k==27||k==10||k==72)controlesConfiguracion=false;return;}if(seleccionIP){if(k==10||k==9||k==27){seleccionIP=false;return;}if(k==65&&teclas.contains(17)){direccion="";return;}if(k==8&& !direccion.isEmpty())direccion=direccion.substring(0,direccion.length()-1);else if(c>=32&&c<127&&direccion.length()<80)direccion+=c;return;}if(k==27)salir=true;if(k==38)modo=Math.floorMod(modo-1,4);if(k==40)modo=(modo+1)%4;if((k==37||k==39)&&modo!=3)dificultad=Dificultad.values()[Math.floorMod(dificultad.ordinal()+(k==37?-1:1),3)];if(k>=49&&k<=51&&modo!=3)dificultad=Dificultad.values()[k-49];if(k==70&&modo==3)rolInvitado=1-rolInvitado;if(k==82&&!gestionExterna)continuarGuardado=!continuarGuardado;if(k==9)seleccionIP=true;if(k==10||k==69)conectar();if(k==72)controlesConfiguracion=true;return;}
+    public void pulsar(char c,int k){if(k==13)k=10;if(pantallaLan.pulsar(c,k))return;if(!teclas.add(k))return;if(configurando&&conectando)return;
+        if(configurando){if(controlesConfiguracion){if(k==27||k==10||k==72)controlesConfiguracion=false;return;}if(k==27)salir=true;if(k==38)modo=Math.floorMod(modo-1,4);if(k==40)modo=(modo+1)%4;if((k==37||k==39)&&modo!=3)dificultad=Dificultad.values()[Math.floorMod(dificultad.ordinal()+(k==37?-1:1),3)];if(k>=49&&k<=51&&modo!=3)dificultad=Dificultad.values()[k-49];if(k==82&&!gestionExterna)continuarGuardado=!continuarGuardado;if(k==10||k==69)elegirConexion();if(k==72)controlesConfiguracion=true;return;}
         if(v==null)return;
         if(pausaVisible()){teclaPausa(k);return;}
         if(k==27||k==80){panelPausa=PanelPausa.MENU;pausar();return;}
@@ -314,18 +411,18 @@ public final class MisionCincoVista implements AutoCloseable {
         if(v.fase()==Fase.TURNO){if(k==38)eleccion=Math.floorMod(eleccion-1,3);if(k==40)eleccion=(eleccion+1)%3;}
         if(k==69)continuar(modo==1?0:rolLocal);if(k==10)continuar(modo==1?1:rolLocal);
     }
-    public void soltar(int k){if(k==13)k=10;teclas.remove(k);teclasBloqueadas.remove(k);}
+    public void soltar(int k){pantallaLan.soltar(k);if(k==13)k=10;teclas.remove(k);teclasBloqueadas.remove(k);}
     public void limpiar(){teclas.clear();teclasBloqueadas.clear();detenerEntrada();}
     public void perderFoco(){limpiar();if(canal!=null&&!pausaVisible()){panelPausa=PanelPausa.MENU;pausar();}}
     private void reiniciar(){cerrarPartida();configurando=true;continuarGuardado=false;resultadoRegistrado=false;estadoGuardado="";}
-    public void raton(int x,int y){if(botonesAudio.stream().anyMatch(r->r.contains(x,y)))alcaldedigital.cliente.audio.InterfazSonora.activar("click");
+    public void raton(int x,int y){if(pantallaLan.raton(x,y))return;if(botonesAudio.stream().anyMatch(r->r.contains(x,y)))alcaldedigital.cliente.audio.InterfazSonora.activar("click");
         if(conectando)return;
         if(configurando){
             if(controlesConfiguracion){if(x>=alcaldedigital.cliente.misiones.PantallaControles.VOLVER_X&&x<alcaldedigital.cliente.misiones.PantallaControles.VOLVER_X+alcaldedigital.cliente.misiones.PantallaControles.VOLVER_ANCHO&&y>=alcaldedigital.cliente.misiones.PantallaControles.VOLVER_Y&&y<alcaldedigital.cliente.misiones.PantallaControles.VOLVER_Y+alcaldedigital.cliente.misiones.PantallaControles.VOLVER_ALTO)controlesConfiguracion=false;return;}
-            if(x>=170&&x<595)for(int i=0;i<4;i++)if(y>=205+i*53&&y<247+i*53)modo=i;
+            if(x>=170&&x<595)for(int i=0;i<4;i++)if(y>=205+i*53&&y<247+i*53){modo=i;if(i==3)elegirConexion();}
             if(x>=640&&x<1090&&modo!=3)for(int i=0;i<3;i++)if(y>=205+i*58&&y<247+i*58)dificultad=Dificultad.values()[i];
-            if(y>=455&&y<497){if(!gestionExterna&&x>=170&&x<510)continuarGuardado=!continuarGuardado;if(x>=535&&x<1090)seleccionIP=true;}
-            if(y>=550&&y<592){if(x>=170&&x<595)conectar();else if(x>=640&&x<850)controlesConfiguracion=true;else if(x>=870&&x<1090)salir=true;}
+            if(y>=455&&y<497){if(!gestionExterna&&x>=170&&x<510)continuarGuardado=!continuarGuardado;}
+            if(y>=550&&y<592){if(x>=170&&x<595)elegirConexion();else if(x>=640&&x<850)controlesConfiguracion=true;else if(x>=870&&x<1090)salir=true;}
             return;
         }
         if(v==null)return;
@@ -342,20 +439,34 @@ public final class MisionCincoVista implements AutoCloseable {
         if(v.fase()==Fase.DECISION&&y>=570&&y<612){if(x>=105&&x<615)comando(rolLocal,"DECISION",0);if(x>=645&&x<1175)comando(rolLocal,"DECISION",1);}
         if(v.fase()==Fase.FINAL&&y>=550&&y<592){if(x>=250&&x<635)salir=true;if(x>=655&&x<1030)reiniciar();}
     }
-    public void mando(EstadoMando estado){
+    public void mando(EstadoMando estado){if(pantallaLan.mando(estado)){mando=estado;return;}
         EstadoMando anterior=mando;mando=estado;if(!estado.conectado()&&anterior.conectado())perderFoco();
         if(estado.pulsado(EstadoMando.Boton.MENU)&&!anterior.pulsado(EstadoMando.Boton.MENU)){pulsar(' ',80);soltar(80);return;}
         if(estado.pulsado(EstadoMando.Boton.B)&&!anterior.pulsado(EstadoMando.Boton.B)){pulsar(' ',27);soltar(27);return;}
         for(var b:EstadoMando.Boton.values())if(estado.pulsado(b)&&!anterior.pulsado(b)){
             int k=switch(b){case A->10;case VISTA->72;case LB->84;case Y->82;case ARRIBA->38;case ABAJO->40;case IZQUIERDA->37;case DERECHA->39;default->0;};
-            if(b==EstadoMando.Boton.A&&!configurando&&v!=null&&!pausaVisible()&&v.fase()!=Fase.DECISION)continuar(rolLocal);
+            if(b==Boton.A&&!configurando&&v!=null&&!pausaVisible()){
+                if(v.fase()==Fase.DECISION)comando(rolLocal,"DECISION",Math.min(1,eleccion));
+                else continuar(rolLocal);
+            }
             else if(k!=0){pulsar(' ',k);soltar(k);}
         }
+    }
+    public void segundoMando(EstadoMando estado){
+        mandoDos.leer(estado,modo==1&&listaComun()&&!pausaVisible());
+        if(mandoDos.pulso(Boton.MENU)){pausar();return;}
+        if(v==null)return;
+        if(v.fase()==Fase.TURNO||v.fase()==Fase.DECISION){
+            int opciones=v.fase()==Fase.TURNO?3:2;
+            if(mandoDos.pulso(Boton.ARRIBA)||mandoDos.pulso(Boton.IZQUIERDA))eleccionDos=Math.floorMod(eleccionDos-1,opciones);
+            if(mandoDos.pulso(Boton.ABAJO)||mandoDos.pulso(Boton.DERECHA))eleccionDos=(eleccionDos+1)%opciones;
+            if(mandoDos.pulso(Boton.A))comando(1,v.fase()==Fase.TURNO?"ACCION":"DECISION",Math.min(opciones-1,eleccionDos));
+        }else if(mandoDos.pulso(Boton.A))continuar(1);
     }
     public boolean salir(){return salir;}
     public Vista vistaResultado(){return v;}
     public EstadoCiudad ciudadResultado(){if(v==null||v.fase()!=Fase.FINAL)return ciudadInicial;try{return resultados.acreditar(v,ciudadInicial);}catch(IOException e){mensaje=e.getMessage();return ciudadInicial;}}
-    public void cerrarPartida(){limpiar();if(canal!=null){canal.close();canal=null;}if(servidor!=null){servidor.close();servidor=null;}v=null;pausaPendiente=false;panelPausa=PanelPausa.MENU;focoPausa=0;ultimaFase=null;ultVidas=-1;}
+    public void cerrarPartida(){pantallaLan.close();esperandoLan=false;avisoLan="";limpiar();if(canal!=null){canal.close();canal=null;}if(servidor!=null){servidor.close();servidor=null;}v=null;pausaPendiente=false;panelPausa=PanelPausa.MENU;focoPausa=0;ultimaFase=null;ultVidas=-1;}
     @Override public void close(){cerrada=true;if(conexion!=null){if(conexion.isDone())try{var c=conexion.get();if(c!=canal)c.close();}catch(Exception ignored){}conexion.cancel(true);}tareas.shutdownNow();cerrarPartida();sonidos.close();}
     private void previsualizar(String tipo){
         boolean coop=tipo.equals("coop");MotorBatalla m=new MotorBatalla(2026,!coop,Dificultad.valueOf(System.getProperty("ad.mision5.dificultad","NORMAL")));

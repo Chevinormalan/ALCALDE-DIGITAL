@@ -38,6 +38,7 @@ class MisionSeisTest {
  @Test void campanaHablaConJuanYCaminaHastaElHelicoptero(){
   var m=new MisionSeisMotor();assertEquals(Fase.DISCURSO,m.fase);
   for(int i=0;i<DISCURSO.length;i++)texto(m);assertEquals(Fase.BUSCAR,m.fase);
+  assertEquals(ESCENARIO_X,m.juanX);assertEquals(ESCENARIO_Y,m.juanY);
   m.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.BUSCAR,m.fase);
   m.pulsar(KeyEvent.VK_W);paso(m,.51f);m.soltar(KeyEvent.VK_W);m.pulsar(KeyEvent.VK_A);paso(m,2.4f);m.soltar(KeyEvent.VK_A);
   assertTrue(m.cercaDeJuan(),"El influencer debe poder acercarse a Juan caminando");m.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.ENCUENTRO,m.fase);
@@ -53,6 +54,7 @@ class MisionSeisTest {
    assertEquals(Fase.ENTRENAMIENTO,m.fase);m.pulsar(KeyEvent.VK_D);paso(m,.3f);m.soltar(KeyEvent.VK_D);
    int fuego=modo==Modo.SOLO?KeyEvent.VK_J:KeyEvent.VK_F;m.pulsar(fuego);paso(m,.3f);m.soltar(fuego);
    assertTrue(m.practicoMover);assertTrue(m.practicoDisparo);assertEquals(5,m.naves[0].vida);
+   paso(m,1.3f);assertTrue(m.aciertosPractica>0);assertNotNull(MisionSeisMotor.restaurar(m.capturar()));
    m.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.COMBATE,m.fase);assertEquals(180,m.energia);
   }
  }
@@ -85,14 +87,37 @@ class MisionSeisTest {
  @Test void interferenciaSeRompeYAmbasEntrevistasSonValidas(){
   for(int decision=0;decision<2;decision++){
    var m=combate(Modo.SOLO);m.energia=1;m.actualizar(.01f);m.proyectiles.add(new Proyectil(m.jefeX,m.jefeY,0,0,3,0,false,false));m.actualizar(.01f);assertEquals(Fase.RETIRADA,m.fase);
-   for(int i=0;i<TRANSMISION.length;i++)texto(m);assertEquals(Fase.LLEGADA,m.fase);paso(m,6.1f);assertEquals(Fase.EXPLORAR_SALA,m.fase);m.pulsar(KeyEvent.VK_A);paso(m,.98f);m.soltar(KeyEvent.VK_A);m.pulsar(KeyEvent.VK_W);paso(m,.6f);m.soltar(KeyEvent.VK_W);m.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.SALA,m.fase);texto(m);texto(m);assertEquals(Fase.ENTREVISTA,m.fase);
+   for(int i=0;i<TRANSMISION.length;i++)texto(m);assertEquals(Fase.LLEGADA,m.fase);paso(m,6.1f);assertEquals(Fase.EXPLORAR_SALA,m.fase);m.pulsar(KeyEvent.VK_D);paso(m,3.0f);m.soltar(KeyEvent.VK_D);m.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.SALA,m.fase);texto(m);texto(m);assertEquals(Fase.ENTREVISTA,m.fase);
    for(int i=0;i<3;i++){m.pulsar(decision==0?KeyEvent.VK_1:KeyEvent.VK_2);assertEquals(Fase.RESPUESTA,m.fase);texto(m);}
-   assertEquals(Fase.FINAL,m.fase);assertEquals(decision==0?Ruta.ESCUCHA:Ruta.CONVICCION,m.ruta());assertFalse(m.resultado().completada());m.pulsar(KeyEvent.VK_ENTER);assertTrue(m.resultado().completada());
+   assertEquals(Fase.FINAL,m.fase);assertEquals(decision==0?Ruta.ESCUCHA:Ruta.CONVICCION,m.ruta());assertFalse(m.resultado().completada());assertEquals("JUAN",m.interlocutor());texto(m);assertEquals("INFLUENCER",m.interlocutor());texto(m);assertTrue(m.resultado().completada());
   }
  }
  @Test void derrotaReiniciaLaPracticaSinRepetirHistoria(){
   var m=combate(Modo.SOLO);m.naves[0].vida=1;m.naves[0].invulnerable=0;m.proyectiles.add(new Proyectil(m.naves[0].x,m.naves[0].y,0,0,1,-1,true,false));m.actualizar(.01f);
   assertEquals(Fase.DERROTA,m.fase);assertFalse(m.resultado().completada());m.pulsar(KeyEvent.VK_R);assertEquals(Fase.ENTRENAMIENTO,m.fase);assertEquals(5,m.naves[0].vida);assertEquals(180,m.energia);
+ }
+ @Test void laLineaDelDisparoDirigidoSeConservaAlMoverseYAlRecuperar(){
+  var m=combate(Modo.DUO);m.energia=120;
+  for(int i=0;i<150&&m.avisoDron==null;i++)m.actualizar(1f/60);
+  assertNotNull(m.avisoDron);
+  assertEquals(Ataque.DIRIGIDO,m.avisoDron.tipo());assertEquals(0,m.avisoDron.objetivo());
+  var aviso=m.avisoDron;
+  m.pulsar(KeyEvent.VK_S);paso(m,.24f);m.soltar(KeyEvent.VK_S);
+  assertEquals(aviso,m.avisoDron);
+  var copia=MisionSeisMotor.restaurar(m.capturar());assertNotNull(copia);assertEquals(aviso,copia.avisoDron);
+  for(int i=0;i<60&&copia.proyectiles.isEmpty();i++)copia.actualizar(1f/60);
+  assertEquals(cantidad(Ataque.DIRIGIDO),copia.proyectiles.size());
+  Proyectil centro=copia.proyectiles.get(1);
+  assertEquals(Math.cos(aviso.angulo())*260,centro.vx,.01);assertEquals(Math.sin(aviso.angulo())*260,centro.vy,.01);
+ }
+ @Test void elHaloTieneUnAvisoSinDanioAntesDeActivarse(){
+  var m=combate(Modo.SOLO);m.energia=60;
+  for(int i=0;i<240&&(m.avisoDron==null||m.avisoDron.tipo()!=Ataque.HALO);i++)m.actualizar(1f/60);
+  assertNotNull(m.avisoDron);assertEquals(Ataque.HALO,m.avisoDron.tipo());
+  var n=m.naves[0];n.x=m.avisoDron.x()+12;n.y=m.avisoDron.y();n.vida=5;n.invulnerable=0;
+  m.actualizar(1f/60);assertEquals(5,n.vida);
+  for(int i=0;i<60&&m.choque<=0;i++)m.actualizar(1f/60);
+  assertTrue(m.choque>0);assertEquals(4,n.vida);
  }
  @Test void instantaneaConservaCombateSinTeclasFantasma(){
   var m=combate(Modo.DUO);m.energia=86;m.naves[1].vida=3;m.naves[1].misil=2.3f;m.pulsar(KeyEvent.VK_D);m.pulsar(KeyEvent.VK_F);paso(m,.15f);

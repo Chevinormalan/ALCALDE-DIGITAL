@@ -3,6 +3,7 @@ package alcaldedigital.batalla;
 import alcaldedigital.cliente.mision5.ClienteBatalla;
 import alcaldedigital.servidor.batalla.*;
 import alcaldedigital.compartido.batalla.EstadoBatalla.*;
+import alcaldedigital.compartido.batalla.PaqueteRastreador;
 import java.net.*;
 import java.io.*;
 import java.nio.file.*;
@@ -42,6 +43,23 @@ class RedBatallaTest {
             assertEquals(antes.jugadores()[0].x(),motor.vista().jugadores()[0].x());assertEquals(antes.jugadores()[1].x(),motor.vista().jugadores()[1].x());
         }
     }
+    @Test void ambosClientesRecibenElMismoRastreadorYLaMismaRutaFijada() throws Exception {
+        var motor=RastreadorBatallaTest.hastaElAviso(42,Dificultad.NORMAL,false);
+        var ritmo=PaqueteRastreador.para(Dificultad.NORMAL);
+        motor.orden(1,0,0,false,"",0);
+        do{motor.paso();}
+        while(ritmo.fase(RastreadorBatallaTest.rastreador(motor.vista()))!=PaqueteRastreador.Fase.FIJADO);
+        var fijado=RastreadorBatallaTest.rastreador(motor.vista());
+        try(var servidor=new ServidorBatalla(InetAddress.getLoopbackAddress(),0,motor,null);
+            var a=new ClienteBatalla("127.0.0.1",servidor.puerto(),0,"Ciudadano");
+            var b=new ClienteBatalla("127.0.0.1",servidor.puerto(),1,"Periodista")){
+            assertTrue(a.vista().pausa()&&b.vista().pausa());
+            assertEquals(1,fijado.objetivo());
+            assertEquals(fijado,RastreadorBatallaTest.rastreador(a.vista()));
+            assertEquals(fijado,RastreadorBatallaTest.rastreador(b.vista()));
+        }
+    }
+
     @Test void protocoloSoloPermiteMisionHabilitadaYNoAdmiteElRolDelOtro()throws Exception{
         var motor=new MotorBatalla(2,false);try(var servidor=new ServidorBatalla(InetAddress.getLoopbackAddress(),0,motor,null)){
             try(var s=new Socket("127.0.0.1",servidor.puerto());var out=new DataOutputStream(s.getOutputStream());var in=new DataInputStream(s.getInputStream())){out.writeInt(0x43495635);out.writeInt(alcaldedigital.compartido.batalla.EstadoBatalla.VERSION);out.writeInt(3);out.writeInt(0);out.writeUTF("Otro");out.flush();assertFalse(in.readBoolean());}

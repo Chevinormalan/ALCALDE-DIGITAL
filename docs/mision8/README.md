@@ -52,16 +52,16 @@ Hay individual con selección entre Sofi, periodista e influencer, cooperativo d
 
 | Puesto | Movimiento | Salto | Tres acciones | Esquiva |
 |---|---|---|---|---|
-| J1 | A/D | Espacio | F/Q/E | R |
-| J2 | Flechas izquierda/derecha | Mayús | L/K/Enter | J |
+| J1 | A/D | Espacio | F/Q/C | R |
+| J2 | Flechas izquierda/derecha | Mayús | L/K/O | J |
 | J3 | Numérico 4/6 | Numérico 0 | Numérico 1/2/3 | Decimal |
-| J4 jefe | — | — | Z/X/C/B/N/M eligen los seis ataques | — |
+| J4 jefe | — | — | Números 1–6 de la fila superior eligen los seis ataques | — |
 
-Mando J1: stick, A salto, X/Y ataques, LB protección y RB esquiva. Menú pausa. Configuración y diálogos: Tab o flechas para elegir y Enter/E para confirmar; ratón y mando también funcionan. Esc/P abre la pausa común, G guarda, H muestra ayuda y T abre consultas. La página de controles de la misión incluye todos los puestos.
+Mando J1: stick, A salto, X/Y ataques, LB protección y RB esquiva. Menú pausa. Configuración y diálogos: Tab o flechas para elegir y Enter/E/A para confirmar; ratón y mando también funcionan. En combate, C y O ejecutan la tercera acción de J1 y J2; E y Enter quedan reservados para confirmar fuera del combate. Los números superiores del jefe no se confunden con los del teclado numérico de J3. Esc/P abre la pausa común, G guarda, H muestra ayuda y T abre consultas. La página de controles de la misión incluye todos los puestos.
 
 ## LAN y guardados
 
-Crear/unirse sala usa TCP **48508**. El anfitrión selecciona participantes y dificultad. Los invitados eligen J2, J3 o J4. Se espera a todos antes de reanudar desde pausa. Una conexión queda vinculada a un puesto y no puede enviar entradas por otro. El servidor decide física, daño, azar, auditoría, escrutinio y victoria; el anfitrión controla el avance narrativo y la auditoría. Cada invitado emite su propio voto.
+Crear/unirse sala usa TCP **48508**. El anfitrión elige cupo de dos a cuatro y dificultad. Los invitados ven las salas de misión 8 con cupos disponibles y eligen un puesto libre. La partida empieza automáticamente al completarse el cupo. En LAN, J4 usa 1–6 del teclado o A, X, Y, LB, RB y RT del mando para los seis ataques. Una conexión queda vinculada a un puesto y no puede enviar entradas por otro. El servidor decide física, daño, azar, auditoría, escrutinio y victoria; el anfitrión controla el avance narrativo y la auditoría. Cada invitado emite su propio voto.
 
 Desconectar pausa la sala. Un token vincula la reconexión a su puesto; se conserva en `mision8-red.properties` del invitado. El anfitrión guarda `mision8.properties`. Al continuar un guardado LAN se vuelve a la configuración para volver a alojarlo. El resultado de campaña se acredita en el perfil del anfitrión.
 

@@ -2,7 +2,6 @@ package alcaldedigital.cliente.entrada;
 
 import java.awt.event.KeyEvent;
 import java.util.List;
-import java.util.Locale;
 
 /** Acciones visibles y traducción de los dispositivos para la campaña. */
 public final class MapaControles {
@@ -15,8 +14,7 @@ public final class MapaControles {
             if(jugador2==null)jugador2="Jugador 2";
             if(nombreMando==null)nombreMando="";
         }
-        public boolean playStation(){return nombreMando.toLowerCase(Locale.ROOT)
-            .matches(".*(dualshock|dualsense|wireless controller|sony|playstation).*");}
+        public boolean playStation(){return LectorJInput.esPlayStation(nombreMando);}
     }
     public record Tecla(String tecla, String accion) {}
     public record Boton(String boton, String accion) {}
@@ -58,30 +56,30 @@ public final class MapaControles {
         case 2,5,8->"Saltar";case 4->"Esquivar";case 6->"Impulso";case 7->"Correr";
         default->"Moverse";};}
     public static List<Tecla> teclado1(Contexto c){return switch(c.mision()){
-        case 1->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar"),new Tecla("C","Civitas"),new Tecla("T","Consultas"));
+        case 1->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar / recoger"),new Tecla("Q","Lupa"),new Tecla("TAB","Libreta"),new Tecla("T","Consultas"));
         case 2->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Reparar"),new Tecla("ESPACIO","Saltar"),new Tecla("MAYÚS","Correr"));
         case 3->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar"),new Tecla("F","PING"),new Tecla("Q","FLASH"),new Tecla("ESPACIO","DASH"),new Tecla("CTRL","Modo privado"));
-        case 4->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Hablar"),new Tecla("ESPACIO","Esquivar"),new Tecla("F","Atacar"),new Tecla("Q","Escudo"),new Tecla("V / N","Investigar / responder"));
+        case 4->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Interactuar"),new Tecla("ESPACIO","Esquivar"),new Tecla("F / J","Linterna / espada"),new Tecla("Q","Escudo"),new Tecla("S / N","Responder en tarima"));
         case 5->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Confirmar"),new Tecla("ESPACIO","Saltar"),new Tecla("1 2 3","Responder"));
-        case 8->List.of(new Tecla("A / D","Moverse"),new Tecla("ESPACIO","Salto doble"),new Tecla("F / Q / E","Ataque / alcance / protección"),new Tecla("R","Esquivar"));
+        case 8->List.of(new Tecla("A / D","Moverse"),new Tecla("ESPACIO","Salto doble"),new Tecla("F / Q / C","Ataque / alcance / protección"),new Tecla("R","Esquivar"));
         case 6->List.of(new Tecla("W A S D","Moverse"),new Tecla("E","Confirmar"),new Tecla("ESPACIO","Impulso"),new Tecla("F","Disparar"),new Tecla("Q","Misil"));
-        default->List.of(new Tecla("W / S","Cambiar carril"),new Tecla("E","Confirmar / ayuda"),new Tecla("ESPACIO","Correr"),new Tecla("Q","Usar ayuda"),new Tecla("1 2 3","Responder"));
+        default->List.of(new Tecla("W / S","Cambiar carril"),new Tecla("E","Confirmar noticia"),new Tecla("ESPACIO","Correr"),new Tecla("Q","Usar ayuda"),new Tecla("1 2 3","Responder"));
     };}
     public static List<Tecla> teclado2(Contexto c){if(!c.dosJugadores())return List.of();return switch(c.mision()){
         case 5->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("ENTER","Confirmar"),new Tecla("MAYÚS","Saltar"),new Tecla("7 8 9","Responder"));
         case 6->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("ENTER","Confirmar"),new Tecla("MAYÚS","Impulso"),new Tecla("L","Disparar"),new Tecla("K","Misil"));
-        case 8->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("MAYÚS","Salto doble"),new Tecla("L / K / ENTER","Tres ataques"),new Tecla("J","Esquivar"));
-        case 7->List.of(new Tecla("FLECHAS","Cambiar carril"),new Tecla("ENTER","Confirmar"),new Tecla("MAYÚS","Correr"),new Tecla("K","Usar ayuda"),new Tecla("7 8 9","Responder"));
+        case 8->List.of(new Tecla("FLECHAS","Moverse"),new Tecla("MAYÚS","Salto doble"),new Tecla("L / K / O","Tres acciones"),new Tecla("J","Esquivar"));
+        case 7->List.of(new Tecla("FLECHAS","Cambiar carril"),new Tecla("ENTER","Avanzar diálogo"),new Tecla("MAYÚS","Correr"),new Tecla("K","Usar ayuda"),new Tecla("7 8 9","Responder"));
         default->List.of();};}
     public static List<Boton> mando(Contexto c){return switch(c.mision()){
-        case 1->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Hablar"),new Boton("X","Civitas"),new Boton("Y","Consultas"));
+        case 1->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Hablar / recoger"),new Boton("LB","Lupa"),new Boton("X","Libreta"),new Boton("Y","Consultas"));
         case 2->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Reparar"),new Boton("X","Saltar"),new Boton("RB","Correr"));
         case 3->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Hablar"),new Boton("X / RT","PING"),new Boton("Y","LIVE BURST"),new Boton("LT","FLASH"),new Boton("RB","DASH"),new Boton("LB","Modo privado"));
-        case 4->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X / RT","Atacar"),new Boton("Y / LT","Escudo"),new Boton("RB","Esquivar"));
+        case 4->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X / RT","Espada"),new Boton("Y / LT","Escudo"),new Boton("LB / RB","Linterna / esquivar"));
         case 5->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X","Saltar"));
         case 8->List.of(new Boton("STICK","Moverse"),new Boton("A","Salto doble"),new Boton("X / Y","Ataques"),new Boton("LB","Protección"),new Boton("RB","Esquiva"));
         case 6->List.of(new Boton("STICK / CRUCETA","Moverse"),new Boton("A","Confirmar"),new Boton("X / RT","Disparar"),new Boton("Y / LT","Misil"),new Boton("RB","Impulso"));
-        default->List.of(new Boton("STICK / CRUCETA","Cambiar carril"),new Boton("A","Confirmar"),new Boton("X","Correr"),new Boton("Y","Usar ayuda"),new Boton("LB / RB","Elegir respuesta"));
+        default->List.of(new Boton("STICK","Cambiar carril"),new Boton("A","Confirmar"),new Boton("RB / X","Correr"),new Boton("Y","Usar ayuda"),new Boton("CRUCETA IZQ / DER","Elegir noticia"));
     };}
     public static String etiquetaBoton(Contexto c,String boton){if(!c.playStation())return boton;
         String[] partes=boton.split(" / ");

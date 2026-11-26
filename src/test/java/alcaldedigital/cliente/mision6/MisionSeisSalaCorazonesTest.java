@@ -16,8 +16,9 @@ class MisionSeisSalaCorazonesTest {
  }
  @Test void explorarSalaRequiereLlegarAlSofaYConservaPosicionAlRecuperar(){
   var m=new MisionSeisMotor();m.fase=Fase.LLEGADA;paso(m,6.1f);
+  assertEquals(ENTRADA_SALA_X,m.salaX);assertEquals(ENTRADA_SALA_Y,m.salaY);
   m.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.EXPLORAR_SALA,m.fase,"Enter lejos del sofá no inicia la entrevista");
-  m.pulsar(KeyEvent.VK_A);paso(m,.98f);m.soltar(KeyEvent.VK_A);m.pulsar(KeyEvent.VK_W);paso(m,.6f);m.soltar(KeyEvent.VK_W);
+  m.pulsar(KeyEvent.VK_D);paso(m,3.0f);m.soltar(KeyEvent.VK_D);
   assertTrue(m.cercaDelSofa());float x=m.salaX,y=m.salaY;m.pulsar(KeyEvent.VK_D);
   var copia=MisionSeisMotor.restaurar(m.capturar());assertNotNull(copia);paso(copia,.2f);assertEquals(x,copia.salaX);assertEquals(y,copia.salaY);
   copia.pulsar(KeyEvent.VK_ENTER);assertEquals(Fase.SALA,copia.fase);

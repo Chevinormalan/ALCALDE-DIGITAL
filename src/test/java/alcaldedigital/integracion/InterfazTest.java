@@ -11,11 +11,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class InterfazTest {
     @Test void ayudaDelMenuSigueDisponibleTrasJugarMisionUno(){
         var j=new JuegoCliente(SesionLocal::new,SesionMisionUnoLocal::new);var r=new RenderJuego();
-        j.accion("jugar");j.accion("mision1");j.accion("m1dificultad:FACIL");
+        j.abrir(JuegoCliente.Pantalla.MISIONES);j.accion("mision1");j.accion("m1dificultad:FACIL");
         j.abrir(JuegoCliente.Pantalla.MENU);j.accion("ayuda");r.dibujar(j);
         assertTrue(r.botones().stream().anyMatch(b->b.accion().equals("verControles")));
         j.accion("verControles");assertEquals(JuegoCliente.Pantalla.CONTROLES,j.pantalla);
         j.accion("volver");j.accion("volver");assertEquals(JuegoCliente.Pantalla.MENU,j.pantalla);
+    }
+    @Test void mapaDeControlesDelMenuLlegaALaMisionOcho(){
+        var j=new JuegoCliente(SesionLocal::new);var r=new RenderJuego();
+        j.pantalla=JuegoCliente.Pantalla.CONTROLES;j.controlesMision=7;r.dibujar(j);
+        assertTrue(r.botones().stream().anyMatch(b->b.accion().equals("controlesSiguiente")));
+        j.accion("controlesSiguiente");r.dibujar(j);
+        assertEquals(8,j.controlesMision);
+        assertFalse(r.botones().stream().anyMatch(b->b.accion().equals("controlesSiguiente")));
     }
     @Test void pantallasBotonesYRecursos() {
         var j=new JuegoCliente(SesionLocal::new);var r=new RenderJuego();
